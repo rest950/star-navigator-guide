@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>探索星號 Star Navigator｜設施導覽與航程攻略</title>
+  <meta name="theme-color" content="#0b0a1d">
+  <meta name="description" content="麗星郵輪探索星號 (Star Navigator) 10 層甲板設施、免費與付費餐廳、防迷路動線，以及 2026/11/29 基隆出發神戶・高知 5 晚航程攻略。可離線使用（非官方專案）。">
+  <link rel="canonical" href="https://rest950.github.io/star-navigator-guide/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="探索星號 Star Navigator 導覽">
+  <meta property="og:title" content="探索星號 Star Navigator｜設施導覽與航程攻略">
+  <meta property="og:description" content="麗星郵輪探索星號 10 層甲板設施、餐飲與動線，以及基隆出發神戶・高知 5 晚航程攻略。可離線使用（非官方專案）。">
+  <meta property="og:url" content="https://rest950.github.io/star-navigator-guide/">
+  <meta property="og:image" content="https://rest950.github.io/star-navigator-guide/icons/icon-512.png">
+  <meta property="og:locale" content="zh_TW">
+  <meta name="twitter:card" content="summary">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="探索星號">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ==============================================
+       MOBILE-FIRST CSS — Base: 320px–428px
+       ============================================== */
+    :root {
+      --bg: #0b0a1d;
+      --bg-rgb: 11, 10, 29;
+      --bg-card: #16133a;
+      --bg-card-hover: #1f1b4e;
+      --bg-surface: #100e2b;
+      --border: #2a2660;
+      --border-active: #4b42a0;
+      --gold: #e3b95c;
+      --gold-rgb: 227, 185, 92;
+      --gold-light: #f6dd9c;
+      --gold-dim: #a5822f;
+      --red: #ef4f5a;
+      --red-rgb: 239, 79, 90;
+      --text: #f4f2fc;
+      --text-body: #d6d2ee;
+      --text-sec: #b3add3;
+      --text-dim: #847eae;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --cyan: #06b6d4;
+      --purple: #a78bfa;
+      --rose: #f43f5e;
+      --blue: #60a5fa;
+      --font: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-serif: 'Cinzel', serif;
+      --safe-b: env(safe-area-inset-bottom, 0px);
+      --safe-t: env(safe-area-inset-top, 0px);
+      --header-h: 52px;
+      --bottom-h: 56px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+    /* overflow-x 只放在 html。放在 body 會讓 body 變成捲動容器，
+       .deck-bar 的 sticky 就會改以 body 內容框為基準（Costa 版實測錯位 51px）。 */
+    html { overflow-x: hidden; }
+    html, body {
+      width: 100%; max-width: 100vw;
+      background: var(--bg); color: var(--text);
+      font-family: var(--font); font-size: 15px; line-height: 1.55;
+      min-height: 100vh; min-height: 100dvh;
+      overscroll-behavior-x: none;
+    }
+    body { padding-top: calc(var(--header-h) + var(--safe-t)); padding-bottom: calc(var(--bottom-h) + var(--safe-b) + 8px); }
+    a { color: var(--gold-light); }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Header ── */
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+      background: rgba(var(--bg-rgb), 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding-top: var(--safe-t);
+      height: calc(var(--header-h) + var(--safe-t));
+    }
+    .header-row {
+      height: var(--header-h); padding: 0 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .hdr-brand { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; cursor: pointer; }
+    .hdr-logo {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: linear-gradient(160deg, #3a2c86, #7a3f7f);
+      color: var(--gold-light); display: grid; place-items: center; font-size: 17px;
+      box-shadow: 0 0 10px rgba(var(--gold-rgb), 0.25);
+    }
+    .hdr-titles { min-width: 0; }
+    .hdr-titles h1 {
+      font-family: var(--font-serif); font-size: 0.86rem; font-weight: 700;
+      color: var(--gold-light); line-height: 1.15;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hdr-titles p { font-size: 0.65rem; color: var(--text-sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hdr-actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .hdr-btn {
+      width: 40px; height: 40px; border-radius: 10px; border: none;
+      background: transparent; color: var(--text-sec);
+      font-size: 1.15rem; display: grid; place-items: center;
+      cursor: pointer; transition: all 0.15s; touch-action: manipulation;
+      font-family: inherit;
+    }
+    .hdr-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.92); }
+    a.hdr-btn { text-decoration: none; }
+
+    /* 關於 modal 內的船舶規格 */
+    .about-specs {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 10px; margin-top: 2px;
+    }
+    .about-specs div { display: flex; justify-content: space-between; gap: 8px; }
+    .about-specs dt { color: var(--text-dim); font-size: 0.76rem; }
+    .about-specs dd { color: var(--gold-light); font-size: 0.78rem; font-weight: 600; text-align: right; }
+
+    /* ── Deck selector sticky bar ── */
+    .deck-bar {
+      position: sticky; top: calc(var(--header-h) + var(--safe-t));
+      z-index: 50; background: rgba(var(--bg-rgb), 0.96); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 8px; display: none;
+    }
+    .deck-bar.visible { display: block; }
+    .deck-bar-scroll {
+      display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .deck-bar-scroll::-webkit-scrollbar { display: none; }
+    .dk-chip {
+      flex-shrink: 0; padding: 6px 12px; border-radius: 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-sec); font-size: 0.78rem; font-weight: 500; font-family: inherit;
+      cursor: pointer; transition: all 0.15s; touch-action: manipulation;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .dk-chip:active { transform: scale(0.95); }
+    .dk-chip.on {
+      background: var(--gold); color: var(--bg); font-weight: 700;
+      border-color: var(--gold-light); box-shadow: 0 0 10px rgba(var(--gold-rgb), 0.35);
+    }
+    .dk-chip.golden { border-color: rgba(var(--gold-rgb), 0.4); }
+
+    /* ── Main content area ── */
+    .main { padding: 10px 10px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── Section banner ── */
+    .sec-banner {
+      background: linear-gradient(135deg, #1d1850 0%, #141236 100%);
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px; position: relative; overflow: hidden;
+    }
+    .sec-banner h2 {
+      font-size: 1.05rem; color: var(--gold-light); font-weight: 700;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      line-height: 1.3; word-break: break-word;
+    }
+    .sec-badge {
+      display: inline-block; background: var(--gold); color: var(--bg);
+      font-size: 0.72rem; font-weight: 800; padding: 2px 7px;
+      border-radius: 4px; font-family: var(--font);
+    }
+    .sec-banner p { color: var(--text-sec); font-size: 0.78rem; margin-top: 4px; line-height: 1.45; word-break: break-word; }
+    .sec-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+    .sec-tag {
+      background: rgba(var(--gold-rgb), 0.14); border: 1px solid rgba(var(--gold-rgb), 0.3);
+      color: var(--gold-light); padding: 2px 8px; border-radius: 4px; font-size: 0.68rem;
+    }
+    .sec-title {
+      font-size: 0.8rem; color: var(--gold-light); font-weight: 700; letter-spacing: 0.03em;
+      margin: 8px 2px -2px; display: flex; align-items: center; gap: 6px;
+    }
+    .sec-title small { color: var(--text-dim); font-weight: 400; font-size: 0.7rem; letter-spacing: 0; }
+
+    /* ── Facility Accordion List ── */
+    .fac-list { display: flex; flex-direction: column; gap: 6px; }
+    .fac-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; transition: border-color 0.2s;
+    }
+    .fac-item.expanded { border-color: rgba(var(--gold-rgb), 0.4); }
+    .fac-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; cursor: pointer; touch-action: manipulation;
+      transition: background 0.15s; min-height: 48px;
+      -webkit-user-select: none; user-select: none;
+    }
+    .fac-head:active { background: rgba(255,255,255,0.04); }
+    .fac-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      display: grid; place-items: center; font-size: 1.05rem; flex-shrink: 0;
+    }
+    .fac-head-info { flex: 1; min-width: 0; }
+    .fac-name { font-size: 0.9rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .fac-name-en { font-size: 0.68rem; color: var(--text-dim); font-family: var(--font-serif); line-height: 1.2; margin-top: 1px; }
+    .fac-head-tags { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+    .fac-price-tag {
+      font-size: 0.65rem; font-weight: 600; padding: 2px 6px;
+      border-radius: 4px; line-height: 1; white-space: nowrap;
+    }
+    .fac-price-tag.free { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+    .fac-price-tag.paid { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+    .fac-price-tag.vip { background: rgba(167,139,250,0.16); color: #d8ccff; border: 1px solid rgba(167,139,250,0.35); }
+    .fac-chevron {
+      width: 28px; height: 28px; display: grid; place-items: center;
+      color: var(--text-dim); font-size: 0.8rem;
+      transition: transform 0.25s ease; flex-shrink: 0;
+    }
+    .fac-item.expanded .fac-chevron { transform: rotate(180deg); }
+
+    .fac-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 14px;
+    }
+    .fac-item.expanded .fac-body { max-height: 1200px; padding: 0 14px 14px; }
+    .fac-body-inner { display: flex; flex-direction: column; gap: 8px; }
+    .fac-meta { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.7rem; }
+    .fac-meta-pill {
+      padding: 2px 7px; border-radius: 4px; display: inline-flex;
+      align-items: center; gap: 3px; line-height: 1.3;
+    }
+    .fac-meta-pill.loc { background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.25); color: #a9cbfb; }
+    .fac-meta-pill.deck { background: rgba(var(--gold-rgb), 0.12); border: 1px solid rgba(var(--gold-rgb), 0.25); color: var(--gold-light); }
+    .fac-desc { font-size: 0.82rem; color: var(--text-body); line-height: 1.6; word-break: break-word; }
+    .fac-tips {
+      background: rgba(0,0,0,0.28); border-left: 3px solid var(--gold);
+      padding: 8px 10px; border-radius: 0 8px 8px 0;
+      font-size: 0.76rem; color: var(--text-sec); line-height: 1.5;
+      word-break: break-word;
+    }
+    .fac-tips strong { color: var(--gold-light); }
+    .fac-star-row { display: flex; justify-content: flex-end; }
+    .btn-star {
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-dim); font-size: 0.78rem; padding: 6px 12px; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+      transition: all 0.15s; touch-action: manipulation; min-height: 36px;
+    }
+    .btn-star:active { transform: scale(0.95); }
+    .btn-star.on { color: var(--gold); border-color: rgba(var(--gold-rgb), 0.4); background: rgba(var(--gold-rgb), 0.08); }
+
+    /* ── Overview Mode ── */
+    .overview-section { display: flex; flex-direction: column; gap: 10px; }
+    .qf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .qf-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; cursor: pointer;
+      transition: all 0.15s; touch-action: manipulation;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .qf-card:active { transform: scale(0.97); background: var(--bg-card-hover); }
+    .qf-card-icon { font-size: 1.4rem; line-height: 1; }
+    .qf-card-label { font-size: 0.8rem; font-weight: 600; color: var(--text); line-height: 1.25; }
+    .qf-card-decks { font-size: 0.68rem; color: var(--gold-light); font-weight: 600; }
+    .qf-card-hint { font-size: 0.65rem; color: var(--text-dim); line-height: 1.25; }
+
+    .ov-deck {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; transition: border-color 0.2s;
+    }
+    .ov-deck.golden { border-left: 3px solid var(--gold); background: linear-gradient(90deg, rgba(var(--gold-rgb), 0.08) 0%, var(--bg-card) 30%); }
+    .ov-deck.ov-expanded { border-color: rgba(var(--gold-rgb), 0.35); }
+    .ov-deck-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px; cursor: pointer; touch-action: manipulation;
+      min-height: 48px; -webkit-user-select: none; user-select: none;
+    }
+    .ov-deck-head:active { background: rgba(255,255,255,0.03); }
+    .ov-num {
+      min-width: 36px; text-align: center; font-family: var(--font-serif);
+      font-weight: 700; font-size: 0.88rem; color: var(--gold-light);
+      background: var(--bg-surface); border: 1px solid var(--border);
+      padding: 3px 6px; border-radius: 6px; flex-shrink: 0;
+    }
+    .ov-deck.golden .ov-num { background: var(--gold); color: var(--bg); border-color: var(--gold-light); }
+    .ov-deck-info { flex: 1; min-width: 0; }
+    .ov-deck-title { font-size: 0.88rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .ov-deck-title small { font-size: 0.7rem; color: var(--text-dim); font-family: var(--font-serif); font-weight: 500; }
+    .ov-deck-sub { font-size: 0.7rem; color: var(--text-sec); line-height: 1.25; margin-top: 1px; }
+    .ov-pills { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 12px; margin-top: -4px; padding-bottom: 10px; }
+    .ov-pill {
+      font-size: 0.68rem; padding: 2px 6px; border-radius: 4px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      color: #d0cbe8; display: inline-flex; align-items: center; gap: 3px;
+    }
+    .ov-pill.t-free { border-left: 2px solid var(--green); }
+    .ov-pill.t-paid { border-left: 2px solid var(--amber); }
+    .ov-pill.t-pool { border-left: 2px solid var(--cyan); }
+    .ov-pill.t-ent { border-left: 2px solid var(--purple); }
+    .ov-pill.t-vip { border-left: 2px solid #c4b5fd; color: #d8ccff; }
+    .ov-pill.t-more { border-style: dashed; border-color: var(--border-active); color: var(--gold-light); cursor: pointer; touch-action: manipulation; }
+    .ov-chevron {
+      width: 28px; height: 28px; display: grid; place-items: center;
+      color: var(--text-dim); font-size: 0.8rem; transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+    .ov-deck.ov-expanded .ov-chevron { transform: rotate(180deg); }
+    .ov-expand { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .ov-deck.ov-expanded .ov-expand { max-height: 4000px; }
+    .ov-expand-inner { padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+    .btn-wide {
+      width: 100%; padding: 10px; border-radius: 8px; font-family: inherit;
+      background: rgba(var(--gold-rgb), 0.12); border: 1px solid rgba(var(--gold-rgb), 0.3);
+      color: var(--gold-light); font-size: 0.82rem; cursor: pointer; touch-action: manipulation;
+    }
+    .btn-wide:active { transform: scale(0.98); }
+
+    /* ── Trip mode：航程攻略 ── */
+    .trip-hero {
+      position: relative; overflow: hidden; border-radius: 16px; padding: 16px 16px 14px;
+      border: 1px solid rgba(var(--gold-rgb), 0.25);
+      background:
+        radial-gradient(1.5px 1.5px at 12% 22%, rgba(255,255,255,0.8), transparent),
+        radial-gradient(1px 1px at 32% 12%, rgba(255,255,255,0.6), transparent),
+        radial-gradient(1.5px 1.5px at 58% 28%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1px 1px at 78% 14%, rgba(255,255,255,0.6), transparent),
+        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.5), transparent),
+        linear-gradient(165deg, #2a1f6b 0%, #3b2a7c 55%, #74407e 100%);
+    }
+    .trip-kicker { font-size: 0.7rem; color: var(--gold-light); letter-spacing: 0.06em; font-weight: 600; }
+    .trip-hero h2 { font-size: 1.22rem; color: #fff; line-height: 1.3; margin-top: 4px; }
+    .trip-hero .route { font-size: 0.8rem; color: #ddd6fb; margin-top: 2px; }
+    .trip-status {
+      margin-top: 12px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+      background: rgba(0,0,0,0.22); border-radius: 10px; padding: 10px 12px;
+      font-size: 0.82rem; color: #eae6ff;
+    }
+    .trip-status b { font-size: 1.6rem; color: var(--gold-light); font-family: var(--font-serif); line-height: 1; }
+    .trip-status .sub { width: 100%; font-size: 0.72rem; color: #c9c1f0; }
+
+    .clock-strip {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+    }
+    .clock-cell { display: flex; flex-direction: column; gap: 1px; }
+    .clock-cell span { font-size: 0.68rem; color: var(--text-dim); }
+    .clock-cell b { font-size: 1.3rem; font-variant-numeric: tabular-nums; color: var(--text); font-weight: 700; line-height: 1.15; }
+    .clock-cell.jp b { color: var(--gold-light); }
+    .clock-note { grid-column: 1 / -1; font-size: 0.7rem; color: var(--text-sec); line-height: 1.45; border-top: 1px dashed var(--border); padding-top: 6px; }
+
+    details.card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    details.card[open] { border-color: rgba(var(--gold-rgb), 0.35); }
+    details.card > summary {
+      list-style: none; display: flex; align-items: center; gap: 10px;
+      padding: 12px; cursor: pointer; min-height: 48px; touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
+    }
+    details.card > summary::-webkit-details-marker { display: none; }
+    details.card > summary:active { background: rgba(255,255,255,0.03); }
+    details.card[open] > summary .ov-chevron { transform: rotate(180deg); }
+    .card-body { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+    .card-title { flex: 1; min-width: 0; }
+    .card-title b { display: block; font-size: 0.9rem; color: var(--text); font-weight: 600; line-height: 1.3; }
+    .card-title span { display: block; font-size: 0.72rem; color: var(--text-sec); line-height: 1.35; margin-top: 1px; }
+    .card-ico {
+      width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      display: grid; place-items: center; font-size: 1.1rem;
+    }
+
+    .day-card.today { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(var(--gold-rgb), 0.35), 0 0 18px rgba(var(--gold-rgb), 0.12); }
+    .day-card.past { opacity: 0.7; }
+    .day-badge {
+      width: 46px; flex-shrink: 0; text-align: center; border-radius: 9px; padding: 4px 0;
+      background: var(--bg-surface); border: 1px solid var(--border);
+    }
+    .day-badge small { display: block; font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.05em; }
+    .day-badge b { display: block; font-size: 0.86rem; color: var(--gold-light); line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .day-badge i { display: block; font-style: normal; font-size: 0.62rem; color: var(--text-sec); }
+    .day-card.today .day-badge { background: var(--gold); border-color: var(--gold-light); }
+    .day-card.today .day-badge small, .day-card.today .day-badge b, .day-card.today .day-badge i { color: var(--bg); }
+    .today-tag { display: inline-block; margin-left: 6px; font-size: 0.62rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: var(--red); color: #fff; vertical-align: 2px; }
+
+    .time-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tpill {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 0.74rem;
+      padding: 3px 8px; border-radius: 6px; background: var(--bg-surface); border: 1px solid var(--border);
+      color: var(--text-body); font-variant-numeric: tabular-nums;
+    }
+    .tpill em { font-style: normal; font-size: 0.62rem; font-weight: 700; padding: 0 4px; border-radius: 3px; background: rgba(255,255,255,0.08); color: var(--text-sec); }
+    .tpill.jp em { background: rgba(var(--gold-rgb), 0.2); color: var(--gold-light); }
+    .tpill.warn { border-color: rgba(var(--red-rgb), 0.5); background: rgba(var(--red-rgb), 0.1); }
+    .tpill.warn em { background: rgba(var(--red-rgb), 0.3); color: #ffd1d5; }
+
+    .tl { list-style: none; display: flex; flex-direction: column; }
+    .tl li {
+      display: grid; grid-template-columns: 50px 1fr; gap: 8px; padding: 7px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.07); font-size: 0.82rem; line-height: 1.55;
+    }
+    .tl li:last-child { border-bottom: none; }
+    .tl-t { color: var(--gold-light); font-weight: 600; font-size: 0.76rem; font-variant-numeric: tabular-nums; padding-top: 1px; }
+    .tl-x { color: var(--text-body); word-break: break-word; }
+    .tl-x b { color: var(--text); }
+    .tl-x small { display: block; color: var(--text-dim); font-size: 0.72rem; line-height: 1.45; margin-top: 1px; }
+    .tz-note { font-size: 0.7rem; color: var(--text-dim); }
+
+    .warn-box, .info-box {
+      border-radius: 10px; padding: 9px 11px; font-size: 0.78rem; line-height: 1.55; word-break: break-word;
+    }
+    .warn-box { background: rgba(var(--red-rgb), 0.09); border: 1px solid rgba(var(--red-rgb), 0.35); color: #ffd7da; }
+    .warn-box b { color: #ffb4bb; }
+    .info-box { background: rgba(0,0,0,0.25); border-left: 3px solid var(--gold); border-radius: 0 10px 10px 0; color: var(--text-sec); }
+    .info-box b { color: var(--gold-light); }
+    .box-list { margin: 0 0 0 1.1em; font-size: 0.82rem; line-height: 1.6; color: var(--text-body); }
+    .box-list li { margin: 3px 0; padding-left: 2px; word-break: break-word; }
+    .box-list li::marker { color: var(--gold-dim); }
+    .box-list b { color: var(--text); }
+
+    .port-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .port-tile {
+      background: linear-gradient(160deg, #221d58, #17143d); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; cursor: pointer; touch-action: manipulation; display: flex; flex-direction: column; gap: 2px;
+    }
+    .port-tile:active { transform: scale(0.97); }
+    .port-tile .pi { font-size: 1.5rem; line-height: 1.1; }
+    .port-tile b { font-size: 0.95rem; color: var(--text); }
+    .port-tile span { font-size: 0.7rem; color: var(--text-sec); line-height: 1.35; }
+    .port-tile em { font-style: normal; font-size: 0.72rem; color: var(--gold-light); font-weight: 600; margin-top: 4px; }
+
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 0.8rem; line-height: 1.5; }
+    .kv dt { color: var(--text-dim); white-space: nowrap; }
+    .kv dd { color: var(--text-body); word-break: break-word; }
+
+    .route-step-title { font-size: 0.8rem; color: var(--gold-light); font-weight: 600; margin-top: 2px; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip-link {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 0.74rem; text-decoration: none;
+      padding: 5px 9px; border-radius: 16px; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-sec);
+    }
+    .chip-link:active { background: var(--bg-card-hover); }
+
+    .aboard-box {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: rgba(var(--red-rgb), 0.08); border: 1px solid rgba(var(--red-rgb), 0.4); border-radius: 12px; padding: 10px 12px;
+    }
+    .aboard-box .lbl { font-size: 0.74rem; color: #ffc9ce; flex: 1; min-width: 150px; line-height: 1.45; }
+    .aboard-box .lbl b { display: block; font-size: 0.9rem; color: #fff; }
+    .aboard-box input[type=time] {
+      font-family: inherit; font-size: 16px; padding: 6px 8px; border-radius: 8px;
+      background: var(--bg-surface); color: var(--text); border: 1px solid var(--border-active); color-scheme: dark;
+    }
+    .aboard-conv { width: 100%; font-size: 0.74rem; color: #ffc9ce; font-variant-numeric: tabular-nums; }
+    .aboard-cd { width: 100%; font-size: 0.82rem; color: #fff; font-weight: 700; }
+
+    .ck-progress { height: 4px; border-radius: 2px; background: var(--bg-surface); overflow: hidden; margin-top: 4px; }
+    .ck-progress i { display: block; height: 100%; background: var(--gold); transition: width 0.25s; }
+    .ck-item {
+      display: flex; gap: 10px; align-items: flex-start; padding: 9px 2px;
+      border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem; line-height: 1.5; cursor: pointer;
+      color: var(--text-body);
+    }
+    .ck-item:last-child { border-bottom: none; }
+    .ck-item input {
+      -webkit-appearance: none; appearance: none; width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+      border: 1.5px solid var(--border-active); border-radius: 6px; background: var(--bg-surface);
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .ck-item input:checked { background: var(--gold); border-color: var(--gold); }
+    .ck-item input:checked::after { content: "✓"; color: var(--bg); font-size: 0.78rem; font-weight: 800; line-height: 1; }
+    .ck-item input:checked + span { color: var(--text-dim); text-decoration: line-through; }
+    .ck-item small { display: block; color: var(--text-dim); font-size: 0.72rem; }
+    .ck-count { font-size: 0.72rem; color: var(--gold-light); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+    /* ── Search overlay ── */
+    .search-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(var(--bg-rgb), 0.97); backdrop-filter: blur(20px);
+      display: flex; flex-direction: column;
+      transform: translateY(-100%); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+      padding-top: var(--safe-t);
+    }
+    .search-overlay.open { transform: translateY(0); }
+    .search-top { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .search-input-wrap { flex: 1; position: relative; }
+    .search-input {
+      width: 100%; background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 40px 10px 36px;
+      color: var(--text); font-size: 16px; font-family: inherit;
+      outline: none; -webkit-appearance: none;
+    }
+    .search-input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(var(--gold-rgb), 0.2); }
+    .search-clear {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      width: 26px; height: 26px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.10); color: var(--text-sec);
+      font-size: 0.75rem; display: none; place-items: center;
+      cursor: pointer; touch-action: manipulation;
+    }
+    .search-clear.show { display: grid; }
+    .search-clear:active { background: rgba(255,255,255,0.18); }
+    .search-input-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; color: var(--text-dim); pointer-events: none; }
+    .search-cancel { background: none; border: none; color: var(--gold-light); font-size: 0.88rem; cursor: pointer; padding: 8px; touch-action: manipulation; white-space: nowrap; font-family: inherit; }
+    .search-chips {
+      display: flex; gap: 6px; padding: 10px 12px;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      border-bottom: 1px solid var(--border); scrollbar-width: none;
+    }
+    .search-chips::-webkit-scrollbar { display: none; }
+    .s-chip {
+      flex-shrink: 0; padding: 6px 12px; border-radius: 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-sec); font-size: 0.76rem; cursor: pointer; font-family: inherit;
+      transition: all 0.15s; touch-action: manipulation;
+    }
+    .s-chip.on { background: rgba(var(--gold-rgb), 0.2); border-color: var(--gold); color: var(--gold-light); font-weight: 600; }
+    .search-results {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .search-empty { text-align: center; color: var(--text-dim); padding: 40px 20px; font-size: 0.85rem; }
+    .search-empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
+
+    /* 高度受限的 flex column 捲動區：子元素預設 flex-shrink:1 會被壓扁而非捲動，
+       配上卡片的 overflow:hidden 就會截斷內容。捲動容器一律關掉收縮。 */
+    .search-results > *,
+    .modal-sheet-body > * { flex-shrink: 0; }
+
+    /* ── Bottom Navigation ── */
+    .bottom-nav {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+      background: rgba(var(--bg-rgb), 0.97); backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 4px 0 calc(4px + var(--safe-b));
+      box-shadow: 0 -2px 16px rgba(0,0,0,0.4);
+    }
+    .bottom-nav-inner { display: flex; justify-content: space-around; align-items: center; }
+    .nav-tab {
+      background: none; border: none; color: var(--text-dim); font-family: inherit;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      font-size: 0.62rem; cursor: pointer; padding: 6px 4px;
+      border-radius: 8px; transition: all 0.15s;
+      touch-action: manipulation; min-width: 52px; flex: 1; max-width: 88px; position: relative;
+    }
+    .nav-tab-icon { font-size: 1.2rem; line-height: 1; transition: transform 0.15s; }
+    .nav-tab.on { color: var(--gold-light); font-weight: 700; }
+    .nav-tab.on .nav-tab-icon { transform: scale(1.1); }
+    .nav-tab-badge {
+      position: absolute; top: 1px; right: 10px;
+      background: var(--rose); color: #fff; font-size: 0.55rem;
+      padding: 1px 4px; border-radius: 8px; font-weight: 700; min-width: 14px; text-align: center;
+    }
+
+    /* ── More menu (popover) ── */
+    .more-menu {
+      position: fixed; bottom: calc(var(--bottom-h) + var(--safe-b) + 4px);
+      right: 8px; z-index: 85;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 6px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      display: none; flex-direction: column; min-width: 180px;
+      animation: slideUp 0.2s ease;
+    }
+    .more-menu.open { display: flex; }
+    .more-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; font-family: inherit;
+      color: var(--text); cursor: pointer; transition: background 0.1s;
+      border: none; background: none; width: 100%; text-align: left;
+      touch-action: manipulation; text-decoration: none;
+    }
+    .more-item:active { background: rgba(255,255,255,0.06); }
+    .more-item .ext { margin-left: auto; font-size: 0.7rem; color: var(--text-dim); }
+
+    /* ── Modal bottom sheet ── */
+    .modal-bg {
+      position: fixed; inset: 0; z-index: 150;
+      background: rgba(5,4,14,0.8); backdrop-filter: blur(6px);
+      display: none; animation: fadeIn 0.2s;
+    }
+    .modal-bg.open { display: block; }
+    .modal-sheet {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 151;
+      background: var(--bg-card); border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      max-height: 88vh; display: none; flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+      padding-bottom: var(--safe-b);
+    }
+    .modal-sheet.open { display: flex; transform: translateY(0); }
+    .modal-handle-bar { display: flex; justify-content: center; padding: 10px 0 4px; cursor: grab; touch-action: none; }
+    .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.2); }
+    .modal-sheet-header {
+      padding: 8px 16px 12px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-sheet-header h3 { font-size: 1rem; color: var(--gold-light); display: flex; align-items: center; gap: 6px; }
+    .modal-close {
+      width: 36px; height: 36px; border-radius: 8px; border: none;
+      background: rgba(255,255,255,0.06); color: var(--text-sec);
+      font-size: 1.3rem; display: grid; place-items: center;
+      cursor: pointer; touch-action: manipulation;
+    }
+    .modal-sheet-body {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .tip-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+    .tip-card h4 { color: var(--gold-light); margin-bottom: 4px; font-size: 0.88rem; display: flex; align-items: center; gap: 5px; }
+    .tip-card p, .tip-card li { font-size: 0.82rem; color: var(--text-body); line-height: 1.6; word-break: break-word; }
+    .tip-card ul { margin-left: 1.1em; }
+
+    .update-bar {
+      position: fixed; left: 12px; right: 12px;
+      bottom: calc(var(--bottom-h) + var(--safe-b) + 12px);
+      z-index: 95; display: none; align-items: center; gap: 10px;
+      background: var(--bg-card); border: 1px solid var(--gold-dim);
+      border-radius: 12px; padding: 10px 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5); font-size: 0.8rem;
+    }
+    .update-bar.show { display: flex; }
+    .update-bar span { flex: 1; }
+    .update-bar button { border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; font-weight: 600; touch-action: manipulation; font-family: inherit; }
+    .update-bar .go { background: var(--gold); color: var(--bg); }
+    .update-bar .skip { background: rgba(255,255,255,0.08); color: var(--text-sec); }
+
+    .app-footer { padding: 4px 16px 10px; text-align: center; font-size: 0.68rem; color: var(--text-dim); line-height: 1.6; }
+    .app-footer .ver { color: var(--text-sec); font-weight: 600; }
+    .app-footer button {
+      border: none; background: none; padding: 0; cursor: pointer; font-family: inherit;
+      color: var(--gold-dim); font-size: inherit; text-decoration: underline;
+      text-underline-offset: 2px; touch-action: manipulation;
+    }
+    .about-link { color: var(--gold-light); text-decoration: underline; text-underline-offset: 2px; }
+
+    .dining-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+    .dining-card-name { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .dining-card-loc { font-size: 0.72rem; color: var(--gold-light); margin-bottom: 4px; }
+    .dining-card-desc { font-size: 0.78rem; color: var(--text-sec); line-height: 1.45; }
+    .dine-h { font-size: 0.82rem; font-weight: 600; margin-top: 4px; }
+
+    .btn-top {
+      position: fixed; right: 12px; bottom: calc(var(--bottom-h) + var(--safe-b) + 12px);
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--bg-card); border: 1px solid var(--gold);
+      color: var(--gold-light); font-size: 1.1rem;
+      display: grid; place-items: center; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      opacity: 0; visibility: hidden; transition: all 0.2s;
+      z-index: 60; touch-action: manipulation;
+    }
+    .btn-top.show { opacity: 1; visibility: visible; }
+
+    .empty-box { background: var(--bg-card); border: 1px dashed var(--border); border-radius: 12px; padding: 30px 16px; text-align: center; color: var(--text-sec); }
+    .empty-box-icon { font-size: 2rem; margin-bottom: 6px; opacity: 0.5; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ==============================================
+       TABLET (min-width: 768px)
+       ============================================== */
+    @media (min-width: 768px) {
+      :root { --header-h: 56px; }
+      .main { padding: 14px; gap: 12px; max-width: 800px; margin: 0 auto; }
+      .qf-grid { grid-template-columns: repeat(4, 1fr); }
+      .fac-list { gap: 8px; }
+    }
+
+    /* ==============================================
+       DESKTOP (min-width: 1024px)
+       ============================================== */
+    .desktop-nav-btns { display: none; }
+    @media (min-width: 1024px) {
+      :root { --header-h: 58px; --bottom-h: 0px; }
+      body { padding-bottom: 0; }
+      .bottom-nav { display: none; }
+      .btn-top { bottom: 24px; right: 24px; }
+      .main { max-width: 1100px; padding: 20px; gap: 16px; }
+      .desktop-nav-btns { display: flex; gap: 4px; flex-shrink: 0; }
+      .desktop-nav-btns .hdr-btn { width: auto; padding: 0 10px; font-size: 0.8rem; gap: 5px; display: flex; align-items: center; }
+      .hdr-actions .nav-search-btn { display: none; }
+      /* 桌機隱藏了 bottom-nav，deck bar 是單一 Deck 模式唯一的切換 UI，必須保留 */
+      .deck-bar-scroll { max-width: 1100px; margin: 0 auto; }
+      .modal-sheet { left: 50%; right: auto; transform: translateX(-50%) translateY(100%); width: 600px; max-width: 90vw; border-radius: 20px 20px 0 0; }
+      .modal-sheet.open { transform: translateX(-50%) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<header class="app-header">
+  <div class="header-row">
+    <div class="hdr-brand" onclick="go('trip')">
+      <div class="hdr-logo">★</div>
+      <div class="hdr-titles">
+        <h1>STAR NAVIGATOR 探索星號</h1>
+        <p>麗星郵輪｜11/29 基隆 → 神戶・高知 5 晚</p>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <button class="hdr-btn nav-search-btn" onclick="openSearch()" title="搜尋">🔍</button>
+    </div>
+    <div class="desktop-nav-btns">
+      <button class="hdr-btn" onclick="openSearch()">🔍 搜尋</button>
+      <button class="hdr-btn" onclick="go('trip')" id="dBtnTr">🗓️ 行程</button>
+      <button class="hdr-btn" onclick="go('overview')" id="dBtnOv">🚢 速覽</button>
+      <button class="hdr-btn" onclick="go('single')" id="dBtnSg">🏛️ Deck</button>
+      <button class="hdr-btn" onclick="go('starred')" id="dBtnSt">⭐ 收藏</button>
+      <button class="hdr-btn" onclick="openModal('navModal')">🧭 動線</button>
+      <button class="hdr-btn" onclick="openModal('dineModal')">🍽️ 餐飲</button>
+      <a class="hdr-btn" href="https://www.vesselfinder.com/vessels/details/9141077" target="_blank" rel="noopener noreferrer" title="在 VesselFinder 查看即時船位（IMO 9141077）">🛰️ 船位</a>
+    </div>
+  </div>
+</header>
+
+<!-- Deck bar (shown in single-deck mode) -->
+<nav class="deck-bar" id="deckBar">
+  <div class="deck-bar-scroll" id="deckBarScroll"><!-- JS --></div>
+</nav>
+
+<!-- Main content -->
+<main class="main" id="mainContent"><!-- JS renders here --></main>
+
+<!-- Footer -->
+<footer class="app-footer">
+  <span class="ver" id="verLabel"></span> · 非官方旅客整理，資訊以船上每日活動表與廣播為準<br>
+  <button onclick="openModal('aboutModal')">關於與免責聲明</button>
+</footer>
+
+<button class="btn-top" id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<div class="update-bar" id="updateBar">
+  <span>已有新版本資料</span>
+  <button class="skip" onclick="this.parentNode.classList.remove('show')">稍後</button>
+  <button class="go" onclick="applyUpdate()">更新</button>
+</div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="nav-tab on" id="tabTr" onclick="go('trip')">
+      <span class="nav-tab-icon">🗓️</span><span>行程</span>
+    </button>
+    <button class="nav-tab" id="tabOv" onclick="go('overview')">
+      <span class="nav-tab-icon">🚢</span><span>速覽</span>
+    </button>
+    <button class="nav-tab" id="tabSg" onclick="go('single')">
+      <span class="nav-tab-icon">🏛️</span><span>Deck</span>
+    </button>
+    <button class="nav-tab" id="tabSt" onclick="go('starred')">
+      <span class="nav-tab-icon">⭐</span><span>收藏</span>
+      <span class="nav-tab-badge" id="starBadge">0</span>
+    </button>
+    <button class="nav-tab" id="tabMore" onclick="toggleMore()">
+      <span class="nav-tab-icon">☰</span><span>更多</span>
+    </button>
+  </div>
+</nav>
+
+<!-- More menu popover -->
+<div class="more-menu" id="moreMenu">
+  <button class="more-item" onclick="openSearch(); closeMore();">🔍 搜尋設施</button>
+  <button class="more-item" onclick="openModal('dineModal'); closeMore();">🍽️ 餐飲速查表</button>
+  <button class="more-item" onclick="openModal('navModal'); closeMore();">🧭 防迷路指南</button>
+  <a class="more-item" href="https://www.vesselfinder.com/vessels/details/9141077" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🛰️ 即時船位<span class="ext">↗</span></a>
+  <a class="more-item" href="https://www.windy.com/?34.0,133.5,6" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🌬️ 風場海況<span class="ext">↗</span></a>
+  <a class="more-item" href="https://stardreamcruises.com/tc-tw/our-ship/star-navigator" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🌐 麗星官網<span class="ext">↗</span></a>
+  <button class="more-item" onclick="openModal('aboutModal'); closeMore();">ℹ️ 關於與免責聲明</button>
+</div>
+
+<!-- Search overlay -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-top">
+    <div class="search-input-wrap">
+      <span class="search-input-icon">🔍</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="搜尋設施、餐廳、泳池、劇院..." oninput="doSearch();syncClear()">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" title="清除">✕</button>
+    </div>
+    <button class="search-cancel" onclick="closeSearch()">取消</button>
+  </div>
+  <div class="search-chips" id="searchChips">
+    <button class="s-chip on" data-cat="all" onclick="setFilter('all')">全部</button>
+    <button class="s-chip" data-cat="dining" onclick="setFilter('dining')">🍽️ 美食</button>
+    <button class="s-chip" data-cat="pool" onclick="setFilter('pool')">🏊 泳池甲板</button>
+    <button class="s-chip" data-cat="entertainment" onclick="setFilter('entertainment')">🎭 娛樂</button>
+    <button class="s-chip" data-cat="bar" onclick="setFilter('bar')">🍸 酒吧咖啡</button>
+    <button class="s-chip" data-cat="spa" onclick="setFilter('spa')">💆 水療健身</button>
+    <button class="s-chip" data-cat="kids" onclick="setFilter('kids')">👶 親子</button>
+    <button class="s-chip" data-cat="service" onclick="setFilter('service')">🛎️ 服務</button>
+    <button class="s-chip" data-cat="shopping" onclick="setFilter('shopping')">🛍️ 購物</button>
+    <button class="s-chip" data-cat="cabin" onclick="setFilter('cabin')">🛏️ 客房</button>
+  </div>
+  <div class="search-results" id="searchResults">
+    <div class="search-empty"><div class="search-empty-icon">🔍</div>輸入關鍵字搜尋全船設施</div>
+  </div>
+</div>
+
+<!-- Modal: Navigation Guide -->
+<div class="modal-bg" id="navModalBg" onclick="closeModal('navModal')"></div>
+<div class="modal-sheet" id="navModal">
+  <div class="modal-handle-bar"><div class="modal-handle"></div></div>
+  <div class="modal-sheet-header">
+    <h3>🧭 防迷路指南</h3>
+    <button class="modal-close" onclick="closeModal('navModal')">✕</button>
+  </div>
+  <div class="modal-sheet-body" id="navBody">
+    <div class="tip-card">
+      <h4>🐟 先分清船頭船尾</h4>
+      <p>走廊地毯上的魚頭（或花頭）指向<strong>船頭</strong>；客房號碼越小越靠船頭，x5xx 號在左舷、x0xx–x2xx 號在右舷。</p>
+    </div>
+    <div class="tip-card">
+      <h4>🛗 三組電梯怎麼選</h4>
+      <ul>
+        <li><strong>船頭</strong>：Deck 7–8 娛樂場、Deck 12 水療／健身／棕櫚閣、Deck 13 兒童俱樂部</li>
+        <li><strong>船中</strong>：Deck 7 大堂（接待處、岸上觀光）、Deck 8 精品廊、Deck 12 泳池與麗都入口</li>
+        <li><strong>船尾</strong>：Deck 6 星夢餐廳、Deck 7–8 星座劇院、Deck 12 麗都自助與戶外燒烤</li>
+      </ul>
+    </div>
+    <div class="tip-card">
+      <h4>🚧 Deck 6 前後不通</h4>
+      <p>Deck 6 船頭是客房、船中百味軒、船尾星夢餐廳，百味軒到星夢之間是廚房，<strong>走不過去</strong>；要從 Deck 7 走再下樓，或直接搭船尾電梯。</p>
+    </div>
+    <div class="tip-card">
+      <h4>🏛️ 迷路就回 Deck 7 大堂</h4>
+      <p>Deck 7 從船頭娛樂場一路通到船尾劇院，兩側還有露天的悠閒大道；接待處就在大堂。</p>
+    </div>
+    <div class="tip-card">
+      <h4>💧 喝水、吸菸、醫務室</h4>
+      <p>各客房層電梯旁有飲水機（冷水、常溫，沒有熱水）。吸菸限指定戶外區與陽台。醫務室在 Deck 4 船頭。</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Dining Guide -->
+<div class="modal-bg" id="dineModalBg" onclick="closeModal('dineModal')"></div>
+<div class="modal-sheet" id="dineModal">
+  <div class="modal-handle-bar"><div class="modal-handle"></div></div>
+  <div class="modal-sheet-header">
+    <h3>🍽️ 全船餐飲速查</h3>
+    <button class="modal-close" onclick="closeModal('dineModal')">✕</button>
+  </div>
+  <div class="modal-sheet-body" id="dineBody"><!-- DINE_GUIDE --></div>
+</div>
+
+<!-- Modal: About / Disclaimer -->
+<div class="modal-bg" id="aboutModalBg" onclick="closeModal('aboutModal')"></div>
+<div class="modal-sheet" id="aboutModal">
+  <div class="modal-handle-bar"><div class="modal-handle"></div></div>
+  <div class="modal-sheet-header">
+    <h3>ℹ️ 關於與免責聲明</h3>
+    <button class="modal-close" onclick="closeModal('aboutModal')">✕</button>
+  </div>
+  <div class="modal-sheet-body">
+    <div class="tip-card">
+      <h4>🚢 船舶規格</h4>
+      <dl class="about-specs">
+        <div><dt>總噸位</dt><dd>75,338 GT</dd></div>
+        <div><dt>船長／寬</dt><dd>268 / 32 公尺</dd></div>
+        <div><dt>客房數</dt><dd>926 間</dd></div>
+        <div><dt>載客（下鋪）</dt><dd>1,854 人</dd></div>
+        <div><dt>甲板</dt><dd>13 層（旅客 4–13）</dd></div>
+        <div><dt>建造</dt><dd>1999 Meyer Werft</dd></div>
+      </dl>
+      <p style="margin-top:8px">前身依序為麗星郵輪處女星號（SuperStar Virgo）、星夢郵輪探索夢號、名勝世界壹號，2025 年起以麗星郵輪品牌更名為探索星號。</p>
+    </div>
+    <div class="tip-card">
+      <h4>⚠️ 非官方專案</h4>
+      <p>本站為旅客個人整理的開源專案，<strong>並非麗星郵輪官方網站</strong>，亦未受其贊助或審核。</p>
+    </div>
+    <div class="tip-card">
+      <h4>🕐 一律以船上公告為準</h4>
+      <p>設施營運時間、菜單、收費、演出、靠港與回船時間，請以船上每日郵報與廣播為準。行程攻略中的港口營業時間與價格為 2026 年 10 月查詢的結果，可能變動。</p>
+    </div>
+    <div class="tip-card">
+      <h4>📐 資料來源</h4>
+      <p>甲板與設施依麗星官方《探索星號》台灣出發版手冊甲板圖整理，並對照一般版與英文版手冊、SNA Cruise Guide（2025/6）、官方航程表（V9.2，2026/10/2）。2026 年起的變動（如火鍋改為泰悅）與實用小技巧依旅客心得補充；港口資訊來自神戶、高知官方與景點官網。</p>
+    </div>
+    <div class="tip-card">
+      <h4>™ 商標權</h4>
+      <p>「麗星郵輪」「Star Cruises」「探索星號」「Star Navigator」及各餐廳、設施之名稱與商標，均歸其各自權利人所有。</p>
+    </div>
+    <div class="tip-card">
+      <h4>📄 授權與版本</h4>
+      <p>本專案以 <a class="about-link" href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh_TW" target="_blank" rel="noopener noreferrer">CC BY-NC 4.0</a> 釋出，允許分享與修改，<strong>禁止商業使用</strong>。<br><span id="verDetail"></span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+// 探索星號導覽 — 資料在上、邏輯在下；改資料不必動邏輯
+// ════════════════════════════════════════════════
+// ═══ Version ═══
+const APP_VERSION="1.0.0", DATA_DATE="2026-10-04";   // 改版時同步 bump sw.js 的 VERSION
+
+// ═══ 甲板與設施 ═══
+// 基準：麗星官方《探索星號》台灣出發版手冊（SNA_Ship_Brochure_Ex_TWN_TC）甲板圖與索引；
+//       英文名取自英文版手冊與 SNA Cruise Guide。2026 年改裝後的變動（火鍋→泰悅）依旅客心得補註。
+// 陣列順序即畫面順序（Deck 13 → 4）；swipe 換層用 index 前後移動，勿重排
+// fac.id 是收藏的 localStorage key（sn_stars），改 id 會孤兒化既有收藏
+// cat 封閉列舉：dining / pool / entertainment / bar / spa / kids / service / shopping / cabin
+// free=免費、vip=皇宮貴賓限定（顯示「皇宮限定」）；cabin 不顯示價格標籤
+const D=[
+{id:13,num:"13",zh:"日光運動甲板",en:"Sun Deck",icon:"☀️",gold:false,
+ desc:"全船最高的露天甲板：船頭瞭望台與兒童俱樂部，船中露天吧與海鮮燒烤，船尾緩跑徑與綜合運動場。",
+ nature:"瞭望台・兒童俱樂部・露天燒烤・運動",tags:["瞭望台甲板","小小夢想家天地","海鮮燒烤餐廳","緩跑徑","綜合運動場"],fac:[
+ {id:"f13_1",zh:"瞭望台甲板",en:"Observation Deck",cat:"pool",loc:"船頭（駕駛台上方）",free:true,icon:"🔭",desc:"船頭最高處的露天平台，前方視野幾乎無遮蔽，看進出港、海上日出與星空。",tips:"風大或天候不佳可能封閉；12 月甲板風很冷，帶防風外套。"},
+ {id:"f13_2",zh:"小小夢想家天地",en:"Little Dreamers Club",cat:"kids",loc:"船頭",free:true,icon:"🧸",desc:"兒童俱樂部：遊戲、手作工作坊、變裝派對、DJ 體驗，有專人照顧。",tips:"每天前 2 小時免費，之後按小時收費（2–4 歲與 5–12 歲費率不同）；手作課另收費。第一次使用需家長到場登記。"},
+ {id:"f13_3",zh:"海鮮燒烤餐廳",en:"Seafood Grill",cat:"dining",loc:"船中偏前",free:false,icon:"🦐",desc:"露天炭烤海鮮，另有漢堡、三明治、玉米片、薯條等輕食，可在星空下配飲料。",tips:"付費（另加 18% 服務費）；冬夜露天座位很冷。"},
+ {id:"f13_4",zh:"露天吧",en:"Sun Deck Bar",cat:"bar",loc:"船中偏前（海鮮燒烤旁）",free:true,icon:"🍹",desc:"海鮮燒烤餐廳旁的露天酒吧。",tips:"入座免費，飲品自費（另加 18%）。"},
+ {id:"f13_5",zh:"日光甲板",en:"Sun Deck",cat:"pool",loc:"船中兩側（環繞泳池上方）",free:true,icon:"🪑",desc:"環繞 Deck 12 羅馬泳池上方的日光浴平台，可俯瞰泳池與池畔舞台。",tips:"躺椅先到先得。"},
+ {id:"f13_6",zh:"緩跑徑",en:"Jogging Track",cat:"spa",loc:"船尾兩側",free:true,icon:"👟",desc:"船尾兩側的露天跑道。",tips:"清早人最少；甲板濕滑時放慢。"},
+ {id:"f13_7",zh:"綜合運動場",en:"SportsPlex",cat:"entertainment",loc:"船尾",free:true,icon:"🏀",desc:"船尾的圍網多功能球場。",tips:"心得提到可向現場借籃球，規定以現場為準。"}
+]},
+{id:12,num:"12",zh:"泳池・麗都甲板",en:"Lido Deck",icon:"🏊",gold:true,
+ desc:"最常來的一層：船中羅馬泳池與「凱撒」滑水梯，船中偏後是免費的麗都自助餐廳、船尾戶外燒烤；船頭是棕櫚閣觀景廊、水療、健身與 VR 探索館。",
+ nature:"泳池・免費自助餐・水療健身",tags:["麗都自助餐廳（免費）","羅馬泳池","凱撒滑水梯","棕櫚閣","水療中心"],fac:[
+ {id:"f12_1",zh:"麗都自助餐廳",en:"The Lido",cat:"dining",loc:"船中偏後",free:true,icon:"🍽️",desc:"最大的免費自助餐廳，中西式菜色，早午晚餐之外還有下午茶與宵夜，設有素食區。",tips:"人最多：開餐時就到，或開餐前半小時先拿號碼牌。同一餐期只能免費吃一間餐廳。"},
+ {id:"f12_2",zh:"麗都戶外燒烤餐廳",en:"Lido Grill",cat:"dining",loc:"船尾",free:true,icon:"🍖",desc:"麗都後方的戶外燒烤區，手冊與麗都一起列為免費；6 天航次通常會有一晚泳池畔燒烤。",tips:"燒烤夜是哪一晚看郵報。"},
+ {id:"f12_3",zh:"羅馬泳池",en:"Parthenon Pool",cat:"pool",loc:"船中",free:true,icon:"🏛️",desc:"羅馬主題的露天泳池，有 4 個按摩池與現場樂隊舞台。",tips:"按摩池冬天水溫友善；12 歲以下需大人陪同，兒童救生衣在毛巾站免費借。"},
+ {id:"f12_4",zh:"「凱撒」滑水梯",en:"Caesar's Slide",cat:"pool",loc:"船中（泳池後段）",free:true,icon:"🌊",desc:"羅馬泳池的滑水梯，有一段是透明管。",tips:"身高 115 cm 以上；分上午、下午兩段開放，風浪大或下大雨會關。"},
+ {id:"f12_5",zh:"義式手作冰品",en:"Gelateria",cat:"dining",loc:"船中右舷（泳池旁）",free:false,icon:"🍨",desc:"泳池旁的義式冰淇淋。",tips:"付費。"},
+ {id:"f12_6",zh:"棕櫚閣",en:"Palm Court",cat:"bar",loc:"船頭",free:true,icon:"🌴",desc:"船頭觀景廊，大片窗景一望無際；晚上有肚皮舞、拉丁舞，也是手作課與紅毯夜的場地。",tips:"入座免費、飲品自費；本航次的霹靂操偶體驗往年在這裡。"},
+ {id:"f12_7",zh:"醇夢雪茄廊",en:"Humidor Cigar Lounge",cat:"bar",loc:"船頭左舷",free:false,icon:"🚬",desc:"雪茄與烈酒小酒廊。",tips:"怕菸味的人避開。"},
+ {id:"f12_8",zh:"水療中心",en:"The Spa",cat:"spa",loc:"船頭左舷",free:false,icon:"💆",desc:"按摩、臉部保養等療程。",tips:"付費另加 18%；最後一天常有優惠。"},
+ {id:"f12_9",zh:"美髮沙龍",en:"The Salon",cat:"spa",loc:"船頭",free:false,icon:"💇",desc:"洗髮、造型、美甲。",tips:"付費另加 18%。"},
+ {id:"f12_10",zh:"健身中心",en:"The Gym",cat:"spa",loc:"船頭左舷",free:true,icon:"🏋️",desc:"有氧與重訓器材。",tips:"免費；要穿運動鞋，拖鞋、涼鞋、布希鞋不能進。"},
+ {id:"f12_11",zh:"VR探索館",en:"ESC Experience Lab",cat:"entertainment",loc:"船頭右舷",free:false,icon:"🥽",desc:"VR、AR 沉浸式遊戲與街機。",tips:"按遊戲計費、刷房卡；容易暈 3D 的人斟酌。"},
+ {id:"f12_12",zh:"動感地帶",en:"The Zone",cat:"kids",loc:"船頭右舷",free:false,icon:"🕹️",desc:"青少年與兒童的遊戲區（街機）。",tips:"多數遊戲需付費。"},
+ {id:"f12_13",zh:"寫真廊",en:"Photo Corner",cat:"shopping",loc:"船頭右舷",free:false,icon:"📸",desc:"船上攝影師拍的照片展示與販售。",tips:"不買不用付錢。"}
+]},
+{id:11,num:"11",zh:"客房・皇宮別墅",en:"Stateroom Deck",icon:"🛏️",gold:false,
+ desc:"客房層：兩側露台客房、中央內側客房；船尾是全船最大房型皇宮庭苑別墅與皇宮豪華套房。船頭是駕駛台（台灣版甲板圖標「船長室」），心得提到有隔著玻璃參觀的機會，以船上公告為準。",
+ nature:"露台客房・皇宮庭苑別墅",tags:["露台客房","內側客房","皇宮豪華套房","皇宮庭苑別墅"],fac:[
+ {id:"f11_1",zh:"皇宮庭苑別墅",en:"Palace Villa",cat:"cabin",loc:"船尾",free:false,vip:true,icon:"🏰",desc:"全船頂級房型：約 93.85 ㎡、最多 6 人，1 張特大雙人床＋1 張大雙人床＋1 張雙人沙發床。",tips:"屬皇宮貴賓專區，享管家服務與 Deck 10 皇宮設施。"},
+ {id:"f11_2",zh:"皇宮豪華套房",en:"Palace Deluxe Suite",cat:"cabin",loc:"船尾兩側",free:false,vip:true,icon:"👑",desc:"約 37–44 ㎡起、最多 4 人，1 張特大雙人床＋1 張雙人沙發床。",tips:""},
+ {id:"f11_3",zh:"露台客房",en:"Balcony Stateroom",cat:"cabin",loc:"兩側",free:false,icon:"🌅",desc:"約 18–20 ㎡起、最多 4 人，2 張單人床（可併成大床）＋1 張雙人沙發床。",tips:"陽台可以吸菸，怕菸味的人留意隔壁。"},
+ {id:"f11_4",zh:"內側客房",en:"Interior Stateroom",cat:"cabin",loc:"中央",free:false,icon:"🛏️",desc:"約 12–21 ㎡、最多 3–4 人，無窗；本層有無障礙房。",tips:""}
+]},
+{id:10,num:"10",zh:"皇宮甲板",en:"Palace Deck",icon:"👑",gold:false,
+ desc:"「船中船」皇宮貴賓專區所在：船尾有皇宮接待處、皇宮餐廳、皇宮泳池與貴賓廳；其餘為皇宮套房、皇宮露台房與一般客房。",
+ nature:"皇宮貴賓專區・套房",tags:["皇宮接待處","皇宮餐廳","皇宮泳池","貴賓廳","皇宮套房"],fac:[
+ {id:"f10_1",zh:"皇宮接待處",en:"Palace Reception",cat:"service",loc:"船尾",free:false,vip:true,icon:"🛎️",desc:"皇宮貴賓專屬接待櫃檯，管家服務與各項安排由此處理。",tips:""},
+ {id:"f10_2",zh:"皇宮餐廳",en:"Palace Restaurant",cat:"dining",loc:"船尾右舷",free:false,vip:true,icon:"🍷",desc:"皇宮貴賓專屬的 24 小時餐廳，皇宮住客免費用餐。",tips:""},
+ {id:"f10_3",zh:"皇宮泳池及日光甲板",en:"Palace Pool & Sun Deck",cat:"pool",loc:"船尾",free:false,vip:true,icon:"🏖️",desc:"皇宮專屬的船尾泳池與日光甲板，可看船尾航跡。",tips:""},
+ {id:"f10_4",zh:"貴賓廳",en:"VIP Casino",cat:"entertainment",loc:"船尾左舷",free:false,vip:true,icon:"🎰",desc:"貴賓娛樂場（英文版手冊稱 Genting Club）。",tips:"限特定貴賓；一般旅客用 Deck 7–8 娛樂場。"},
+ {id:"f10_5",zh:"皇宮套房",en:"Palace Suite",cat:"cabin",loc:"船頭與兩側",free:false,vip:true,icon:"🛋️",desc:"約 21–60 ㎡、最多 4 人，1 張特大雙人床＋1 張雙人沙發床。",tips:""},
+ {id:"f10_6",zh:"皇宮露台房",en:"Palace Balcony",cat:"cabin",loc:"兩側（船中段）",free:false,vip:true,icon:"🌇",desc:"約 18–20 ㎡、最多 4 人，2 張單人床＋1 張雙人沙發床，享皇宮禮遇。",tips:""},
+ {id:"f10_7",zh:"皇宮豪華套房",en:"Palace Deluxe Suite",cat:"cabin",loc:"船尾兩側",free:false,vip:true,icon:"👑",desc:"約 37–44 ㎡起、最多 4 人。",tips:""},
+ {id:"f10_8",zh:"露台客房・內側客房",en:"Balcony & Interior",cat:"cabin",loc:"兩側・中央",free:false,icon:"🛏️",desc:"一般露台客房與內側客房。",tips:""}
+]},
+{id:9,num:"9",zh:"客房甲板",en:"Stateroom Deck",icon:"🛏️",gold:false,
+ desc:"全層客房：兩側露台客房、中央內側客房，船頭少量海景客房，船尾有皇宮套房。",
+ nature:"露台客房・內側客房",tags:["露台客房","內側客房","皇宮套房（船尾）"],fac:[
+ {id:"f9_1",zh:"露台客房",en:"Balcony Stateroom",cat:"cabin",loc:"兩側",free:false,icon:"🌅",desc:"約 18–20 ㎡起、最多 4 人，2 張單人床（可併成大床）＋1 張雙人沙發床。",tips:"陽台可以吸菸，怕菸味的人留意隔壁。"},
+ {id:"f9_2",zh:"內側客房",en:"Interior Stateroom",cat:"cabin",loc:"中央",free:false,icon:"🛏️",desc:"約 12–21 ㎡、最多 3–4 人，無窗。",tips:""},
+ {id:"f9_3",zh:"海景客房",en:"Oceanview Stateroom",cat:"cabin",loc:"船頭",free:false,icon:"🌊",desc:"約 13–20 ㎡、最多 2–4 人。",tips:""},
+ {id:"f9_4",zh:"皇宮套房",en:"Palace Suite",cat:"cabin",loc:"船尾",free:false,vip:true,icon:"🛋️",desc:"約 21–60 ㎡、最多 4 人。",tips:""}
+]},
+{id:8,num:"8",zh:"娛樂場・特色餐廳",en:"Casino & Dining Deck",icon:"🎰",gold:false,
+ desc:"船頭為客房；船中娛樂場與免稅精品廊；船中偏後是星空廊、海馬日本料理（鐵板燒）與泰悅；船尾是星座劇院上層。",
+ nature:"娛樂場・精品廊・鐵板燒・泰式",tags:["娛樂場","精品廊","海馬日本料理","泰悅","星座劇院上層"],fac:[
+ {id:"f8_1",zh:"娛樂場",en:"Casino",cat:"entertainment",loc:"船頭至船中",free:true,icon:"🎰",desc:"與 Deck 7 相連的娛樂場（Deck 8 層）；心得提到籌碼以港幣計。",tips:"18 歲以上；駛入公海才開、禁止拍照。有免費咖啡與美祿，會員（免費加入）深夜有免費泡麵。"},
+ {id:"f8_2",zh:"精品廊",en:"The Boutiques",cat:"shopping",loc:"船中",free:false,icon:"🛍️",desc:"免稅精品、香水化妝品、日本成藥與零食。",tips:"最後一天折扣最大；菸酒帶回台灣有免稅額限制。"},
+ {id:"f8_3",zh:"星空廊",en:"Gift Gallery",cat:"shopping",loc:"船中偏後右舷",free:false,icon:"🎁",desc:"禮品與糖果（一般版手冊稱「禮品廊」）。",tips:""},
+ {id:"f8_4",zh:"海馬日本料理",en:"Umi Uma",cat:"dining",loc:"船中偏後",free:false,icon:"🍣",desc:"日式料理與鐵板燒；鐵板燒只有 2 間、每間 8 席，可點和牛與龍蝦。",tips:"上船當天就去訂；付費另加 18%；皇宮住客優先。"},
+ {id:"f8_5",zh:"泰悅",en:"Rua Thai",cat:"dining",loc:"船中偏後右舷",free:false,icon:"🍛",desc:"泰式料理。2026 年起是泰式自助吧，位置原本是火鍋（台灣版手冊仍標「火鍋」）。",tips:"付費，兒童價較低；飲料另計，熱茶與冰水免費。"},
+ {id:"f8_6",zh:"星座劇院（上層）",en:"Zodiac Theatre · Upper",cat:"entertainment",loc:"船尾",free:true,icon:"🎭",desc:"主劇院的上層座位，從 Deck 8 進場。",tips:"上層通常比較好找位子。"},
+ {id:"f8_7",zh:"海景客房",en:"Oceanview Stateroom",cat:"cabin",loc:"船頭兩側",free:false,icon:"🌊",desc:"約 13–20 ㎡、最多 2–4 人。",tips:""},
+ {id:"f8_8",zh:"內側客房",en:"Interior Stateroom",cat:"cabin",loc:"船頭中央",free:false,icon:"🛏️",desc:"約 12–21 ㎡、最多 3–4 人。",tips:""}
+]},
+{id:7,num:"7",zh:"大堂・劇院・悠閒大道",en:"Grand Piazza Deck",icon:"🎭",gold:true,
+ desc:"全船生活中心：船中大堂有接待處與岸上觀光櫃檯，船頭娛樂場與麻將廳，中段多間付費餐廳與甜點店，船尾星座劇院；兩側是露天的悠閒大道。",
+ nature:"大堂・接待處・劇院・付費餐廳",tags:["接待處","岸上觀光櫃檯","星座劇院","藍湖美食","悠閒大道"],fac:[
+ {id:"f7_1",zh:"接待處和岸上觀光櫃檯",en:"Reception & Shore Excursions",cat:"service",loc:"船中大堂",free:true,icon:"🛎️",desc:"帳務、結帳、登記信用卡、失物招領、岸上觀光報名都在這；可索取免費暈船藥、用船上匯率換日圓。",tips:"開船後與最後一晚最擠；暈船藥領取數量的規定以現場為準。"},
+ {id:"f7_2",zh:"劇院售票處／賓果櫃檯",en:"Box Office & Bingo",cat:"service",loc:"船中左舷",free:true,icon:"🎟️",desc:"付費表演票與賓果卡。",tips:"賓果每天兩場，在大堂進行。"},
+ {id:"f7_3",zh:"大堂",en:"Grand Piazza",cat:"entertainment",loc:"船中",free:true,icon:"🏛️",desc:"主要活動舞台：賓果、電影、廚藝示範、拍賣、岸上觀光說明會；本航次的霹靂演出往年也在這裡。",tips:"迷路先回大堂，接待處就在旁邊。"},
+ {id:"f7_4",zh:"大堂咖啡",en:"Lobby Café",cat:"bar",loc:"船中大堂",free:false,icon:"☕",desc:"大堂旁的咖啡吧。",tips:"付費。"},
+ {id:"f7_5",zh:"甜品匯",en:"The Little Cake Café",cat:"dining",loc:"船中偏前左舷",free:false,icon:"🧁",desc:"蛋糕甜點與咖啡（一般版手冊稱「小蛋糕咖啡館」）。",tips:"付費。"},
+ {id:"f7_6",zh:"抹茶坊",en:"Matcha Ice",cat:"dining",loc:"船中偏前右舷",free:false,icon:"🍵",desc:"抹茶甜點與冰品。",tips:"付費。"},
+ {id:"f7_7",zh:"義大利披薩餐廳",en:"Mozzarella Ristorante & Pizzeria",cat:"dining",loc:"船中左舷",free:false,icon:"🍕",desc:"手工義大利麵與披薩，有素食選擇，可內用或外帶。",tips:"付費另加 18%。"},
+ {id:"f7_8",zh:"藍湖美食",en:"Blue Lagoon",cat:"dining",loc:"船中右舷",free:false,icon:"🍜",desc:"近 24 小時營業的南洋小吃：叻沙、海南雞飯、咖椰吐司、牛肉麵。",tips:"不用訂位；靠港日想快速吃早餐的好選擇。"},
+ {id:"f7_9",zh:"絲路花舞中餐廳",en:"Silk Road",cat:"dining",loc:"船中偏後",free:false,icon:"🥢",desc:"中式餐廳，招牌片皮鴨兩吃；也有付費港點早餐。",tips:"包廂有低消；付費另加 18%。"},
+ {id:"f7_10",zh:"星宴",en:"Vintage Room",cat:"dining",loc:"船中偏後左舷",free:false,icon:"🍷",desc:"座位少的西式套餐與品酒晚宴，有時推出特價午晚餐。",tips:"早點訂位；皇宮住客優先。"},
+ {id:"f7_11",zh:"星座劇院",en:"Zodiac Theatre",cat:"entertainment",loc:"船尾",free:true,icon:"🎭",desc:"主劇院（Deck 7–8 兩層，約 800 席），每晚免費製作秀。",tips:"提早 15–30 分排隊，第二場人較少；前排保留給皇宮住客。"},
+ {id:"f7_12",zh:"娛樂場",en:"Casino",cat:"entertainment",loc:"船頭",free:true,icon:"🎰",desc:"主娛樂場，與 Deck 8 相連。",tips:"18 歲以上；駛入公海才開；有免費咖啡飲料。"},
+ {id:"f7_13",zh:"麻將廳",en:"Mahjong Lounge",cat:"entertainment",loc:"船中偏前",free:false,icon:"🀄",desc:"自動麻將桌。",tips:"按時段收費（心得：含水果茶點）。"},
+ {id:"f7_14",zh:"紀念品商店",en:"Souvenir Market",cat:"shopping",loc:"船中（大堂周邊兩處）",free:false,icon:"🛍️",desc:"船上紀念品與日用品。",tips:"忘了帶的小東西先來這裡找。"},
+ {id:"f7_15",zh:"悠閒大道",en:"Boardwalk",cat:"pool",loc:"兩側",free:true,icon:"🚶",desc:"沿船身兩側的露天步道（一般版手冊稱「海濱長廊」）。",tips:"側風強；晚上看星星的好地方。"},
+ {id:"f7_16",zh:"觀景處",en:"Viewpoint",cat:"pool",loc:"船頭最前端",free:true,icon:"⚓",desc:"甲板圖標示於 Deck 7 船頭最前端的觀景點。",tips:"是否開放依船方安排。"}
+]},
+{id:6,num:"6",zh:"免費主餐廳",en:"Dining Deck",icon:"🥟",gold:true,
+ desc:"兩間免費主餐廳都在這層：船中百味軒、船尾星夢餐廳；船頭為海景與內側客房。Deck 6 船頭客房區與船尾餐廳不相通，要從 Deck 7 繞。",
+ nature:"免費主餐廳・客房",tags:["星夢餐廳（免費）","百味軒（免費）","海景客房","內側客房"],fac:[
+ {id:"f6_1",zh:"星夢餐廳",en:"Dream Dining Room",cat:"dining",loc:"船尾",free:true,icon:"🥟",desc:"免費中式桌菜，每天換菜、可續點；早餐有港點（蝦餃、燒賣、叉燒包）與粥品。座位最多，長輩最愛。",tips:"同一餐期只能免費吃一間；最後一晚常有派對（以郵報為準）。"},
+ {id:"f6_2",zh:"百味軒",en:"The Pavilion",cat:"dining",loc:"船中",free:true,icon:"🍲",desc:"免費西式套餐（前菜、湯、主菜、甜點），主菜可續；早餐是自助加現做蛋料理。",tips:"同一餐期只能免費吃一間。"},
+ {id:"f6_3",zh:"海景客房",en:"Oceanview Stateroom",cat:"cabin",loc:"船頭兩側",free:false,icon:"🌊",desc:"約 13–20 ㎡、最多 2–4 人。",tips:"低樓層、靠船中的房間搖晃感較小。"},
+ {id:"f6_4",zh:"內側客房",en:"Interior Stateroom",cat:"cabin",loc:"船頭中央",free:false,icon:"🛏️",desc:"約 12–21 ㎡、最多 3–4 人。",tips:""}
+]},
+{id:5,num:"5",zh:"客房甲板",en:"Stateroom Deck",icon:"🛏️",gold:false,
+ desc:"前半段為海景與內側客房；後半段非旅客區域。",
+ nature:"海景客房・內側客房",tags:["海景客房","內側客房"],fac:[
+ {id:"f5_1",zh:"海景客房",en:"Oceanview Stateroom",cat:"cabin",loc:"兩側",free:false,icon:"🌊",desc:"約 13–20 ㎡、最多 2–4 人。",tips:"低樓層搖晃感較小。"},
+ {id:"f5_2",zh:"內側客房",en:"Interior Stateroom",cat:"cabin",loc:"中央",free:false,icon:"🛏️",desc:"約 12–21 ㎡、最多 3–4 人。",tips:""}
+]},
+{id:4,num:"4",zh:"醫務室・客房",en:"Medical Deck",icon:"🏥",gold:false,
+ desc:"最低的旅客甲板：船頭醫務室、少量海景與內側客房，船中兩側是接駁船接送處。",
+ nature:"醫務室・接駁船接送處・客房",tags:["醫務室","接駁船接送處","海景客房"],fac:[
+ {id:"f4_1",zh:"醫務室",en:"Medical Centre",cat:"service",loc:"船頭",free:false,icon:"🏥",desc:"醫師與護理師駐診，處理急症與外傷。",tips:"看診與用藥自費且不便宜，自備常用藥並保旅遊醫療險。"},
+ {id:"f4_2",zh:"接駁船接送處",en:"Tender Boarding Area",cat:"service",loc:"船中兩側",free:true,icon:"🚤",desc:"需要搭接駁小艇上岸時的登艇處。",tips:"神戶、高知都靠碼頭，通常用不到。"},
+ {id:"f4_3",zh:"海景客房",en:"Oceanview Stateroom",cat:"cabin",loc:"左舷",free:false,icon:"🌊",desc:"約 13–20 ㎡、最多 2–4 人。",tips:"全船最低樓層，搖晃感最小。"},
+ {id:"f4_4",zh:"內側客房",en:"Interior Stateroom",cat:"cabin",loc:"中央",free:false,icon:"🛏️",desc:"約 12–21 ㎡、最多 3–4 人。",tips:""}
+]}
+];
+
+// ═══ Quick-filter presets（卡片與搜尋篩選共用同一份定義；Deck 清單由 qfDecks() 從 D 推導，勿寫死）═══
+const QF=[
+  {key:"eat",   icon:"🍽️", label:"免費用餐",       hint:"星夢、百味軒、麗都",       test:f=>f.cat==="dining"&&f.free&&!f.vip},
+  {key:"fine",  icon:"🍣", label:"付費餐廳・點心",  hint:"鐵板燒、泰式、片皮鴨",     test:f=>f.cat==="dining"&&!f.free&&!f.vip},
+  {key:"pool",  icon:"🏊", label:"泳池・戶外甲板",  hint:"羅馬泳池、滑水梯、瞭望台", test:f=>f.cat==="pool"&&!f.vip},
+  {key:"night", icon:"🎭", label:"看秀・夜生活",    hint:"星座劇院、娛樂場、酒吧",   test:f=>(f.cat==="entertainment"||f.cat==="bar")&&!f.vip},
+  {key:"spa",   icon:"💆", label:"水療・健身",      hint:"水療、健身中心、緩跑徑",   test:f=>f.cat==="spa"},
+  {key:"kids",  icon:"👶", label:"親子・遊戲",      hint:"小小夢想家、動感地帶",     test:f=>f.cat==="kids"},
+  {key:"svc",   icon:"🛎️", label:"服務・醫療",      hint:"接待處、岸上觀光、醫務室", test:f=>f.cat==="service"&&!f.vip},
+  {key:"shop",  icon:"🛍️", label:"免稅購物",        hint:"精品廊、星空廊、寫真廊",   test:f=>f.cat==="shopping"},
+];
+
+const DINE_NOTE="手冊只把 <b>星夢餐廳、百味軒、麗都自助及燒烤</b> 標為免費餐廳，<b>同一餐期只能免費吃一間</b>（跑第二間會另外計費）。其餘一律付費，並另加 18% 服務費；營業時間與價格以船上郵報為準。";
+
+// ═══ 航程：2026/11/29 基隆出發「神戶・高知 5 晚」（官方航程表 V9.2，2026/10/2 版）═══
+// 時間一律寫清楚是船上時間（＝台灣 UTC+8）還是日本時間（UTC+9）
+const TRIP={
+  kicker:"麗星郵輪・探索星號 STAR NAVIGATOR",
+  title:"5 晚 神戶・高知海上遊",
+  route:"11/29（日）基隆 → 12/1 神戶 → 12/2 高知 → 12/4（五）基隆",
+  embarkNote:"11/29（日）16:00 基隆啟航・霹靂星海傳奇年度最終航次",
+  afterNote:"照片記得備份；刷卡帳單留意海外交易手續費與退稅入帳",
+  shipClock:"船上時間＝台灣 (UTC+8)",
+  clockNote:"官方：船上全程使用母港時間。郵報、集合、回船時間都是<b>船上時間</b>；日本當地快 1 小時。手機到日本會自動跳時區，看時間以這裡為準。",
+};
+const DAYS=[
+ {n:1,date:"2026-11-29",md:"11/29",wd:"日",icon:"⚓",title:"基隆登船",sub:"16:00 啟航・霹靂主題航次",
+  times:[{k:"船上",v:"16:00 啟航"}],
+  plan:[
+   {t:"出門前",x:"<b>先吃飽午餐再去港口</b>",s:"前一航次 11/29 14:00 才回基隆，登船約 14:00 後開始；上船後麗都有午餐但人很多"},
+   {t:"依船票",x:"到<b>西岸或東岸旅客中心</b>報到（看電子船票）",s:"西岸：港西街 16 號，基隆車站北站出口過馬路約 10 分；東岸：中正路 1 號"},
+   {t:"報到",x:"1F 托運行李 → 2F 報到拍照、領房卡、入境記錄表與黃色海關申報單 → 安檢 → 出境查驗 → <b>交出護照</b> → 7F 登船",s:"護照由船方保管到最後一天；日本上下船都用 A4 護照影本"},
+   {t:"上船後",x:"Deck 12 麗都自助吃點東西，房卡套上自備的卡套",s:"行李會直接送到房門口"},
+   {t:"上船後",x:"到 Deck 8 海馬日本料理<b>訂鐵板燒</b>（只有 2 間各 8 席）；想吃星宴、絲路花舞也一起訂"},
+   {t:"啟航前",x:"<b>救生演習（強制）</b>：帶房卡到指定集合站，約 10 分鐘"},
+   {t:"16:00",x:"Deck 13 瞭望台甲板或 Deck 7 悠閒大道看基隆港出港"},
+   {t:"晚餐",x:"免費三選一：星夢（中式桌菜）、百味軒（西式套餐）、麗都（自助）",s:"同一餐期只能免費吃一間"},
+   {t:"晚上",x:"星座劇院第 1 晚秀（2026 年心得：「炫麗啟航」，散場前觀眾可上台）",s:"第二場人較少"}
+  ],
+  warn:"<b>12 月東北季風，第一晚最晃</b>：會暈的人出港前就先吃暈船藥，不舒服才吃來不及；7F 接待處可索取免費暈船藥。",
+  tip:"本航次是 2026「霹靂星海傳奇」最終航次：往年在 7F 大堂演出（第 2、5 晚）、12F 棕櫚閣有操偶體驗，以船上郵報為準。"},
+ {n:2,date:"2026-11-30",md:"11/30",wd:"一",icon:"🌊",title:"海上巡遊",sub:"整天在海上・把船玩一輪＋準備入境日本",
+  plan:[
+   {t:"早餐",x:"星夢餐廳有<b>港點</b>（蝦餃、燒賣、叉燒包）；百味軒有現做蛋",s:"同一餐期只能免費吃一間"},
+   {t:"上午",x:"Deck 13 緩跑徑走一圈，或 Deck 12 健身中心"},
+   {t:"上午",x:"7F 大堂賓果、岸上觀光說明會（神戶、高知）",s:"時間看郵報"},
+   {t:"午餐",x:"麗都自助；想換口味就藍湖美食（叻沙、海南雞飯）"},
+   {t:"下午",x:"羅馬泳池的按摩池（冬天水溫友善）、「凱撒」滑水梯（115 cm 以上）",s:"風浪大會關"},
+   {t:"下午",x:"小孩：Deck 13 小小夢想家天地每天前 2 小時免費"},
+   {t:"傍晚",x:"<b>準備入境日本</b>：護照影本、黃色海關申報單（一家一張）填好、入境記錄表已簽名",s:"船上會公告神戶面審的分批時間"},
+   {t:"晚上",x:"星座劇院第 2 晚（2026 心得：「國風萬象」）；霹靂演出（7F 大堂，以郵報為準）"},
+   {t:"睡前",x:"確認隔天：面審梯次、下船時間、<b>最晚回船時間</b>"}
+  ],
+  tip:"郵報不送到房間（環保政策），到 7F 拿或連船上 Wi-Fi 掃 QR code；不買網路也能看郵報與帳單。"},
+ {n:3,date:"2026-12-01",md:"12/1",wd:"二",icon:"🌃",title:"神戶",sub:"日本 15:00 靠港 → 隔天 01:00 離港",port:"kobe",
+  times:[{k:"船上",v:"14:00–23:59"},{k:"日本",v:"15:00–01:00",jp:true},{k:"建議回碼頭",v:"22:30",jp:true,warn:true}],
+  tz:"以下為日本時間（比船上快 1 小時）",
+  plan:[
+   {t:"上午",x:"睡飽、吃早午餐；準備小背包",s:"護照影本、房卡、日圓、交通卡、外套、行動電源"},
+   {t:"15:00",x:"靠<b>神戸ポートターミナル</b>（新港第4突堤）",s:"本船第一次停神戶"},
+   {t:"15:00–18:00",x:"<b>日本入境面審</b>：依廣播分批到 7F/8F 星座劇院，影本背面貼上陸許可",s:"岸上觀光團先辦；自由行可能 16:00–18:00 才下得了船"},
+   {t:"16:49",x:"日落；17:00–17:30 是拍夜景的藍調時刻"},
+   {t:"晚上",x:"港灣夜景、神戶牛晚餐、三宮購物（港口頁有 3 條路線）"},
+   {t:"22:30",x:"建議回到碼頭（最晚 23:00）",s:"Port Liner 三宮 → ポートターミナル 5 分，22 點每小時 8–9 班"},
+   {t:"00:30",x:"官方規則的最晚回船：開船前 30 分鐘；以郵報為準"},
+   {t:"01:00",x:"離港"}
+  ],
+  warn:"<b>沒在神戶辦入境，高知就不能下船</b>：不打算下船也要依廣播去面審。<br><b>摩耶山掬星台週二公休</b>，12/1 去不了；山上夜景改六甲山天覧台。<br>郵報若寫回船 23:00，那是<b>船上時間＝日本 00:00</b>。"},
+ {n:4,date:"2026-12-02",md:"12/2",wd:"三",icon:"🏯",title:"高知",sub:"日本 11:00–20:00・最後一個日本港",port:"kochi",
+  times:[{k:"船上",v:"10:00–19:00"},{k:"日本",v:"11:00–20:00",jp:true},{k:"建議回碼頭",v:"18:30",jp:true,warn:true}],
+  tz:"以下為日本時間",
+  plan:[
+   {t:"上午",x:"藍湖美食或麗都快速吃早餐",s:"岸上觀光團先下船"},
+   {t:"11:00",x:"靠高知新港 客船ターミナル（當天港內只有這艘船）"},
+   {t:"約 12:00",x:"自由行上岸；第二港不用再面審，下船快很多"},
+   {t:"白天",x:"市區經典／桂浜龍馬／五台山（港口頁有 3 條路線）"},
+   {t:"16:58",x:"日落，戶外景點排在 16:30 前"},
+   {t:"18:30",x:"建議回到碼頭"},
+   {t:"19:30",x:"官方規則的最晚回船（開船前 30 分鐘）；以郵報為準"},
+   {t:"20:00",x:"離港，碼頭常有送行表演"}
+  ],
+  warn:"<b>碼頭周邊沒有公車、鐵路</b>，計程車常不夠（2026/6 心得：計程車、Uber、GO 都叫不到）。有長輩小孩 → 跟船方岸上觀光團或預約包車。<br><b>免稅品的退稅確認在高知辦</b>：神戶、高知買的免稅品要整張收據帶著，依船方指示辦理。"},
+ {n:5,date:"2026-12-03",md:"12/3",wd:"四",icon:"🌊",title:"海上巡遊",sub:"收心日：結帳、打包、最後一晚",
+  plan:[
+   {t:"上午",x:"睡晚一點；星夢港點或百味軒早餐"},
+   {t:"白天",x:"Deck 8 精品廊、Spa 最後一天常有折扣"},
+   {t:"下午",x:"<b>結帳</b>：7F 接待處，或連船上 Wi-Fi 入口自助結帳（台幣現金或 Visa／Master）",s:"前一晚或下船前 3 小時結清最不用排隊"},
+   {t:"晚上",x:"星座劇院（2026 心得：第 4 晚「和之藝。平衡傳奇」）；霹靂演出（往年第 5 晚，以郵報為準）"},
+   {t:"深夜",x:"最後一晚的派對與甜點夜（以郵報為準）"},
+   {t:"睡前",x:"整理行李：明天大件行李要放門外（時間看郵報）"}
+  ],
+  tip:"在日本買的酒會被船方代管，最後一天在 7F 出口領回。"},
+ {n:6,date:"2026-12-04",md:"12/4",wd:"五",icon:"🏠",title:"返抵基隆",sub:"16:00 抵達・下午才下船",
+  times:[{k:"船上",v:"16:00 抵達"}],
+  plan:[
+   {t:"上午",x:"船上早餐、午餐照常"},
+   {t:"約 11–13 點",x:"<b>大件行李放房門外</b>；同時段依公告<b>領回護照</b>",s:"2025 年同類航次心得的時間，以郵報為準"},
+   {t:"下船前",x:"隨身包留護照、房卡、外套、錢包、藥品；清空保險箱"},
+   {t:"16:00 後",x:"依房卡梯次分批下船（皇宮 → 露台 → 其他）；不趕時間就在 7F 大堂等人潮退"},
+   {t:"入境",x:"領代管物品 → 證照查驗 → 依 Deck 號碼領行李 → 海關"}
+  ],
+  warn:"<b>台灣海關</b>：水果、新鮮肉品不能帶；電子煙與未經核准的加熱菸不能帶入。"}
+];
+
+const PORTS={
+ kobe:{id:"kobe",zh:"神戶",ja:"神戸",icon:"🌃",day:3,date:"2026-12-01",arr:"15:00",dep:"01:00",aboardGuess:"00:00",
+  when:"12/1（二）傍晚到深夜",
+  lead:"本船第一次停神戶。停在市區邊的神戸ポートターミナル，Port Liner 到三宮只要 5 分鐘；先面審、再下船，主菜是港灣夜景與神戶牛。",
+  times:[{k:"船上",v:"14:00–23:59"},{k:"日本",v:"15:00–01:00",jp:true},{k:"日落",v:"16:49",jp:true},{k:"氣溫",v:"8–15°C"}],
+  routeNote:"日本時間；15:30–16:30 下船、22:30 回碼頭",
+  sections:[
+   {icon:"🚢",title:"碼頭與交通",sub:"Port Liner 下車即到・三宮 5 分鐘",open:true,body:`<dl class="kv">
+    <dt>碼頭</dt><dd>神戸ポートターミナル（新港第4突堤，中央区新港町 4-5）。<b>不在</b>人工島本島上，在神戸大橋的市區端</dd>
+    <dt>Port Liner</dt><dd>「ポートターミナル」站下車即到；到三宮 2 站約 5 分，大人 ¥210／兒童 ¥100。平日三宮發末班 0:15，每班都停</dd>
+    <dt>付款</dt><dd>ICOCA、Suica、感應式信用卡都能刷；<b>感應式信用卡一律扣大人票價</b>，小孩用兒童 IC 卡或買兒童票</dd>
+    <dt>步行</dt><dd>到阪神三宮約 1.7 km、22 分</dd>
+    <dt>計程車</dt><dd>到三宮約 6 分、約 ¥1,200（估算）；22:00 後加 2 成。叫車 App 可試 GO、DiDi、Uber</dd>
+    <dt>接駁車</dt><dd>碼頭緊鄰車站，別家郵輪在這裡不開接駁車；探索星號未確認，看郵報</dd>
+    <dt>航站</dt><dd>有外幣兌換機；投幣置物櫃只收 ¥100 硬幣、只在開館時間能存取</dd>
+   </dl>`},
+   {icon:"🛂",title:"入境與下船節奏",sub:"第一港要全員面審",body:`<ul class="box-list">
+    <li>依廣播分批到 7F/8F 星座劇院面審（船舶觀光上陸許可：按指紋、不拍照），許可貼在影本背面。</li>
+    <li>岸上觀光團先辦；過去首港心得是靠港後 1–3 小時，自由行預估 <b>16:00–18:00</b> 才下船。</li>
+    <li>旅行社 FAQ 提到每港只能下船一次，不能回船再出去；晚餐與購物排在同一趟。</li>
+    <li>下船帶：房卡＋貼了許可的護照影本。</li>
+   </ul>`},
+   {icon:"🌉",title:"夜景與景點（12/1 週二）",sub:"摩耶山公休・改六甲山或港塔",body:`<ul class="box-list">
+    <li><b>摩耶山掬星台：週二公休，去不了</b>（冬季平日也只開到 17:30）。</li>
+    <li><b>六甲山 天覧台</b>：纜車山上站旁，開到 20:45、免費；六甲纜車單程 ¥800，上山末班 21:10（12 月時刻與下山末班要再確認）。</li>
+    <li><b>神戸ポートタワー</b>：9:00–23:00（22:30 最後入場）；展望＋屋上 ¥1,200／兒童 ¥500。<b>要買指定時段票</b>，網路 60 天前開賣，時段賣完就進不去。</li>
+    <li>メリケンパーク「BE KOBE」：夜間打燈、免費。</li>
+    <li>MOSAIC 摩天輪：營業到 22:00，¥800。神戸海洋博物館到 18:00（17:30 最後入館）。</li>
+    <li>南京町：各店時間不同，小吃攤多半傍晚收；老祥記豬肉包到 18:30（賣完就收）。燈籠祭往年 11 月下旬到 12/25、16:00 點燈（2026 未公布）。</li>
+    <li>北野異人館約 17:00 關門；布引ハーブ園平日沒有夜間營業（下山末班 17:15）。</li>
+    <li>umie 聖誕燈飾往年 11/1 開始（2026 未公布）；神戸ルミナリエ是 2027/1/29–2/7，這次看不到。</li>
+   </ul>`},
+   {icon:"🥩",title:"神戶牛晚餐",sub:"先訂位・訂 19:00 以後",body:`<ul class="box-list">
+    <li>正牌神戶牛：認明「のじぎく」紋章；店頭有銅牛像的是指定登録店。</li>
+    <li><b>平價</b>：吉祥吉 三宮店（三宮センター街地下）神戸牛漢堡排晚餐 ¥3,740＋5% 服務費，只有 16 席。</li>
+    <li><b>中價</b>：ステーキランド 神戸牛ステーキセット 180 g ¥5,480；ダイニングモーリヤ 100 g 套餐 ¥5,700，官網寫明歡迎帶小孩。</li>
+    <li><b>中高價</b>：モーリヤ本店 ¥6,940 起；神戸プレジール ¥9,570 起＋10%（週一公休）；和黒 北野坂 ¥9,700 起。</li>
+    <li>最後點餐多在 20:30–21:00；入境可能拖到 18:00，訂位抓 19:00 以後。</li>
+   </ul><p class="tz-note">價格含稅，取自各店官網（2026/10 查詢），以現場為準。</p>`},
+   {icon:"🧾",title:"購物與免稅新制",sub:"11/1 起先付稅、出境再退",body:`<ul class="box-list">
+    <li>2026/11/1 起日本免稅改成<b>退稅制</b>：先付含稅價，出境時海關確認後由店家退款；同店同日稅前滿 ¥5,000。</li>
+    <li>購物出示：貼了上陸許可的<b>護照影本</b>即可。</li>
+    <li>郵輪在<b>日本最後一港（高知）</b>用電子終端機確認，神戶買的也在高知辦。</li>
+    <li><b>同一張收據有一件不在身上（吃掉、用掉），整張不退</b>：要當場吃的零食分開結帳。</li>
+    <li>退款方式各店不同，選<b>刷退回信用卡</b>最穩。</li>
+    <li>三宮センター街、元町商店街逛街；大丸、ドン・キホーテ營業時間出發前再查。</li>
+   </ul>`}
+  ],
+  routes:[
+   {icon:"🅰️",title:"A 港灣夜景經典",sub:"最穩・親子首選",steps:[
+    {t:"15:30–16:15",x:"下船，Port Liner 到三宮（5 分）"},
+    {t:"16:20",x:"往元町：Port Loop 巴士或 JR／阪神 1 站；逛<b>南京町</b>、吃老祥記豬肉包",s:"有燈籠祭的話 16:00 左右點燈"},
+    {t:"17:00",x:"走到メリケンパーク：BE KOBE、日落後的藍調時刻；上<b>神戸ポートタワー</b>屋上",s:"先在網路買 17:00–18:00 的時段票"},
+    {t:"18:00",x:"ハーバーランド：umie 燈飾、MOSAIC 摩天輪"},
+    {t:"19:00",x:"三宮<b>神戶牛晚餐</b>（ステーキランド、ダイニングモーリヤ等，先訂位）",s:"ハーバーランド搭計程車回三宮約 ¥1,000–1,500"},
+    {t:"20:30",x:"三宮センター街購物，滿 ¥5,000 的收據收好"},
+    {t:"21:45–22:15",x:"Port Liner 回ポートターミナル，回船"}
+   ]},
+   {icon:"🅱️",title:"B 北野散步＋六甲山夜景",sub:"取代週二公休的摩耶山",steps:[
+    {t:"15:30–16:15",x:"下船到三宮；早下船的話走北野坂到風見鶏の館外面（16:45 停止入館）"},
+    {t:"16:45",x:"阪急三宮 → 阪急六甲 → 市バス 16 系統約 14 分 → 六甲纜車約 10 分 → <b>天覧台</b>"},
+    {t:"18:00",x:"天覧台看夜景（開到 20:45），<b>穿厚外套</b>；先確認下山纜車末班"},
+    {t:"18:45",x:"下山回三宮"},
+    {t:"19:45",x:"神戶牛晚餐：挑 L.O. 晚的店（モーリヤ本店、神戸プレジール 21:00）並先訂位"},
+    {t:"21:15–22:15",x:"購物後回碼頭"}
+   ],warn:"12 月的纜車與 16 系統末班要再確認；帶小孩或怕冷改走 A。也可以 17:00 先吃晚餐、18:30 再上山。"},
+   {icon:"🅲",title:"C 大阪快閃",sub:"高風險・非去不可才選",steps:[
+    {t:"15:30–16:30",x:"下船 → 三宮"},
+    {t:"16:30",x:"JR 或阪急到梅田（約 20–30 分）；要去難波搭阪神直通（約 40 分）",s:"車程以乘換案內為準"},
+    {t:"17:15–20:45",x:"梅田或難波晚餐、購物；退稅一樣在高知辦"},
+    {t:"21:00",x:"<b>最晚這時從大阪上車</b>回三宮，不要等末班車"},
+    {t:"21:30–22:00",x:"三宮 → Port Liner → 碼頭"}
+   ],warn:"回船時間可能是日本 00:00；遇到電車延誤就會趕不上。21:15 還沒離開大阪就直接搭最快的車回去。"}
+  ],
+  links:[
+   {t:"📍 神戸ポートターミナル",q:"神戸ポートターミナル"},
+   {t:"📍 南京町",q:"南京町 神戸"},
+   {t:"📍 神戸ポートタワー",q:"神戸ポートタワー"},
+   {t:"📍 六甲山天覧台",q:"六甲山天覧台"},
+   {t:"🎫 港塔時段票",u:"https://www.kobe-port-tower.com/ticket/"},
+   {t:"🚝 Port Liner 時刻",u:"https://www.knt-liner.co.jp/en/stationp01/"},
+   {t:"🚡 六甲纜車",u:"https://www.rokkocable.com/"},
+   {t:"🛳️ 神戶客船入港表",u:"https://www.kobe-meriken.or.jp/terminal/eta/"},
+   {t:"🧾 退稅新制（觀光廳）",u:"https://www.mlit.go.jp/kankocho/tax-free/page01_000001_00023.html"}
+  ]},
+ kochi:{id:"kochi",zh:"高知",ja:"高知",icon:"🏯",day:4,date:"2026-12-02",arr:"11:00",dep:"20:00",aboardGuess:"19:00",
+  when:"12/2（三）白天",
+  lead:"坂本龍馬的故鄉。停高知新港，離市區約 25–30 分車程；當天港內只有探索星號一艘郵輪，也是這趟在日本的最後一港。",
+  times:[{k:"船上",v:"10:00–19:00"},{k:"日本",v:"11:00–20:00",jp:true},{k:"日落",v:"16:58",jp:true},{k:"氣溫",v:"7–17°C"}],
+  routeNote:"日本時間；約 12:00 上岸、18:30 回碼頭",
+  sections:[
+   {icon:"🚢",title:"碼頭與交通",sub:"碼頭周邊沒有公車鐵路",open:true,body:`<dl class="kv">
+    <dt>碼頭</dt><dd>高知新港 客船ターミナル（本船歷次都靠 7-3 岸壁）；航站有觀光服務台、免費 Wi-Fi，對面是精釀啤酒 SOUTH HORIZON</dd>
+    <dt>到市區</dt><dd>車程約 25–30 分；碼頭周邊<b>沒有</b>路線巴士與鐵路</dd>
+    <dt>接駁車</dt><dd>2025 年曾有免費接駁車到「はりまや橋観光バスターミナル」；<b>12/2 有沒有、收不收費未確認</b>，上船後看郵報或問 7F 岸上觀光櫃檯</dd>
+    <dt>計程車</dt><dd>航站有排班但常不夠，部分只收現金。參考：到土佐タタキ道場約 6 分 ¥1,000、到桂浜約 10 分 ¥2,000、到牧野植物園約 12 分 ¥2,000</dd>
+    <dt>路面電車</dt><dd>市內均一 ¥230，運費箱不找零（車上可換 ¥1,000 鈔）；市內一日券 ¥500</dd>
+    <dt>MY遊バス</dt><dd>觀光巴士，不經過港口：桂浜券 ¥1,500、五台山券 ¥1,000（可車上買），都含市內電車</dd>
+   </dl>
+   <div class="warn-box">2026/6/30 靠港心得：計程車、Uber、GO 全叫不到。有長輩小孩 → 跟船方團或事先預約包車；自由行上岸後先排計程車，並跟司機約好回程。</div>`},
+   {icon:"🚌",title:"船方岸上觀光團",sub:"最省心・團體直接回碼頭",body:`<ul class="box-list">
+    <li>高知精華遊（不含餐）：竹林寺、桂浜、高知城外觀、弘人市場、帯屋町、AEON — 成人 NT$1,800</li>
+    <li>炙燒鰹魚體驗（含餐）：高知城外觀、自己燒鰹魚午餐、沉下橋、帯屋町 — NT$2,300</li>
+    <li>自然美景探索（不含餐）：龍馬記念館、龍河洞、弘人市場、桂浜、帯屋町 — NT$2,100</li>
+    <li>大步危遊覽船（含午餐）：單程車程約 1.5 小時，天候不佳取消 — NT$2,600</li>
+   </ul><p class="tz-note">2026 年版 DM，約 7 小時、中文導遊；名額與價格以船上為準。</p>`},
+   {icon:"🍣",title:"必吃",sub:"稻草燒鰹魚・土佐赤牛",body:`<ul class="box-list">
+    <li><b>藁焼き鰹のたたき</b>（稻草炙燒鰹魚）：ひろめ市場；或到土佐タタキ道場自己燒（10:30–15:00，不接受預約、賣完為止）。12 月已過鰹魚旺季。</li>
+    <li><b>土佐あかうし</b>（土佐赤牛）：桂浜「美食館 神」牛排定食、ひろめ市場。</li>
+    <li><b>アイスクリン</b>：桂浜「岩松冷菓」。</li>
+    <li>ひろめ市場約 60 家店，可喝到高知 18 家酒造的日本酒。</li>
+   </ul>`},
+   {icon:"🛍️",title:"伴手禮・藥妝・退稅",sub:"這裡是退稅確認港",body:`<ul class="box-list">
+    <li>伴手禮：芋けんぴ、柚子製品、鰹節、土佐酒、珊瑚。高知站「とさ屋」8:30–18:00；帯屋町、はりまや橋周邊也有。</li>
+    <li>マツモトキヨシ 帯屋町店 9:00–22:00。</li>
+    <li>ドン・キホーテ高知店 9:00–翌 3:00，可免稅；電車「知寄町三丁目」站步行 3 分。</li>
+    <li><b>退稅確認</b>：高知是日本最後一港，依船方指示用電子終端機辦理；神戶買的也一起，<b>收據上的東西一件都不能少</b>。</li>
+   </ul>`},
+   {icon:"⏰",title:"景點時間（12/2 週三）",sub:"全部有開・街路市週三沒有",body:`<dl class="kv">
+    <dt>高知城</dt><dd>9:00–17:00（16:30 最後入館）¥500，未滿 18 歲免費</dd>
+    <dt>城歷史博物館</dt><dd>9:00–18:00；企劃展期間 ¥800（與高知城套票 ¥1,040），高中以下免費</dd>
+    <dt>ひろめ市場</dt><dd>10:00–23:00，12/2 有營業</dd>
+    <dt>龍馬記念館</dt><dd>9:00–17:00（16:30 前入館）；特別展期間約 ¥900，高中以下免費；有繁中語音導覽</dd>
+    <dt>牧野植物園</dt><dd>9:00–17:00（16:30 最後入園）¥850，高中以下免費</dd>
+    <dt>竹林寺</dt><dd>庭園＋宝物館 8:30–17:00 ¥800</dd>
+    <dt>桂浜水族館</dt><dd>9:00–17:00</dd>
+    <dt>街路市</dt><dd><b>週三沒有</b>（只有日、二、四、五）</dd>
+    <dt>麵包超人館</dt><dd>週三有開，但要預約指定日期票、單程車程約 1 小時 → 不建議</dd>
+   </dl><p class="tz-note">2026/10 查詢官網，以現場為準。</p>`}
+  ],
+  routes:[
+   {icon:"🅰️",title:"A 市區經典",sub:"はりまや橋 → ひろめ市場 → 高知城",steps:[
+    {t:"12:00",x:"上岸，搭接駁車（若有）或計程車往はりまや橋",s:"車程 25–30 分＋排隊 20–30 分"},
+    {t:"12:45",x:"はりまや橋拍照"},
+    {t:"13:00",x:"走有屋頂的<b>帯屋町商店街</b>到ひろめ市場（約 20 分）"},
+    {t:"13:20",x:"<b>ひろめ市場</b>午餐：稻草燒鰹魚、土佐赤牛"},
+    {t:"14:30",x:"<b>高知城</b>（16:30 前入館）；有空再加歷史博物館"},
+    {t:"16:00",x:"帯屋町購物、藥妝"},
+    {t:"17:00",x:"回はりまや橋（天快黑了）"},
+    {t:"17:15",x:"排接駁車或計程車（大丸前有排班）"},
+    {t:"17:45–18:00",x:"回到碼頭，航站買伴手禮"}
+   ]},
+   {icon:"🅱️",title:"B 桂浜龍馬＋自己燒鰹魚",sub:"離港最近・最保險",steps:[
+    {t:"12:00",x:"計程車 → <b>土佐タタキ道場</b>（6 分，約 ¥1,000）"},
+    {t:"12:10",x:"自己用稻草燒鰹魚當午餐",s:"10:30–15:00，不接受預約、賣完為止"},
+    {t:"13:10",x:"計程車 → <b>桂浜</b>（10–15 分）"},
+    {t:"13:25",x:"龍馬像、海灘、龍王岬步道、海のテラス、アイスクリン；帶小孩可加桂浜水族館"},
+    {t:"14:45",x:"計程車 → <b>坂本龍馬記念館</b>"},
+    {t:"15:00",x:"記念館（16:30 前入館，有繁中語音導覽）"},
+    {t:"16:20",x:"計程車回港（約 10 分）"},
+    {t:"16:40",x:"航站逛伴手禮，對面 SOUTH HORIZON 喝一杯"}
+   ],warn:"記念館前不一定有計程車：早上就跟司機約好回程時間，或請館方叫車。"},
+   {icon:"🅲",title:"C 五台山＋市區",sub:"植物園、竹林寺，緩衝最少",steps:[
+    {t:"11:00",x:"先在船上吃午餐"},
+    {t:"12:00",x:"計程車 → <b>牧野植物園</b>（約 12 分、¥2,000）"},
+    {t:"12:15",x:"牧野植物園（有溫室，下雨也能逛）"},
+    {t:"14:15",x:"<b>竹林寺</b>：五重塔、名勝庭園"},
+    {t:"15:01",x:"「竹林寺前」搭 MY遊バス → 15:17 はりまや橋",s:"五台山券 ¥1,000 可車上買，含市內電車；備案 16:31 → 16:47"},
+    {t:"15:30",x:"高知城（16:30 前入館）或直接逛帯屋町"},
+    {t:"16:30",x:"ひろめ市場吃早晚餐"},
+    {t:"17:30",x:"はりまや橋搭計程車或接駁車回港"},
+    {t:"18:15",x:"回到碼頭"}
+   ],warn:"緩衝最少的一條：排車久就把ひろめ市場提早到 17:00 結束。"}
+  ],
+  links:[
+   {t:"📍 高知新港客船ターミナル",q:"高知新港 客船ターミナル"},
+   {t:"📍 はりまや橋",q:"はりまや橋"},
+   {t:"📍 ひろめ市場",q:"ひろめ市場"},
+   {t:"📍 高知城",q:"高知城"},
+   {t:"📍 桂浜",q:"桂浜"},
+   {t:"📍 土佐タタキ道場",q:"土佐タタキ道場"},
+   {t:"🚌 MY遊バス",u:"https://kochi-tabi.jp/kanko/kotsu_mybus.php"},
+   {t:"🛳️ 高知縣郵輪寄港",u:"https://www.pref.kochi.lg.jp/doc/kochi_cruise/"}
+  ]}
+};
+
+// ═══ 行前清單（勾選存在 sn_checks；item.id 一經發布勿改）═══
+const CHECKS=[
+ {key:"m2",icon:"📄",title:"出發前 1–2 個月",when:"10 月～11 月中",items:[
+  {id:"c_passport",t:"護照效期：回程日起算 6 個月以上",s:"也就是 2027/6/4 之後才到期"},
+  {id:"c_insure",t:"保旅遊平安險＋海外突發疾病",s:"醫務室看診自費，海上後送費用很高"},
+  {id:"c_tour",t:"決定神戶／高知要不要跟船方岸上觀光",s:"高知交通不便，有長輩小孩建議跟團"},
+  {id:"c_tower",t:"神戸ポートタワー指定時段票",s:"網路 60 天前開賣（12/1 的票 10/2 起）"},
+  {id:"c_beef",t:"神戶牛晚餐訂位，抓 19:00 以後",s:"入境面審可能拖到 18:00"},
+  {id:"c_esim",t:"買日本 eSIM 或開漫遊",s:"船上 Wi-Fi 貴又慢"},
+  {id:"c_card",t:"準備免海外手續費的信用卡",s:"船上刷卡算海外交易；不收 JCB"}
+ ]},
+ {key:"w1",icon:"🧾",title:"出發前 1 週",when:"11/22 前後",items:[
+  {id:"c_checkin",t:"完成線上報到",s:"官方：啟航前 48 小時關閉；心得：約 7 天前開放"},
+  {id:"c_copy",t:"護照影本：A4、1:1 彩色、不縮放不裁切不寫字",s:"每人 2 份"},
+  {id:"c_ticket",t:"看電子船票：報到時間、西岸或東岸碼頭"},
+  {id:"c_jpy",t:"換日圓現金",s:"小店、計程車、路面電車常只收現金"},
+  {id:"c_ic",t:"手機加入 ICOCA／Suica",s:"小孩要兒童卡，感應式信用卡只扣大人價"},
+  {id:"c_med",t:"暈船藥與常備藥"},
+  {id:"c_park",t:"開車的話預約基隆停車場"}
+ ]},
+ {key:"pack",icon:"🧳",title:"行李打包",when:"每人最多 2 件、每件 25 kg",items:[
+  {id:"c_coat",t:"防風外套＋保暖層",s:"神戶晚上約 8°C、甲板與六甲山更冷"},
+  {id:"c_shoes",t:"好走的鞋",s:"高知城、龍馬記念館都有坡"},
+  {id:"c_lanyard",t:"房卡卡套＋掛繩",s:"船上不送"},
+  {id:"c_slipper",t:"室內拖鞋",s:"內側、海景房沒附"},
+  {id:"c_adapter",t:"萬用轉接頭",s:"房內 220–240V，中式＋英式插座與 USB"},
+  {id:"c_usb",t:"多孔 USB 充電器",s:"延長線禁止攜帶"},
+  {id:"c_swim",t:"泳衣",s:"按摩池冬天也溫暖"},
+  {id:"c_daybag",t:"下船日的隨身包",s:"最後一天中午前大行李就收走"},
+  {id:"c_nogo",t:"不要帶：吹風機、電捲棒、離子夾、熨斗、煮水壺、酒、無人機、風箏"}
+ ]},
+ {key:"d1",icon:"⚓",title:"登船當天",when:"11/29（日）",items:[
+  {id:"c_lunch",t:"先吃午餐再去港口"},
+  {id:"c_docs",t:"護照、A4 影本、電子船票、信用卡、台幣現金"},
+  {id:"c_pill",t:"出港前吃暈船藥"},
+  {id:"c_teppan",t:"上船後先訂鐵板燒（海馬日本料理）"},
+  {id:"c_drill",t:"參加救生演習"}
+ ]},
+ {key:"end",icon:"🏠",title:"下船前",when:"12/3–12/4",items:[
+  {id:"c_bill",t:"結清船上帳單",s:"前一晚或下船前 3 小時"},
+  {id:"c_bags",t:"大件行李依公告時間放門外"},
+  {id:"c_pp",t:"領回護照"},
+  {id:"c_safe",t:"清空保險箱、衣櫃、浴室"},
+  {id:"c_liquor",t:"在 7F 出口領回代管的酒"}
+ ]}
+];
+
+// ═══ 船上實用資訊（body 為 HTML）═══
+const INFO=[
+ {icon:"💳",title:"船上消費與帳單",sub:"全程新台幣・刷卡算海外交易",body:`<ul class="box-list">
+  <li>船上一律<b>新台幣</b>計價，消費記在房卡（需輸入密碼）；娛樂場另用港幣籌碼。</li>
+  <li>接受 Visa、Mastercard、Apple Pay、Google Pay、Samsung Pay；<b>不收 JCB</b>。</li>
+  <li>刷卡算海外交易，銀行會收手續費 → 用免手續費的卡，或最後用台幣現金結帳。</li>
+  <li>官方要求上船後到 7F 登記信用卡；也有心得是最後一晚直接結帳。</li>
+  <li>結帳：7F 接待處，或連船上 Wi-Fi 入口自助結帳；前一晚或下船前 3 小時最不用排。</li>
+  <li>付費餐廳、Spa、酒吧另加 <b>18%</b> 服務費。</li>
+ </ul>`},
+ {icon:"🧾",title:"船票外的固定費用",sub:"服務費・燃油費・日本出國稅",body:`<dl class="kv">
+  <dt>服務費</dt><dd>每人 5 晚：內側／海景 NT$3,000、露台 NT$4,000、皇宮套房 NT$5,000；未滿 2 歲免。可線上預付或最後結帳</dd>
+  <dt>燃油費</dt><dd>2026/10/1 以後的新訂位每人每晚 NT$450（2 歲以上）；之前訂的依訂位條件</dd>
+  <dt>出國稅</dt><dd>日本國際觀光旅客稅 2026/7/1 起每人 ¥3,000（6/30 前購票適用 ¥1,000），記在船上帳戶</dd>
+ </dl><p class="tz-note">服務費依官方 2025/6 版指南；以船上帳單為準。</p>`},
+ {icon:"🍽️",title:"免費餐廳的規則",sub:"每個餐期只能免費吃一間",body:`<ul class="box-list">
+  <li><b>星夢餐廳</b>（Deck 6 船尾）中式桌菜可續點，早餐有港點；<b>百味軒</b>（Deck 6 船中）西式套餐主菜可續；<b>麗都</b>（Deck 12）自助，含下午茶與宵夜。</li>
+  <li>同一餐期跑第二間免費餐廳要另收費（心得：早餐 NT$250、午晚餐 NT$380）。</li>
+  <li>麗都最擠：開餐時就去，或開餐前半小時拿號碼牌。</li>
+  <li>免費飲料：餐廳有汽水機（2026 心得）、各層電梯旁有飲水機（無熱水）、娛樂場有咖啡與美祿。</li>
+ </ul>`},
+ {icon:"📶",title:"網路",sub:"船上衛星 Wi-Fi 慢又貴",body:`<ul class="box-list">
+  <li>5 晚：標準 1 台 NT$1,450、2 台 NT$2,546；高速 1 台 NT$2,175（官方 2025/6 價目）。</li>
+  <li>一組帳號同時只能 1 台；LINE、傳照片可以，影片會卡，外海常斷。</li>
+  <li>不買網路也能連船上 Wi-Fi 看郵報與帳單。靠港用日本 eSIM／漫遊。</li>
+ </ul>`},
+ {icon:"🎭",title:"表演與活動",sub:"星座劇院每晚免費",body:`<ul class="box-list">
+  <li>星座劇院（Deck 7–8 船尾，約 800 席）每晚免費秀；提早 15–30 分排隊，第二場人少。</li>
+  <li>2026 心得：第 1 晚「炫麗啟航」、第 2 晚「國風萬象」、第 4 晚「和之藝。平衡傳奇」，另有復古秀（每年會換）。</li>
+  <li>本航次「霹靂星海傳奇」：往年在 7F 大堂演出、棕櫚閣有操偶體驗。</li>
+  <li>7F 大堂：賓果、電影、廚藝示範、拍賣；12F 棕櫚閣：肚皮舞、拉丁舞。</li>
+  <li>聖誕活動期間 11/15–12/31：大堂聖誕老人見面會、棕櫚閣紅毯拍照（以郵報為準）。</li>
+  <li>付費：紳士秀（18+）、靜音派對、泡沫派對。</li>
+ </ul>`},
+ {icon:"🌊",title:"暈船與冬季海況",sub:"12 月東北季風",body:`<ul class="box-list">
+  <li>冬季航次的心得普遍說搖晃明顯，第一晚最嚴重。</li>
+  <li>船中、低樓層最穩；搖得厲害時待在 Deck 6–7 船中段。</li>
+  <li>7F 接待處可索取免費暈船藥；不舒服之前就先吃。</li>
+  <li>衣櫃門要關緊，不然整晚碰撞。</li>
+  <li>醫務室在 Deck 4 船頭，看診自費。</li>
+ </ul>`},
+ {icon:"🛂",title:"日本入境",sub:"神戶面審・全程用護照影本",body:`<ul class="box-list">
+  <li>護照在基隆就被船方收走，日本上下船都用 <b>A4 1:1 彩色影本</b>（不縮放、不裁切、不寫字），每人帶 2 份。</li>
+  <li>報到時發入境記錄表（排隊時簽名）與黃色海關申報單（一家一張），<b>不用 Visit Japan Web</b>。</li>
+  <li>神戶是第一港：依廣播分批到 7F/8F 星座劇院面審，影本背面貼上陸許可。<b>沒辦就不能在高知下船</b>。</li>
+  <li>高知回船時影本會被收走（＝出境）。</li>
+  <li>船上的肉類、水果不要帶上岸；在日本買的酒由船方代管到最後一天。</li>
+ </ul>`},
+ {icon:"🧾",title:"日本免稅新制",sub:"2026/11/1 起改退稅制",body:`<ul class="box-list">
+  <li>購物時先付含稅價，出境時海關確認後由店家退款；同店同日稅前滿 ¥5,000。</li>
+  <li>出示貼了上陸許可的護照影本即可。</li>
+  <li>郵輪在<b>日本最後一港（高知）</b>用電子終端機確認；神戶買的也在高知辦。</li>
+  <li>同一張收據少一件就整張不退；要吃要用的東西分開結帳。</li>
+  <li>退款方式各店不同，選刷退回信用卡最穩。</li>
+ </ul>`},
+ {icon:"🛏️",title:"房間小知識",sub:"插座、吹風機、拖鞋",body:`<ul class="box-list">
+  <li>電壓 220–240V，有中式、英式插座與 USB；帶萬用轉接頭。</li>
+  <li>房內吹風機很弱（要一直按著）；自備吹風機屬違禁品。</li>
+  <li>內側、海景房沒有拖鞋；露台以上有浴袍拖鞋。</li>
+  <li>地毯上的魚頭（或花頭）指向船頭，迷路看地板。</li>
+  <li>陽台可以吸菸，怕菸味的人留意。</li>
+ </ul>`},
+ {icon:"☎️",title:"緊急聯絡",sub:"存進手機",body:`<dl class="kv">
+  <dt>日本報警</dt><dd><a href="tel:110">110</a>（警察）・<a href="tel:119">119</a>（救護、消防）</dd>
+  <dt>駐大阪辦事處</dt><dd>急難救助 <a href="tel:+819087944568">090-8794-4568</a>（轄區含兵庫、高知）；上班時間 <a href="tel:+81662278623">06-6227-8623</a></dd>
+  <dt>麗星郵輪</dt><dd>台灣客服 <a href="tel:00801498887">0080-149-8887</a></dd>
+ </dl>`}
+];
+
+const qfDecks=q=>D.filter(d=>d.fac.some(q.test)).map(d=>+d.num).sort((a,b)=>a-b);
+
+// ═══ Storage：私密瀏覽或被封鎖時 localStorage 會拋錯，一律容錯 ═══
+// key 一律 sn_ 前綴：與 Costa 版同在 rest950.github.io 網域，localStorage 是共用的
+function load(k,def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+// ═══ State ═══
+let mode="trip", deckId=7, portId="kobe", filter="all";
+let stars=load("sn_stars",[]), checks=load("sn_checks",[]), aboard=load("sn_aboard",{});
+let shownDay=null;
+
+// ═══ Init ═══
+document.addEventListener("DOMContentLoaded", () => {
+  const r0=routeFromHash(); mode=r0.mode; deckId=r0.deckId; portId=r0.portId;
+  document.getElementById("dineBody").innerHTML=renderDine();
+  render(); updateBadge();
+  document.getElementById("verLabel").textContent=`v${APP_VERSION}`;
+  document.getElementById("verDetail").textContent=`版本 v${APP_VERSION}　·　資料更新 ${DATA_DATE}`;
+  window.addEventListener("scroll", () => { document.getElementById("btnTop").classList.toggle("show", scrollY > 250); });
+  setInterval(tick, 15000);
+  document.addEventListener("visibilitychange", () => { if(!document.hidden) tick(); });
+  // swipe：單一 Deck 模式左右滑換層
+  let sx=0, sy=0, swipeOk=true;
+  const NO_SWIPE=".deck-bar,.search-overlay,.modal-sheet,.time-row,input";
+  document.addEventListener("touchstart", e => {
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
+    swipeOk=!(e.target.closest && e.target.closest(NO_SWIPE));
+  }, {passive:true});
+  document.addEventListener("touchend", e => {
+    if(mode!=="single" || !swipeOk) return;
+    const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>80 && Math.abs(dx)>Math.abs(dy)*1.5){
+      const idx=D.findIndex(d=>d.id===deckId);
+      if(dx<0 && idx>0) deckId=D[idx-1].id;
+      else if(dx>0 && idx<D.length-1) deckId=D[idx+1].id;
+      else return;
+      render(); syncHash(true);   // 滑動換層不另推 history，返回鍵不必一層層退
+    }
+  }, {passive:true});
+});
+
+// ═══ Navigation ═══
+// 網址：#/（行程）、#/ship（速覽）、#/deck/7、#/port/kobe、#/starred
+function hashFor(){
+  return mode==='single'?'#/deck/'+deckId : mode==='port'?'#/port/'+portId :
+         mode==='overview'?'#/ship' : mode==='starred'?'#/starred' : '#/';
+}
+function routeFromHash(){
+  const h=(location.hash||'').replace(/^#\/?/,'');
+  let m=/^deck\/(\d+)$/.exec(h);
+  if(m && D.some(d=>d.id===+m[1])) return {mode:'single', deckId:+m[1], portId};
+  m=/^port\/([a-z]+)$/.exec(h);
+  if(m && PORTS[m[1]]) return {mode:'port', deckId, portId:m[1]};
+  if(h==='starred') return {mode:'starred', deckId, portId};
+  if(h==='ship') return {mode:'overview', deckId, portId};
+  return {mode:'trip', deckId, portId};          // 無效網址一律回行程頁
+}
+function applyRoute(){
+  const r=routeFromHash();
+  if(r.mode===mode && r.deckId===deckId && r.portId===portId) return;
+  mode=r.mode; deckId=r.deckId; portId=r.portId; render();
+}
+function syncHash(replace){
+  const want=hashFor();
+  if(location.hash===want || (want==='#/' && !location.hash)) return;
+  if(canHist) history[replace?'replaceState':'pushState']({nav:1},'',want);
+  else location.hash=want;
+}
+window.addEventListener('hashchange',applyRoute);
+
+function go(m, id){
+  if(m==='single' && id!==undefined) deckId=id;
+  if(m==='port' && id!==undefined) portId=id;
+  mode=m; closeMore(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+  syncHash();
+}
+function jumpDeck(id){ go("single",id); }
+
+// ═══ Tabs ═══
+const TAB_OF={trip:"Tr",port:"Tr",overview:"Ov",single:"Sg",starred:"St"};
+function updateTabs(){
+  const cur=TAB_OF[mode];
+  ["Tr","Ov","Sg","St"].forEach(k=>{
+    const t=document.getElementById("tab"+k); if(t) t.classList.toggle("on",k===cur);
+    const b=document.getElementById("dBtn"+k); if(b) b.style.opacity=k===cur?1:0.55;
+  });
+}
+
+// ═══ Render main ═══
+function render(){
+  updateTabs();
+  document.getElementById("deckBar").classList.toggle("visible", mode==="single");
+  if(mode==="single") renderDeckBar();
+  const mc=document.getElementById("mainContent");
+  mc.innerHTML = mode==="trip"?renderTrip() : mode==="port"?renderPort() :
+                 mode==="overview"?renderOverview() : mode==="single"?renderSingle() : renderStarred();
+  shownDay=twToday();
+  tick();
+}
+
+// ═══ Deck Bar ═══
+// 不可每次 innerHTML 重建（scrollLeft 會歸零）；centeredDeck 守衛避免每次 render 都把捲動位置拉回
+let centeredDeck=null;
+function renderDeckBar(){
+  const c=document.getElementById("deckBarScroll");
+  if(c.childElementCount!==D.length)
+    c.innerHTML=D.map(d=>`<button class="dk-chip ${d.gold?'golden':''}" onclick="jumpDeck(${d.id})">${d.icon} Deck ${d.num}</button>`).join('');
+  D.forEach((d,i)=>c.children[i].classList.toggle('on', d.id===deckId));
+  if(centeredDeck===deckId) return;
+  centeredDeck=deckId;
+  setTimeout(()=>{const a=c.querySelector('.dk-chip.on');if(a)a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});},50);
+}
+
+// ═══ Overview ═══
+function pillCls(f){
+  if(f.vip) return 't-vip';
+  if(f.cat==='pool') return 't-pool';
+  if(f.cat==='entertainment'||f.cat==='bar') return 't-ent';
+  return f.free?'t-free':'t-paid';
+}
+function renderOverview(){
+  const nFac=D.reduce((s,d)=>s+d.fac.length,0);
+  const qf=`<div class="sec-banner"><h2><span class="sec-badge">${D.length} Decks</span> 全船速覽</h2><p>由高至低剖面（Deck ${D[0].num} → ${D[D.length-1].num}），共 ${nFac} 項設施。點擊展開或直達該層。</p></div>
+  <div class="qf-grid">${QF.map(q=>`<div class="qf-card" onclick="qfOpen('${q.key}')"><div class="qf-card-icon">${q.icon}</div><div class="qf-card-label">${q.label}</div><div class="qf-card-decks">Deck ${qfDecks(q).join('·')}</div><div class="qf-card-hint">${q.hint}</div></div>`).join('')}</div>`;
+  const rows=D.map(d=>{
+    const pills=d.fac.slice(0,5).map(f=>`<span class="ov-pill ${pillCls(f)}">${f.icon} ${f.zh}</span>`).join('')
+      +(d.fac.length>5?`<span class="ov-pill t-more" onclick="event.stopPropagation();toggleOvDeck(${d.id})">＋${d.fac.length-5} 項</span>`:'');
+    return `<div class="ov-deck ${d.gold?'golden':''}" id="ovDeck${d.id}">
+      <div class="ov-deck-head" onclick="toggleOvDeck(${d.id})">
+        <div class="ov-num">Deck ${d.num}</div>
+        <div class="ov-deck-info"><div class="ov-deck-title">${d.icon} ${d.zh} <small>${d.en}</small></div><div class="ov-deck-sub">${d.nature}</div></div>
+        <div class="ov-chevron">▼</div>
+      </div>
+      <div class="ov-pills">${pills}</div>
+      <div class="ov-expand"><div class="ov-expand-inner"><div class="sec-tags" style="margin:0 0 4px">${d.tags.map(t=>`<span class="sec-tag">${t}</span>`).join('')}</div><div class="fac-list">${d.fac.map(f=>renderFacItem(f,d)).join('')}</div><div style="padding:4px 0"><button class="btn-wide" onclick="event.stopPropagation();jumpDeck(${d.id})">前往 Deck ${d.num} 詳細頁面 →</button></div></div></div>
+    </div>`;
+  }).join('');
+  return `<div class="overview-section">${qf}<div style="display:flex;flex-direction:column;gap:8px">${rows}</div></div>`;
+}
+function toggleOvDeck(id){ document.getElementById('ovDeck'+id).classList.toggle('ov-expanded'); }
+
+// ═══ Single Deck ═══
+function renderSingle(){
+  const d=D.find(x=>x.id===deckId); if(!d) return '';
+  const banner=`<div class="sec-banner"><h2><span class="sec-badge">Deck ${d.num}</span> ${d.zh} <span style="font-size:.75rem;color:var(--text-dim);font-family:var(--font-serif)">${d.en}</span></h2><p>${d.desc}</p><div class="sec-tags">${d.tags.map(t=>`<span class="sec-tag">${t}</span>`).join('')}</div></div>`;
+  return `${banner}<div class="fac-list">${d.fac.map(f=>renderFacItem(f,d)).join('')}</div>`;
+}
+
+// ═══ Starred ═══
+function renderStarred(){
+  const banner=`<div class="sec-banner"><h2>⭐ 我的收藏</h2><p>已收藏 ${stars.length} 個設施（只存在這台手機）</p></div>`;
+  const items=[];
+  D.forEach(d=>d.fac.forEach(f=>{ if(stars.includes(f.id)) items.push({f,d}); }));
+  if(!items.length) return `${banner}<div class="empty-box"><div class="empty-box-icon">⭐</div><div>尚未收藏任何設施</div><div style="font-size:0.78rem;margin-top:4px">展開設施卡片後點「加入收藏」即可儲存</div></div>`;
+  return `${banner}<div class="fac-list">${items.map(x=>renderFacItem(x.f,x.d)).join('')}</div>`;
+}
+
+// ═══ Facility accordion item（三種模式與搜尋共用）═══
+function priceTag(f){
+  if(f.vip) return '<span class="fac-price-tag vip">皇宮限定</span>';
+  if(f.cat==='cabin') return '';
+  return `<span class="fac-price-tag ${f.free?'free':'paid'}">${f.free?'免費':'付費'}</span>`;
+}
+function renderFacItem(f,d,scope){
+  const isOn=stars.includes(f.id);
+  return `<div class="fac-item" id="fac_${scope||''}${f.id}">
+    <div class="fac-head" onclick="toggleFac(this)">
+      <div class="fac-icon">${f.icon}</div>
+      <div class="fac-head-info"><div class="fac-name">${f.zh}</div><div class="fac-name-en">${f.en}</div></div>
+      <div class="fac-head-tags">${priceTag(f)}</div>
+      <div class="fac-chevron">▼</div>
+    </div>
+    <div class="fac-body"><div class="fac-body-inner">
+      <div class="fac-meta">
+        <span class="fac-meta-pill deck">📍 Deck ${d.num} ${d.zh}</span>
+        <span class="fac-meta-pill loc">${f.loc}</span>
+      </div>
+      <div class="fac-desc">${f.desc}</div>
+      ${f.tips?`<div class="fac-tips"><strong>💡 提醒：</strong>${f.tips}</div>`:''}
+      <div class="fac-star-row"><button class="btn-star ${isOn?'on':''}" data-fac="${f.id}" onclick="event.stopPropagation();toggleStar('${f.id}')">${isOn?'★ 已收藏':'☆ 加入收藏'}</button></div>
+    </div></div>
+  </div>`;
+}
+function toggleFac(el){ el.closest('.fac-item').classList.toggle('expanded'); }
+
+// ═══ Stars ═══
+function toggleStar(id){
+  const i=stars.indexOf(id);
+  if(i>-1) stars.splice(i,1); else stars.push(id);
+  save("sn_stars",stars);
+  const on=stars.includes(id);
+  // 就地更新（主內容與搜尋結果可能同時有同一張卡），整頁重繪會把展開的卡片收合
+  document.querySelectorAll('.btn-star[data-fac="'+id+'"]').forEach(b=>{
+    b.classList.toggle('on',on); b.textContent=on?'★ 已收藏':'☆ 加入收藏';
+  });
+  updateBadge();
+  if(mode==='starred') render();
+}
+function updateBadge(){
+  const b=document.getElementById("starBadge");
+  if(b){ b.textContent=stars.length; b.style.display=stars.length?'block':'none'; }
+}
+
+// ═══ 時間工具：一律用固定時差計算，不依賴手機時區（手機到日本會自動切時區）═══
+function twToday(){ return new Date(Date.now()+8*36e5).toISOString().slice(0,10); }
+function hm(ts,tz){ const d=new Date(ts+tz*36e5); return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0'); }
+// 港口當地時間（UTC+9）→ timestamp；早於抵港時間者視為隔天（神戶 01:00 離港）
+function portTs(p,hhmm){
+  const [Y,M,Dd]=p.date.split('-').map(Number), [h,mi]=hhmm.split(':').map(Number);
+  let ts=Date.UTC(Y,M-1,Dd,h-9,mi);
+  if(hhmm<p.arr) ts+=864e5;
+  return ts;
+}
+function tripStatus(){
+  const t=twToday(), first=DAYS[0].date, last=DAYS[DAYS.length-1].date;
+  const d=DAYS.find(x=>x.date===t);
+  if(d) return {phase:'on', today:d.n, focus:d.n};
+  if(t<first){ const left=Math.round((Date.parse(first)-Date.parse(t))/864e5); return {phase:'before', left, focus:left<=3?1:0}; }
+  return {phase:'after', today:99, focus:0};
+}
+function tick(){
+  const now=Date.now();
+  if(shownDay && shownDay!==twToday() && (mode==='trip')){ render(); return; }   // 跨日自動換「今天」
+  document.querySelectorAll('[data-clock]').forEach(e=>{ e.textContent=hm(now,+e.dataset.clock); });
+  const cd=document.getElementById('aboardCd');
+  const p=cd&&PORTS[cd.dataset.port];
+  if(p){
+    const t=aboard[p.id]||p.aboardGuess;
+    const end=portTs(p,t), start=portTs(p,p.arr), dep=portTs(p,p.dep);
+    let msg='';
+    if(now>=start-12*36e5 && now<start) msg=`尚未靠港：預計當地 ${p.arr} 抵達`;
+    else if(now>=start && now<end){ const m=Math.floor((end-now)/6e4); msg=`⏳ 距離最晚回船還有 ${m>=60?Math.floor(m/60)+' 小時 ':''}${m%60} 分`; }
+    else if(now>=end && now<dep) msg='⚠️ 已過最晚回船時間，請立刻回船！';
+    cd.textContent=msg; cd.style.display=msg?'block':'none';
+  }
+}
+
+// ═══ Trip：航程攻略 ═══
+function renderTrip(){
+  const st=tripStatus();
+  return heroHTML(st) + clockHTML()
+    + `<div class="sec-title">🗓️ 每日行程 <small>點開看當天怎麼安排</small></div>` + DAYS.map(d=>dayHTML(d,st)).join('')
+    + `<div class="sec-title">⚓ 港口攻略</div>` + portTilesHTML()
+    + `<div class="sec-title">✅ 行前清單 <small>勾選只存在這台手機</small></div>` + CHECKS.map(checkGroupHTML).join('')
+    + `<div class="sec-title">💡 船上實用資訊</div>` + INFO.map(cardHTML).join('');
+}
+function heroHTML(st){
+  let s;
+  if(st.phase==='before') s=`距離登船還有 <b>${st.left}</b> 天<span class="sub">${TRIP.embarkNote}</span>`;
+  else if(st.phase==='on'){ const d=DAYS.find(x=>x.n===st.today); s=`航程第 <b>${d.n}</b> 天・${d.icon} ${d.title}<span class="sub">${d.sub}</span>`; }
+  else s=`航程已結束，歡迎回家 🏠<span class="sub">${TRIP.afterNote}</span>`;
+  return `<div class="trip-hero"><div class="trip-kicker">${TRIP.kicker}</div><h2>${TRIP.title}</h2><div class="route">${TRIP.route}</div><div class="trip-status">${s}</div></div>`;
+}
+function clockHTML(){
+  return `<div class="clock-strip">
+    <div class="clock-cell"><span>${TRIP.shipClock}</span><b data-clock="8">--:--</b></div>
+    <div class="clock-cell jp"><span>日本當地 (UTC+9)</span><b data-clock="9">--:--</b></div>
+    <div class="clock-note">${TRIP.clockNote}</div>
+  </div>`;
+}
+function tpills(ts){ return (ts||[]).map(t=>`<span class="tpill ${t.jp?'jp':''} ${t.warn?'warn':''}"><em>${t.k}</em>${t.v}</span>`).join(''); }
+function tlHTML(items){ return `<ul class="tl">${items.map(p=>`<li><span class="tl-t">${p.t||''}</span><span class="tl-x">${p.x}${p.s?`<small>${p.s}</small>`:''}</span></li>`).join('')}</ul>`; }
+function dayHTML(d,st){
+  const isToday=st.today===d.n, past=st.phase!=='before' && d.n<st.today;
+  return `<details class="card day-card ${isToday?'today':''} ${past?'past':''}" ${st.focus===d.n?'open':''}>
+    <summary>
+      <div class="day-badge"><small>DAY ${d.n}</small><b>${d.md}</b><i>週${d.wd}</i></div>
+      <div class="card-title"><b>${d.icon} ${d.title}${isToday?'<span class="today-tag">今天</span>':''}</b><span>${d.sub}</span></div>
+      <div class="ov-chevron">▼</div>
+    </summary>
+    <div class="card-body">
+      ${d.times?`<div class="time-row">${tpills(d.times)}</div>`:''}
+      ${d.tz?`<div class="tz-note">${d.tz}</div>`:''}
+      ${tlHTML(d.plan)}
+      ${d.warn?`<div class="warn-box">${d.warn}</div>`:''}
+      ${d.tip?`<div class="info-box">${d.tip}</div>`:''}
+      ${d.port?`<button class="btn-wide" onclick="go('port','${d.port}')">${PORTS[d.port].icon} 打開${PORTS[d.port].zh}港口攻略 →</button>`:''}
+    </div>
+  </details>`;
+}
+function portTilesHTML(){
+  return `<div class="port-grid">${Object.values(PORTS).map(p=>`<div class="port-tile" onclick="go('port','${p.id}')"><div class="pi">${p.icon}</div><b>${p.zh}</b><span>${p.when}</span><span>當地 ${p.arr}–${p.dep}${p.dep<p.arr?'（隔日）':''}</span><em>看攻略 →</em></div>`).join('')}</div>`;
+}
+function cardHTML(x){
+  return `<details class="card" ${x.open?'open':''}><summary><div class="card-ico">${x.icon}</div><div class="card-title"><b>${x.title}</b>${x.sub?`<span>${x.sub}</span>`:''}</div><div class="ov-chevron">▼</div></summary><div class="card-body">${x.body}</div></details>`;
+}
+
+// ═══ Checklist：勾選就地更新，不重繪（避免收合）═══
+function ckDone(g){ return g.items.filter(i=>checks.includes(i.id)).length; }
+function checkGroupHTML(g){
+  const done=ckDone(g), n=g.items.length;
+  return `<details class="card" data-ckg="${g.key}">
+    <summary><div class="card-ico">${g.icon}</div><div class="card-title"><b>${g.title}</b><span>${g.when}</span><div class="ck-progress"><i style="width:${done/n*100}%"></i></div></div><span class="ck-count">${done}/${n}</span><div class="ov-chevron">▼</div></summary>
+    <div class="card-body">${g.items.map(i=>`<label class="ck-item"><input type="checkbox" ${checks.includes(i.id)?'checked':''} onchange="toggleCheck('${i.id}')"><span>${i.t}${i.s?`<small>${i.s}</small>`:''}</span></label>`).join('')}</div>
+  </details>`;
+}
+function toggleCheck(id){
+  const i=checks.indexOf(id);
+  if(i>-1) checks.splice(i,1); else checks.push(id);
+  save("sn_checks",checks);
+  CHECKS.forEach(g=>{
+    const el=document.querySelector(`[data-ckg="${g.key}"]`); if(!el) return;
+    const done=ckDone(g);
+    el.querySelector('.ck-count').textContent=`${done}/${g.items.length}`;
+    el.querySelector('.ck-progress i').style.width=`${done/g.items.length*100}%`;
+  });
+}
+
+// ═══ Port：港口攻略頁 ═══
+function renderPort(){
+  const p=PORTS[portId]; if(!p) return '';
+  const banner=`<div class="sec-banner"><h2><span class="sec-badge">Day ${p.day}</span> ${p.icon} ${p.zh} <span style="font-size:.78rem;color:var(--text-dim)">${p.ja}</span></h2><p>${p.lead}</p><div class="time-row" style="margin-top:8px">${tpills(p.times)}</div></div>`;
+  return banner + aboardHTML(p)
+    + p.sections.map(cardHTML).join('')
+    + `<div class="sec-title">🧭 路線提案 <small>${p.routeNote||''}</small></div>`
+    + p.routes.map(r=>cardHTML({icon:r.icon,title:r.title,sub:r.sub,body:(r.intro?`<div class="info-box">${r.intro}</div>`:'')+tlHTML(r.steps)+(r.warn?`<div class="warn-box">${r.warn}</div>`:'')})).join('')
+    + (p.links?`<div class="sec-title">🔗 地圖與官網 <small>需要網路</small></div><div class="chip-row">${p.links.map(l=>`<a class="chip-link" href="${l.u||MAP+encodeURIComponent(l.q)}" target="_blank" rel="noopener noreferrer">${l.t} ↗</a>`).join('')}</div>`:'')
+    + `<button class="btn-wide" style="margin-top:6px" onclick="go('trip')">← 回到每日行程</button>`;
+}
+const MAP='https://www.google.com/maps/search/?api=1&query=';
+function aboardLabel(p){ return aboard[p.id]?'依你輸入的時間倒數':'預設抓開船前 1 小時；上船後依郵報改成正式時間'; }
+function minus1h(t){ const [h,m]=t.split(':').map(Number); return String((h+23)%24).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+function aboardConv(p){ const t=aboard[p.id]||p.aboardGuess; return `日本 ${t} ＝ 船上 ${minus1h(t)}（郵報上寫的是船上時間）`; }
+function aboardHTML(p){
+  return `<div class="aboard-box"><div class="lbl"><b>⏰ 最晚回船（日本當地時間）</b><span id="aboardLbl">${aboardLabel(p)}</span></div><input type="time" value="${aboard[p.id]||p.aboardGuess}" onchange="setAboard('${p.id}',this.value)"><div class="aboard-conv" id="aboardConv">${aboardConv(p)}</div><div class="aboard-cd" id="aboardCd" data-port="${p.id}" style="display:none"></div></div>`;
+}
+function setAboard(id,v){
+  if(v) aboard[id]=v; else delete aboard[id];
+  save("sn_aboard",aboard);
+  const p=PORTS[id];
+  const l=document.getElementById('aboardLbl'); if(l) l.textContent=aboardLabel(p);
+  const c=document.getElementById('aboardConv'); if(c) c.textContent=aboardConv(p);
+  tick();
+}
+
+// ═══ Dining modal：由 D 推導，不手寫第二份清單 ═══
+function renderDine(){
+  const all=[]; D.forEach(d=>d.fac.forEach(f=>{ if(f.cat==='dining'||f.cat==='bar') all.push({f,d}); }));
+  const grp=[
+    {h:'🟢 免費餐廳（含在船票內）', c:'#6ee7b7', test:x=>x.f.cat==='dining'&&x.f.free&&!x.f.vip},
+    {h:'🟠 付費餐廳・點心', c:'#fcd34d', test:x=>x.f.cat==='dining'&&!x.f.free&&!x.f.vip},
+    {h:'🍸 酒吧・咖啡・觀景廊', c:'#c4b5fd', test:x=>x.f.cat==='bar'&&!x.f.vip},
+    {h:'👑 皇宮限定', c:'#d8ccff', test:x=>x.f.vip},
+  ];
+  return `<div class="info-box">${DINE_NOTE}</div>` + grp.map(g=>{
+    const xs=all.filter(g.test); if(!xs.length) return '';
+    return `<p class="dine-h" style="color:${g.c}">${g.h}</p>`+xs.map(({f,d})=>`<div class="dining-card"><div class="dining-card-name">${f.icon} ${f.zh} <span style="font-size:.7rem;color:var(--text-dim);font-family:var(--font-serif)">${f.en}</span></div><div class="dining-card-loc">📍 Deck ${d.num}・${f.loc}</div><div class="dining-card-desc">${f.desc}</div></div>`).join('');
+  }).join('');
+}
+
+// ═══ 覆蓋層歷史：手機返回鍵與 Esc 關閉最上層；file:// 下 pushState 會拋錯，退回直接關閉 ═══
+const canHist=(()=>{try{history.replaceState(history.state,'');return true;}catch(e){return false;}})();
+let ovClose=null;
+function ovOpen(close){
+  if(ovClose){ ovClose=close; return; }        // 已有覆蓋層，沿用同一筆 history entry
+  ovClose=close;
+  if(canHist) history.pushState({ov:1},'');
+}
+function ovBack(){
+  if(!ovClose) return false;
+  if(canHist) history.back();                  // popstate 會執行實際關閉
+  else { const c=ovClose; ovClose=null; c(); }
+  return true;
+}
+window.addEventListener('popstate',()=>{
+  const c=ovClose; ovClose=null;
+  if(c){ c(); return; }      // 覆蓋層優先：返回鍵先關搜尋 / modal
+  applyRoute();              // 否則回到網址對應的畫面
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  const m=document.getElementById('moreMenu');
+  if(m && m.classList.contains('open')){ closeMore(); return; }
+  ovBack();
+});
+
+// ═══ Search ═══
+function openSearch(){
+  document.getElementById("searchOverlay").classList.add("open");
+  setTimeout(()=>document.getElementById("searchInput").focus(),300);
+  ovOpen(closeSearchNow);
+}
+function closeSearch(){ if(!ovBack()) closeSearchNow(); }
+function closeSearchNow(){
+  document.getElementById("searchOverlay").classList.remove("open");
+  document.getElementById("searchInput").value='';
+  filter='all'; updateSearchChips(); syncClear();
+}
+function syncClear(){ document.getElementById('searchClear').classList.toggle('show', !!document.getElementById('searchInput').value); }
+function clearSearch(){ const i=document.getElementById('searchInput'); i.value=''; syncClear(); doSearch(); i.focus(); }
+function qfOpen(key){ document.getElementById("searchInput").value=''; syncClear(); openSearch(); setFilter('qf:'+key); }
+function setFilter(c){ filter=c; updateSearchChips(); doSearch(); }
+function matchFilter(f){
+  if(filter==='all') return true;
+  if(filter.startsWith('qf:')){ const q=QF.find(x=>x.key===filter.slice(3)); return q?q.test(f):true; }
+  return f.cat===filter;
+}
+function updateSearchChips(){
+  const row=document.getElementById('searchChips');
+  const dyn=row.querySelector('.s-chip.qf'); if(dyn) dyn.remove();
+  if(filter.startsWith('qf:')){
+    const q=QF.find(x=>x.key===filter.slice(3));
+    if(q) row.insertAdjacentHTML('afterbegin',`<button class="s-chip qf on" onclick="setFilter('all')">${q.icon} ${q.label} ✕</button>`);
+  }
+  row.querySelectorAll('.s-chip:not(.qf)').forEach(e=>e.classList.toggle('on',e.dataset.cat===filter));
+}
+function doSearch(){
+  const q=document.getElementById("searchInput").value.trim().toLowerCase();
+  const box=document.getElementById("searchResults");
+  if(!q&&filter==='all'){ box.innerHTML='<div class="search-empty"><div class="search-empty-icon">🔍</div>輸入關鍵字搜尋全船設施</div>'; return; }
+  const results=[];
+  D.forEach(d=>d.fac.forEach(f=>{
+    if(!matchFilter(f)) return;
+    if(q && ![f.zh,f.en,f.desc,f.tips||'',f.loc,d.zh,d.en,'deck '+d.num].some(s=>s.toLowerCase().includes(q))) return;
+    results.push({f,d});
+  }));
+  if(!results.length){ box.innerHTML='<div class="search-empty"><div class="search-empty-icon">🔎</div>找不到符合的設施<br><span style="font-size:0.78rem">試試其他關鍵字或篩選類別</span></div>'; return; }
+  box.innerHTML=results.map(({f,d})=>renderFacItem(f,d,'s_')).join('');
+}
+
+// ═══ More menu ═══
+function toggleMore(){ document.getElementById("moreMenu").classList.toggle("open"); document.getElementById("tabMore").classList.toggle("on"); }
+function closeMore(){ document.getElementById("moreMenu").classList.remove("open"); document.getElementById("tabMore").classList.remove("on"); }
+document.addEventListener("click",e=>{
+  const m=document.getElementById("moreMenu"),t=document.getElementById("tabMore");
+  if(m.classList.contains("open")&&!m.contains(e.target)&&!t.contains(e.target)) closeMore();
+});
+
+// ═══ Modal ═══
+function openModal(id){
+  document.getElementById(id+'Bg').classList.add('open');
+  document.getElementById(id).classList.add('open');
+  ovOpen(()=>closeModalNow(id));
+}
+function closeModal(id){ if(!ovBack()) closeModalNow(id); }
+function closeModalNow(id){
+  document.getElementById(id+'Bg').classList.remove('open');
+  document.getElementById(id).classList.remove('open');
+}
+
+// ═══ Service worker：離線可用（船上網路要付費，港口訊號也不一定好）═══
+function applyUpdate(){
+  navigator.serviceWorker.getRegistration().then(reg=>{
+    if(reg&&reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+    else location.reload();
+  });
+}
+if(typeof navigator!=='undefined'&&'serviceWorker' in navigator&&
+   typeof location!=='undefined'&&/^https?:/.test(location.protocol)){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing; if(!nw) return;
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='installed'&&navigator.serviceWorker.controller)
+            document.getElementById('updateBar').classList.add('show');
+        });
+      });
+    }).catch(()=>{});
+    let reloading=false;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(reloading) return; reloading=true; location.reload();
+    });
+  });
+}
+</script>
+</body>
+</html>

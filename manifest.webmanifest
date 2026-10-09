@@ -1,0 +1,19 @@
+{
+  "name": "探索星號 Star Navigator｜設施導覽與航程攻略",
+  "short_name": "探索星號",
+  "description": "麗星郵輪探索星號 10 層甲板設施、餐飲、動線，與 11/29 基隆出發神戶・高知 5 晚航程攻略（非官方）",
+  "lang": "zh-TW",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0a1d",
+  "theme_color": "#0b0a1d",
+  "categories": ["travel", "navigation", "reference"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
