@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>探索星號 Star Navigator｜設施導覽與航程攻略</title>
   <meta name="theme-color" content="#0b0a1d">
-  <meta name="description" content="麗星郵輪探索星號 (Star Navigator) 10 層甲板設施、免費與付費餐廳、防迷路動線，以及 2026/11/29 基隆出發神戶・高知 5 晚航程攻略。可離線使用（非官方專案）。">
+  <meta name="description" content="麗星郵輪探索星號 (Star Navigator) 10 層甲板互動平面圖與設施、免費與付費餐廳、自費價目（飲料套餐、Wi-Fi、餐廳菜單）、防迷路動線，以及 2026/11/29 基隆出發神戶・高知 5 晚航程攻略。可離線使用（非官方專案）。">
   <link rel="canonical" href="https://rest950.github.io/star-navigator-guide/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="探索星號 Star Navigator 導覽">
@@ -241,7 +241,7 @@
       word-break: break-word;
     }
     .fac-tips strong { color: var(--gold-light); }
-    .fac-star-row { display: flex; justify-content: flex-end; }
+    .fac-star-row { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
     .btn-star {
       background: none; border: 1px solid var(--border); border-radius: 8px;
       color: var(--text-dim); font-size: 0.78rem; padding: 6px 12px; font-family: inherit;
@@ -250,6 +250,44 @@
     }
     .btn-star:active { transform: scale(0.95); }
     .btn-star.on { color: var(--gold); border-color: rgba(var(--gold-rgb), 0.4); background: rgba(var(--gold-rgb), 0.08); }
+    /* 從平面圖跳過來：卡片停在 header＋deck bar 下方，閃一下金框 */
+    .fac-item { scroll-margin-top: calc(var(--header-h) + var(--safe-t) + 56px); }
+    .fac-item.flash { animation: facFlash 1.6s ease; }
+    @keyframes facFlash {
+      0%, 35% { box-shadow: 0 0 0 2px var(--gold), 0 0 16px rgba(var(--gold-rgb), 0.45); }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    /* ── 甲板平面圖（SVG；座標單位即 viewBox 單位，font-size 也是）── */
+    .deck-split { display: flex; flex-direction: column; gap: 10px; }
+    .plan-svg {
+      display: block; margin: 0 auto; width: clamp(250px, 38vh, 100%); height: auto; aspect-ratio: 188 / 424;
+      -webkit-user-select: none; user-select: none;
+    }
+    .plan-svg text { text-anchor: middle; fill: var(--text); font-weight: 600; pointer-events: none; }
+    .plan-ghost { fill: none; stroke: var(--border); stroke-width: 0.8; stroke-dasharray: 3 2; }
+    .plan-hull { fill: var(--bg-surface); }
+    .plan-line { fill: none; stroke: var(--border-active); stroke-width: 1.2; }
+    .t-free { --c: 16, 185, 129; } .t-paid { --c: 245, 158, 11; } .t-pool { --c: 56, 189, 248; }
+    .t-ent { --c: 167, 139, 250; } .t-vip { --c: 244, 114, 182; } .t-cabin { --c: 148, 163, 184; }
+    .pz { cursor: pointer; }
+    .pz rect { fill: rgba(var(--c), 0.22); stroke: rgba(var(--c), 0.75); stroke-width: 0.6; transition: fill 0.15s; }
+    .pz:hover rect, .pz:active rect { fill: rgba(var(--c), 0.38); }
+    .pz.vip rect { stroke-dasharray: 2.5 1.5; }
+    .pz.link rect { fill: rgba(var(--c), 0.05); stroke-dasharray: 3 2; }
+    .pz.link text { fill: var(--text-sec); }
+    .pz.sel rect { fill: rgba(var(--c), 0.5); stroke: var(--gold-light); stroke-width: 1.4; animation: pzPulse 0.9s ease 2; }
+    @keyframes pzPulse { 50% { stroke-width: 3.2; } }
+    .pz-deco rect { fill: rgba(255,255,255,0.02); stroke: var(--border); stroke-width: 0.6; stroke-dasharray: 2 2; }
+    .plan-svg .pz-deco text { fill: var(--text-dim); font-weight: 400; }
+    .plan-lift rect { fill: var(--bg-card); stroke: var(--text-dim); stroke-width: 0.5; }
+    .plan-lift path { fill: none; stroke: var(--text-dim); stroke-width: 0.4; }
+    .plan-svg .plan-dir { fill: var(--text-dim); font-size: 6px; font-weight: 500; }
+    .plan-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; font-size: 0.7rem; color: var(--text-sec); }
+    .pl-leg { display: inline-flex; align-items: center; gap: 4px; }
+    .pl-leg i { width: 11px; height: 11px; border-radius: 3px; background: rgba(var(--c), 0.3); border: 1px solid rgba(var(--c), 0.8); }
+    .pl-leg.t-vip i { border-style: dashed; }
+    .pl-leg b { color: var(--text-dim); font-weight: 400; }
 
     /* ── Overview Mode ── */
     .overview-section { display: flex; flex-direction: column; gap: 10px; }
@@ -366,6 +404,7 @@
     .card-title { flex: 1; min-width: 0; }
     .card-title b { display: block; font-size: 0.9rem; color: var(--text); font-weight: 600; line-height: 1.3; }
     .card-title span { display: block; font-size: 0.72rem; color: var(--text-sec); line-height: 1.35; margin-top: 1px; }
+    .card-title b small { margin-left: 6px; font-size: 0.68rem; color: var(--text-dim); font-family: var(--font-serif); font-weight: 500; }
     .card-ico {
       width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
       background: var(--bg-surface); border: 1px solid var(--border);
@@ -442,6 +481,20 @@
       padding: 5px 9px; border-radius: 16px; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-sec);
     }
     .chip-link:active { background: var(--bg-card-hover); }
+
+    /* ── 自費價目 ── */
+    .price-list { list-style: none; display: flex; flex-direction: column; }
+    .price-list li {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+      padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.07); font-size: 0.82rem; line-height: 1.45;
+    }
+    .price-list li:last-child { border-bottom: none; }
+    .price-list li.pl-h { color: var(--gold-light); font-weight: 700; font-size: 0.76rem; padding-top: 10px; border-bottom: 1px solid var(--border); }
+    .price-list li.pl-h:first-child { padding-top: 2px; }
+    .pl-n { flex: 1; min-width: 0; color: var(--text-body); word-break: break-word; }
+    .pl-n small { display: block; color: var(--text-dim); font-size: 0.7rem; line-height: 1.4; }
+    .pl-p { flex-shrink: 0; max-width: 48%; text-align: right; color: var(--gold-light); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .pl-p small { display: block; color: var(--text-dim); font-weight: 400; font-size: 0.66rem; }
 
     .aboard-box {
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -670,6 +723,10 @@
       .main { padding: 14px; gap: 12px; max-width: 800px; margin: 0 auto; }
       .qf-grid { grid-template-columns: repeat(4, 1fr); }
       .fac-list { gap: 8px; }
+      /* 平面圖放左欄並 sticky：展開右邊的卡片時，左邊同步標亮 */
+      .deck-split { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 12px; align-items: start; }
+      .plan-card { position: sticky; top: calc(var(--header-h) + var(--safe-t) + 56px); }
+      .plan-card .plan-svg { width: min(100%, calc((100vh - 250px) * 0.443)); }
     }
 
     /* ==============================================
@@ -687,6 +744,7 @@
       .hdr-actions .nav-search-btn { display: none; }
       /* 桌機隱藏了 bottom-nav，deck bar 是單一 Deck 模式唯一的切換 UI，必須保留 */
       .deck-bar-scroll { max-width: 1100px; margin: 0 auto; }
+      .deck-split { grid-template-columns: 340px minmax(0, 1fr); }
       .modal-sheet { left: 50%; right: auto; transform: translateX(-50%) translateY(100%); width: 600px; max-width: 90vw; border-radius: 20px 20px 0 0; }
       .modal-sheet.open { transform: translateX(-50%) translateY(0); }
     }
@@ -713,6 +771,7 @@
       <button class="hdr-btn" onclick="go('overview')" id="dBtnOv">🚢 速覽</button>
       <button class="hdr-btn" onclick="go('single')" id="dBtnSg">🏛️ Deck</button>
       <button class="hdr-btn" onclick="go('starred')" id="dBtnSt">⭐ 收藏</button>
+      <button class="hdr-btn" onclick="go('spend')" id="dBtnSp">💰 自費</button>
       <button class="hdr-btn" onclick="openModal('navModal')">🧭 動線</button>
       <button class="hdr-btn" onclick="openModal('dineModal')">🍽️ 餐飲</button>
       <a class="hdr-btn" href="https://www.cruisemapper.com/?imo=9141077" target="_blank" rel="noopener noreferrer" title="在 CruiseMapper 查看即時船位（IMO 9141077）">🛰️ 船位</a>
@@ -767,6 +826,7 @@
 <!-- More menu popover -->
 <div class="more-menu" id="moreMenu">
   <button class="more-item" onclick="openSearch(); closeMore();">🔍 搜尋設施</button>
+  <button class="more-item" onclick="go('spend')">💰 自費價目表</button>
   <button class="more-item" onclick="openModal('dineModal'); closeMore();">🍽️ 餐飲速查表</button>
   <button class="more-item" onclick="openModal('navModal'); closeMore();">🧭 防迷路指南</button>
   <a class="more-item" href="https://www.cruisemapper.com/?imo=9141077" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🛰️ 即時船位<span class="ext">↗</span></a>
@@ -811,6 +871,7 @@
     <button class="modal-close" onclick="closeModal('navModal')">✕</button>
   </div>
   <div class="modal-sheet-body" id="navBody">
+    <button class="btn-wide" onclick="ovGo('single')">🗺️ 看各層平面圖（點區塊直接看設施）→</button>
     <div class="tip-card">
       <h4>🐟 先分清船頭船尾</h4>
       <p>走廊地毯上的魚頭（或花頭）指向<strong>船頭</strong>；客房號碼越小越靠船頭，x5xx 號在左舷、x0xx–x2xx 號在右舷。</p>
@@ -876,11 +937,11 @@
     </div>
     <div class="tip-card">
       <h4>🕐 一律以船上公告為準</h4>
-      <p>設施營運時間、菜單、收費、演出、靠港與回船時間，請以船上每日郵報與廣播為準。行程攻略中的港口營業時間與價格為 2026 年 10 月查詢的結果，可能變動。</p>
+      <p>設施營運時間、菜單、收費、演出、靠港與回船時間，請以船上每日郵報與廣播為準。港口營業時間與價格、船上自費價目為 2026 年 10 月查詢的結果，可能變動。</p>
     </div>
     <div class="tip-card">
       <h4>📐 資料來源</h4>
-      <p>甲板與設施依麗星官方《探索星號》台灣出發版手冊甲板圖整理，並對照一般版與英文版手冊、SNA Cruise Guide（2025/6）、官方航程表（V9.2，2026/10/2）。2026 年起的變動（如火鍋改為泰悅）與實用小技巧依旅客心得補充；港口資訊來自神戶、高知官方與景點官網。</p>
+      <p>甲板與設施依麗星官方《探索星號》台灣出發版手冊甲板圖整理（平面圖是依該甲板圖簡化的示意圖，寬度放大、非比例尺），並對照一般版與英文版手冊、官方郵輪指南（v8，2026/7）、官方航程表（V9.2，2026/10/2）。2026 年起的變動（如火鍋改為泰悅）與實用小技巧依旅客心得補充；自費價目依官網與 2025–2026 旅客拍的菜單；港口資訊來自神戶、高知官方與景點官網。</p>
     </div>
     <div class="tip-card">
       <h4>™ 商標權</h4>
@@ -898,7 +959,7 @@
 // 探索星號導覽 — 資料在上、邏輯在下；改資料不必動邏輯
 // ════════════════════════════════════════════════
 // ═══ Version ═══
-const APP_VERSION="1.0.2", DATA_DATE="2026-10-09";   // 改版時同步 bump sw.js 的 VERSION
+const APP_VERSION="1.1.0", DATA_DATE="2026-10-09";   // 改版時同步 bump sw.js 的 VERSION
 
 // ═══ 甲板與設施 ═══
 // 基準：麗星官方《探索星號》台灣出發版手冊（SNA_Ship_Brochure_Ex_TWN_TC）甲板圖與索引；
@@ -913,8 +974,8 @@ const D=[
  nature:"瞭望台・兒童俱樂部・露天燒烤・運動",tags:["瞭望台甲板","小小夢想家天地","海鮮燒烤餐廳","緩跑徑","綜合運動場"],fac:[
  {id:"f13_1",zh:"瞭望台甲板",en:"Observation Deck",cat:"pool",loc:"船頭（駕駛台上方）",free:true,icon:"🔭",desc:"船頭最高處的露天平台，前方視野幾乎無遮蔽，看進出港、海上日出與星空。",tips:"風大或天候不佳可能封閉；12 月甲板風很冷，帶防風外套。"},
  {id:"f13_2",zh:"小小夢想家天地",en:"Little Dreamers Club",cat:"kids",loc:"船頭",free:true,icon:"🧸",desc:"兒童俱樂部：遊戲、手作工作坊、變裝派對、DJ 體驗，有專人照顧。",tips:"每天前 2 小時免費，之後按小時收費（2–4 歲與 5–12 歲費率不同）；手作課另收費。第一次使用需家長到場登記。"},
- {id:"f13_3",zh:"海鮮燒烤餐廳",en:"Seafood Grill",cat:"dining",loc:"船中偏前",free:false,icon:"🦐",desc:"露天炭烤海鮮，另有漢堡、三明治、玉米片、薯條等輕食，可在星空下配飲料。",tips:"付費（另加 18% 服務費）；冬夜露天座位很冷。"},
- {id:"f13_4",zh:"露天吧",en:"Sun Deck Bar",cat:"bar",loc:"船中偏前（海鮮燒烤旁）",free:true,icon:"🍹",desc:"海鮮燒烤餐廳旁的露天酒吧。",tips:"入座免費，飲品自費（另加 18%）。"},
+ {id:"f13_3",zh:"海鮮燒烤餐廳",en:"Seafood Grill",cat:"dining",loc:"船中偏前",free:false,icon:"🦐",desc:"露天炭烤海鮮，另有漢堡、三明治、玉米片、薯條等輕食，可在星空下配飲料。",tips:"付費；2026 心得：原本 Deck 8 的火鍋搬到這裡。冬夜露天座位很冷。"},
+ {id:"f13_4",zh:"露天吧",en:"Sun Deck Bar",cat:"bar",loc:"船中偏前（海鮮燒烤旁）",free:true,icon:"🍹",desc:"海鮮燒烤餐廳旁的露天酒吧。",tips:"入座免費，飲品自費。"},
  {id:"f13_5",zh:"日光甲板",en:"Sun Deck",cat:"pool",loc:"船中兩側（環繞泳池上方）",free:true,icon:"🪑",desc:"環繞 Deck 12 羅馬泳池上方的日光浴平台，可俯瞰泳池與池畔舞台。",tips:"躺椅先到先得。"},
  {id:"f13_6",zh:"緩跑徑",en:"Jogging Track",cat:"spa",loc:"船尾兩側",free:true,icon:"👟",desc:"船尾兩側的露天跑道。",tips:"清早人最少；甲板濕滑時放慢。"},
  {id:"f13_7",zh:"綜合運動場",en:"SportsPlex",cat:"entertainment",loc:"船尾",free:true,icon:"🏀",desc:"船尾的圍網多功能球場。",tips:"心得提到可向現場借籃球，規定以現場為準。"}
@@ -929,8 +990,8 @@ const D=[
  {id:"f12_5",zh:"義式手作冰品",en:"Gelateria",cat:"dining",loc:"船中右舷（泳池旁）",free:false,icon:"🍨",desc:"泳池旁的義式冰淇淋。",tips:"付費。"},
  {id:"f12_6",zh:"棕櫚閣",en:"Palm Court",cat:"bar",loc:"船頭",free:true,icon:"🌴",desc:"船頭觀景廊，大片窗景一望無際；晚上有肚皮舞、拉丁舞，也是手作課與紅毯夜的場地。",tips:"入座免費、飲品自費；本航次的霹靂操偶體驗往年在這裡。"},
  {id:"f12_7",zh:"醇夢雪茄廊",en:"Humidor Cigar Lounge",cat:"bar",loc:"船頭左舷",free:false,icon:"🚬",desc:"雪茄與烈酒小酒廊。",tips:"怕菸味的人避開。"},
- {id:"f12_8",zh:"水療中心",en:"The Spa",cat:"spa",loc:"船頭左舷",free:false,icon:"💆",desc:"按摩、臉部保養等療程。",tips:"付費另加 18%；最後一天常有優惠。"},
- {id:"f12_9",zh:"美髮沙龍",en:"The Salon",cat:"spa",loc:"船頭",free:false,icon:"💇",desc:"洗髮、造型、美甲。",tips:"付費另加 18%。"},
+ {id:"f12_8",zh:"水療中心",en:"The Spa",cat:"spa",loc:"船頭左舷",free:false,icon:"💆",desc:"按摩、臉部保養等療程。",tips:"付費；露台房以上 9 折，最後一天常有優惠。"},
+ {id:"f12_9",zh:"美髮沙龍",en:"The Salon",cat:"spa",loc:"船頭",free:false,icon:"💇",desc:"洗髮、造型、美甲。",tips:"付費。"},
  {id:"f12_10",zh:"健身中心",en:"The Gym",cat:"spa",loc:"船頭左舷",free:true,icon:"🏋️",desc:"有氧與重訓器材。",tips:"免費；要穿運動鞋，拖鞋、涼鞋、布希鞋不能進。"},
  {id:"f12_11",zh:"VR探索館",en:"ESC Experience Lab",cat:"entertainment",loc:"船頭右舷",free:false,icon:"🥽",desc:"VR、AR 沉浸式遊戲與街機。",tips:"按遊戲計費、刷房卡；容易暈 3D 的人斟酌。"},
  {id:"f12_12",zh:"動感地帶",en:"The Zone",cat:"kids",loc:"船頭右舷",free:false,icon:"🕹️",desc:"青少年與兒童的遊戲區（街機）。",tips:"多數遊戲需付費。"},
@@ -970,7 +1031,7 @@ const D=[
  {id:"f8_1",zh:"娛樂場",en:"Casino",cat:"entertainment",loc:"船頭至船中",free:true,icon:"🎰",desc:"與 Deck 7 相連的娛樂場（Deck 8 層）；心得提到籌碼以港幣計。",tips:"18 歲以上；駛入公海才開、禁止拍照。有免費咖啡與美祿，會員（免費加入）深夜有免費泡麵。"},
  {id:"f8_2",zh:"精品廊",en:"The Boutiques",cat:"shopping",loc:"船中",free:false,icon:"🛍️",desc:"免稅精品、香水化妝品、日本成藥與零食。",tips:"最後一天折扣最大；菸酒帶回台灣有免稅額限制。"},
  {id:"f8_3",zh:"星空廊",en:"Gift Gallery",cat:"shopping",loc:"船中偏後右舷",free:false,icon:"🎁",desc:"禮品與糖果（一般版手冊稱「禮品廊」）。",tips:""},
- {id:"f8_4",zh:"海馬日本料理",en:"Umi Uma",cat:"dining",loc:"船中偏後",free:false,icon:"🍣",desc:"日式料理與鐵板燒；鐵板燒只有 2 間、每間 8 席，可點和牛與龍蝦。",tips:"上船當天就去訂；付費另加 18%；皇宮住客優先。"},
+ {id:"f8_4",zh:"海馬日本料理",en:"Umi Uma",cat:"dining",loc:"船中偏後",free:false,icon:"🍣",desc:"日式料理與鐵板燒；鐵板燒只有 2 間、每間 8 席，可點和牛與龍蝦。",tips:"上船當天就去訂；皇宮住客優先。"},
  {id:"f8_5",zh:"泰悅",en:"Rua Thai",cat:"dining",loc:"船中偏後右舷",free:false,icon:"🍛",desc:"泰式料理。2026 年起是泰式自助吧，位置原本是火鍋（台灣版手冊仍標「火鍋」）。",tips:"付費，兒童價較低；飲料另計，熱茶與冰水免費。"},
  {id:"f8_6",zh:"星座劇院（上層）",en:"Zodiac Theatre · Upper",cat:"entertainment",loc:"船尾",free:true,icon:"🎭",desc:"主劇院的上層座位，從 Deck 8 進場。",tips:"上層通常比較好找位子。"},
  {id:"f8_7",zh:"海景客房",en:"Oceanview Stateroom",cat:"cabin",loc:"船頭兩側",free:false,icon:"🌊",desc:"約 13–20 ㎡、最多 2–4 人。",tips:""},
@@ -985,9 +1046,9 @@ const D=[
  {id:"f7_4",zh:"大堂咖啡",en:"Lobby Café",cat:"bar",loc:"船中大堂",free:false,icon:"☕",desc:"大堂旁的咖啡吧。",tips:"付費。"},
  {id:"f7_5",zh:"甜品匯",en:"The Little Cake Café",cat:"dining",loc:"船中偏前左舷",free:false,icon:"🧁",desc:"蛋糕甜點與咖啡（一般版手冊稱「小蛋糕咖啡館」）。",tips:"付費。"},
  {id:"f7_6",zh:"抹茶坊",en:"Matcha Ice",cat:"dining",loc:"船中偏前右舷",free:false,icon:"🍵",desc:"抹茶甜點與冰品。",tips:"付費。"},
- {id:"f7_7",zh:"義大利披薩餐廳",en:"Mozzarella Ristorante & Pizzeria",cat:"dining",loc:"船中左舷",free:false,icon:"🍕",desc:"手工義大利麵與披薩，有素食選擇，可內用或外帶。",tips:"付費另加 18%。"},
+ {id:"f7_7",zh:"義大利披薩餐廳",en:"Mozzarella Ristorante & Pizzeria",cat:"dining",loc:"船中左舷",free:false,icon:"🍕",desc:"手工義大利麵與披薩，有素食選擇，可內用或外帶。",tips:"付費。"},
  {id:"f7_8",zh:"藍湖美食",en:"Blue Lagoon",cat:"dining",loc:"船中右舷",free:false,icon:"🍜",desc:"近 24 小時營業的南洋小吃：叻沙、海南雞飯、咖椰吐司、牛肉麵。",tips:"不用訂位；靠港日想快速吃早餐的好選擇。"},
- {id:"f7_9",zh:"絲路花舞中餐廳",en:"Silk Road",cat:"dining",loc:"船中偏後",free:false,icon:"🥢",desc:"中式餐廳，招牌片皮鴨兩吃；也有付費港點早餐。",tips:"包廂有低消；付費另加 18%。"},
+ {id:"f7_9",zh:"絲路花舞中餐廳",en:"Silk Road",cat:"dining",loc:"船中偏後",free:false,icon:"🥢",desc:"中式餐廳，招牌片皮鴨兩吃；也有付費港點早餐。",tips:"包廂有低消。"},
  {id:"f7_10",zh:"星宴",en:"Vintage Room",cat:"dining",loc:"船中偏後左舷",free:false,icon:"🍷",desc:"座位少的西式套餐與品酒晚宴，有時推出特價午晚餐。",tips:"早點訂位；皇宮住客優先。"},
  {id:"f7_11",zh:"星座劇院",en:"Zodiac Theatre",cat:"entertainment",loc:"船尾",free:true,icon:"🎭",desc:"主劇院（Deck 7–8 兩層，約 800 席），每晚免費製作秀。",tips:"提早 15–30 分排隊，第二場人較少；前排保留給皇宮住客。"},
  {id:"f7_12",zh:"娛樂場",en:"Casino",cat:"entertainment",loc:"船頭",free:true,icon:"🎰",desc:"主娛樂場，與 Deck 8 相連。",tips:"18 歲以上；駛入公海才開；有免費咖啡飲料。"},
@@ -1020,6 +1081,106 @@ const D=[
 ]}
 ];
 
+// ═══ 甲板平面圖（Deck 頁的互動示意圖）═══
+// 依台灣出發版手冊第 7–10 頁甲板圖目測換算；船頭朝上，左舷在左。寬度放大約 3 倍，非比例尺
+// 座標：x 0–160（左舷→右舷）、y 0–400（船頭→船尾），十層共用同一框，換層時電梯上下對齊
+// 船形：t＝最前緣 y、b＝船尾 y、bow＝尖船頭的弧長（沒有 bow＝上層的平直前緣）；lift＝電梯 y（預設船頭／船中／船尾三組）
+// z：{f,x,y,w,h,t?} 可點、跳到設施卡；同一設施可有多塊；f 指向別層＝跨層連結（點了換層）
+//    t 是自訂標籤（'|' 強制換行），沒給就用設施中文名；{d,x,y,w,h} 是不可點的地標
+// 皇宮露台房（f10_6）手冊配色找不到（Deck 10 中段兩側是一般露台房），先不畫
+const LIFT_Y=[123,241,313];
+const PLAN={
+ 13:{t:60,b:368,lift:[241],z:[
+  {f:"f13_1",x:4,y:62,w:152,h:33},
+  {f:"f13_2",x:40,y:97,w:110,h:30},
+  {f:"f13_4",x:40,y:138,w:80,h:10},
+  {f:"f13_3",x:6,y:148,w:148,h:18},
+  {f:"f13_5",x:0,y:168,w:16,h:76},{f:"f13_5",x:144,y:168,w:16,h:76},
+  {f:"f12_3",x:20,y:170,w:120,h:64,t:"羅馬泳池上空"},
+  {f:"f13_6",x:0,y:250,w:16,h:88},{f:"f13_6",x:144,y:250,w:16,h:88},
+  {f:"f13_7",x:112,y:298,w:28,h:34},
+  {d:"直升機坪",x:12,y:342,w:136,h:18}]},
+ 12:{t:52,b:377,z:[
+  {f:"f12_6",x:6,y:58,w:148,h:42},
+  {f:"f12_7",x:0,y:100,w:40,h:12},
+  {f:"f12_12",x:120,y:100,w:40,h:16},
+  {f:"f12_8",x:0,y:112,w:48,h:40},
+  {f:"f12_13",x:134,y:116,w:26,h:18},
+  {f:"f12_9",x:58,y:134,w:46,h:16},
+  {f:"f12_11",x:116,y:134,w:44,h:32},
+  {f:"f12_10",x:0,y:152,w:54,h:14},
+  {f:"f12_3",x:6,y:168,w:126,h:54},
+  {f:"f12_5",x:132,y:168,w:24,h:54},
+  {f:"f12_4",x:6,y:222,w:150,h:16},
+  {f:"f12_1",x:0,y:246,w:160,h:64},
+  {f:"f12_2",x:0,y:318,w:160,h:59}]},
+ 11:{t:51,b:388,z:[
+  {d:"駕駛台",x:16,y:56,w:128,h:26},
+  {f:"f11_3",x:0,y:88,w:24,h:230},{f:"f11_3",x:136,y:88,w:24,h:230},
+  {f:"f11_4",x:26,y:88,w:108,h:230},
+  {f:"f11_2",x:0,y:320,w:160,h:28},
+  {f:"f11_1",x:0,y:348,w:160,h:40}]},
+ 10:{t:51,b:394,z:[
+  {f:"f10_5",x:0,y:51,w:160,h:17},
+  {f:"f10_5",x:0,y:70,w:24,h:50},{f:"f10_5",x:136,y:70,w:24,h:50},
+  {f:"f10_8",x:0,y:120,w:24,h:142,t:"露台客房"},{f:"f10_8",x:136,y:120,w:24,h:142,t:"露台客房"},
+  {f:"f10_8",x:26,y:70,w:108,h:246,t:"內側客房"},
+  {f:"f10_7",x:0,y:262,w:24,h:54},{f:"f10_7",x:136,y:262,w:24,h:54},
+  {f:"f10_4",x:0,y:318,w:48,h:40},
+  {f:"f10_1",x:48,y:318,w:52,h:40},
+  {f:"f10_2",x:100,y:318,w:60,h:40},
+  {f:"f10_3",x:0,y:358,w:160,h:36}]},
+ 9:{t:49,b:399,z:[
+  {f:"f9_3",x:26,y:49,w:108,h:13},
+  {f:"f9_1",x:0,y:62,w:24,h:324},{f:"f9_1",x:136,y:62,w:24,h:324},
+  {f:"f9_2",x:26,y:64,w:108,h:320},
+  {f:"f9_4",x:0,y:386,w:160,h:13}]},
+ 8:{t:1,bow:52,b:399,z:[
+  {f:"f8_7",x:0,y:54,w:28,h:80},{f:"f8_7",x:132,y:54,w:28,h:80},
+  {f:"f8_8",x:30,y:52,w:100,h:66},
+  {f:"f8_1",x:28,y:130,w:104,h:52},
+  {f:"f8_2",x:28,y:182,w:104,h:56},
+  {f:"f8_3",x:100,y:247,w:32,h:23},
+  {f:"f8_4",x:28,y:270,w:104,h:20},
+  {f:"f8_5",x:80,y:290,w:52,h:19},
+  {d:"救生艇",x:0,y:140,w:26,h:168},{d:"救生艇",x:134,y:140,w:26,h:168},
+  {f:"f8_6",x:6,y:317,w:148,h:79}]},
+ 7:{t:5,bow:58,b:399,z:[
+  {f:"f7_16",x:64,y:6,w:32,h:24},
+  {f:"f7_12",x:14,y:46,w:132,h:72},
+  {f:"f7_5",x:16,y:127,w:42,h:14},
+  {f:"f7_6",x:102,y:127,w:42,h:14},
+  {f:"f7_7",x:16,y:141,w:30,h:35},
+  {f:"f7_13",x:46,y:141,w:68,h:19},
+  {f:"f7_8",x:114,y:160,w:30,h:24},
+  {f:"f7_14",x:16,y:177,w:44,h:16},
+  {f:"f7_15",x:0,y:124,w:14,h:192},{f:"f7_15",x:146,y:124,w:14,h:192},
+  {f:"f7_2",x:15,y:196,w:25,h:40,t:"售票處|賓果"},
+  {f:"f7_4",x:40,y:200,w:20,h:36},
+  {f:"f7_1",x:60,y:194,w:56,h:18,t:"接待處|岸上觀光"},
+  {f:"f7_3",x:60,y:212,w:56,h:25},
+  {f:"f7_10",x:14,y:246,w:32,h:26},
+  {f:"f7_14",x:116,y:246,w:30,h:26},
+  {f:"f7_9",x:24,y:272,w:98,h:37},
+  {f:"f7_11",x:10,y:317,w:140,h:79}]},
+ 6:{t:12,bow:62,b:398,z:[
+  {f:"f6_3",x:0,y:74,w:24,h:142},{f:"f6_3",x:136,y:74,w:24,h:142},
+  {f:"f6_4",x:26,y:70,w:108,h:146},
+  {f:"f6_2",x:0,y:218,w:160,h:20},
+  {d:"廚房（前後不通）",x:8,y:247,w:144,h:60},
+  {f:"f6_1",x:0,y:317,w:160,h:81}]},
+ 5:{t:26,bow:56,b:398,lift:[123,241],z:[
+  {f:"f5_1",x:0,y:84,w:24,h:164},{f:"f5_1",x:136,y:84,w:24,h:164},
+  {f:"f5_2",x:26,y:76,w:108,h:172},
+  {d:"非旅客區域",x:8,y:256,w:144,h:134}]},
+ 4:{t:39,bow:76,b:399,lift:[123,241],z:[
+  {f:"f4_1",x:30,y:128,w:100,h:42},
+  {f:"f4_3",x:0,y:180,w:30,h:58},
+  {f:"f4_4",x:32,y:180,w:32,h:58},
+  {f:"f4_2",x:0,y:246,w:24,h:22},{f:"f4_2",x:136,y:246,w:24,h:22},
+  {d:"非旅客區域",x:8,y:274,w:144,h:116}]}
+};
+
 // ═══ Quick-filter presets（卡片與搜尋篩選共用同一份定義；Deck 清單由 qfDecks() 從 D 推導，勿寫死）═══
 const QF=[
   {key:"eat",   icon:"🍽️", label:"免費用餐",       hint:"星夢、百味軒、麗都",       test:f=>f.cat==="dining"&&f.free&&!f.vip},
@@ -1032,7 +1193,7 @@ const QF=[
   {key:"shop",  icon:"🛍️", label:"免稅購物",        hint:"精品廊、星空廊、寫真廊",   test:f=>f.cat==="shopping"},
 ];
 
-const DINE_NOTE="手冊只把 <b>星夢餐廳、百味軒、麗都自助及燒烤</b> 標為免費餐廳，<b>同一餐期只能免費吃一間</b>（跑第二間會另外計費）。其餘一律付費，並另加 18% 服務費；營業時間與價格以船上郵報為準。";
+const DINE_NOTE="手冊只把 <b>星夢餐廳、百味軒、麗都自助及燒烤</b> 標為免費餐廳，<b>同一餐期只能免費吃一間</b>（跑第二間會另外計費）。其餘一律付費（2025 年下半年起菜單改標淨價，已含服務費；價目見自費頁）；營業時間以船上郵報為準。";
 
 // ═══ 航程：2026/11/29 基隆出發「神戶・高知 5 晚」（官方航程表 V9.2，2026/10/2 版）═══
 // 時間一律寫清楚是船上時間（＝台灣 UTC+8）還是日本時間（UTC+9）
@@ -1349,31 +1510,11 @@ const CHECKS=[
 
 // ═══ 船上實用資訊（body 為 HTML）═══
 const INFO=[
- {icon:"💳",title:"船上消費與帳單",sub:"全程新台幣・刷卡算海外交易",body:`<ul class="box-list">
-  <li>船上一律<b>新台幣</b>計價，消費記在房卡（需輸入密碼）；娛樂場另用港幣籌碼。</li>
-  <li>接受 Visa、Mastercard、Apple Pay、Google Pay、Samsung Pay；<b>不收 JCB</b>。</li>
-  <li>刷卡算海外交易，銀行會收手續費 → 用免手續費的卡，或最後用台幣現金結帳。</li>
-  <li>官方要求上船後到 7F 登記信用卡；也有心得是最後一晚直接結帳。</li>
-  <li>結帳：7F 接待處，或連船上 Wi-Fi 入口自助結帳；前一晚或下船前 3 小時最不用排。</li>
-  <li>付費餐廳、Spa、酒吧另加 <b>18%</b> 服務費。</li>
- </ul>`},
- {icon:"🧾",title:"船票外的固定費用",sub:"服務費・燃油費・日本出國稅",body:`<dl class="kv">
-  <dt>服務費</dt><dd>每人每晚：內側／海景 NT$600、露台 NT$800、皇宮套房 NT$1,000（5 晚 3,000／4,000／5,000）；未滿 2 歲免。可線上預付或最後結帳</dd>
-  <dt>燃油費</dt><dd>每人每晚：9/30 前訂位 NT$300、10/1 起新訂位 NT$450（2 歲以上）；隨油價調整，記在船上帳戶</dd>
-  <dt>出國稅</dt><dd>日本國際觀光旅客稅 2026/7/1 起每人 ¥3,000（約 NT$630），船上代收；6/30 前訂位依日本過渡規定可能只收 ¥1,000，以帳單為準</dd>
-  <dt>港務費</dt><dd>已含在船票（5 晚每人 NT$3,250），不另收</dd>
-  <dt>5 晚合計</dt><dd>每人約：內側／海景 NT$5,900、露台 NT$6,900、皇宮套房 NT$7,900（10/1 起訂位；9/30 前訂位各少 NT$750）</dd>
- </dl><p class="tz-note">服務費依官方 2025/6 版指南；燃油費、港務費依旅行社公告（2026/10 查詢）；以船上帳單為準。</p>`},
  {icon:"🍽️",title:"免費餐廳的規則",sub:"每個餐期只能免費吃一間",body:`<ul class="box-list">
   <li><b>星夢餐廳</b>（Deck 6 船尾）中式桌菜可續點，早餐有港點；<b>百味軒</b>（Deck 6 船中）西式套餐主菜可續；<b>麗都</b>（Deck 12）自助，含下午茶與宵夜。</li>
-  <li>同一餐期跑第二間免費餐廳要另收費（心得：早餐 NT$250、午晚餐 NT$380）。</li>
+  <li>同一餐期跑第二間免費餐廳要另收費（價格見自費價目頁）。</li>
   <li>麗都最擠：開餐時就去，或開餐前半小時拿號碼牌。</li>
   <li>免費飲料：餐廳有汽水機（2026 心得）、各層電梯旁有飲水機（無熱水）、娛樂場有咖啡與美祿。</li>
- </ul>`},
- {icon:"📶",title:"網路",sub:"船上衛星 Wi-Fi 慢又貴",body:`<ul class="box-list">
-  <li>5 晚：標準 1 台 NT$1,450、2 台 NT$2,546；高速 1 台 NT$2,175（官方 2025/6 價目）。</li>
-  <li>一組帳號同時只能 1 台；LINE、傳照片可以，影片會卡，外海常斷。</li>
-  <li>不買網路也能連船上 Wi-Fi 看郵報與帳單。靠港用日本 eSIM／漫遊。</li>
  </ul>`},
  {icon:"🎭",title:"表演與活動",sub:"星座劇院每晚免費",body:`<ul class="box-list">
   <li>星座劇院（Deck 7–8 船尾，約 800 席）每晚免費秀；提早 15–30 分排隊，第二場人少。</li>
@@ -1418,7 +1559,234 @@ const INFO=[
  </dl>`}
 ];
 
+// ═══ 自費價目（#/spend）：金額一律新台幣、不寫 NT$；每張卡附來源與日期 ═══
+// card：有 fac 的卡片由 D 推導名稱、圖示與位置（fac 必須存在，smoke 會檢查）；否則要給 icon、title
+// rows：{h} 是小標，{n,p,s?,u?} 是品項（n 名稱、p 價格、s 補充、u 價格下方的單位）
+// 2025 年的菜單另加 18%、2026 年改標淨價：同一張卡兩個年份並列時，用小標分開
+const SPEND_NOTE="以下金額皆為<b>新台幣</b>，記在房卡、最後結帳。2025 年下半年起船上菜單改標<b>淨價</b>（已含服務費）；標「2025」的是當時菜單價，<b>結帳時要再加 18%</b>。來源是官方指南、官網與 2025–2026 旅客拍的菜單（2026/10 整理），菜色與促銷每季換，以船上為準。";
+const SPEND=[
+ {icon:"💳",title:"付款與固定費用",cards:[
+  {icon:"💳",title:"怎麼付、怎麼結帳",sub:"全程新台幣・刷卡算海外交易",body:`<ul class="box-list">
+   <li>船上一律<b>新台幣</b>計價，消費記在房卡（需輸入密碼）；娛樂場另用港幣籌碼。</li>
+   <li>接受 Visa、Mastercard、Apple Pay、Google Pay、Samsung Pay；<b>不收 JCB</b>。接待處隨時收台幣現金，餐廳與商店要到回基隆前 2 小時才收現金。</li>
+   <li>刷卡算海外交易，銀行會收手續費 → 用免手續費的卡，或最後用台幣現金結帳。</li>
+   <li>官方要求上船後到 7F 登記信用卡；也有心得是最後一晚直接結帳。</li>
+   <li>結帳：7F 接待處，或連船上 Wi-Fi 入口自助結帳；前一晚或下船前 3 小時最不用排。</li>
+   <li>露台房：Spa 與商店 9 折、迎賓飲料。2025 年指南的「露台房每晚 NT$1,200 餐飲額度」只適用 2025/11/16 前的航次，2026 版指南已刪除（有些 2026 文章還提到，多是 2025 航次重貼；上船可到接待處確認）。</li>
+  </ul><p class="tz-note">官方指南 v8（2026/7）、官網 FAQ。</p>`},
+  {icon:"🧾",title:"船票外的固定費用",sub:"服務費・燃油費・日本出國稅",body:`<dl class="kv">
+   <dt>服務費</dt><dd>每人每晚：內側／海景 NT$600、露台 NT$800、皇宮套房 NT$1,000（5 晚 3,000／4,000／5,000）；未滿 2 歲免。可線上預付或最後結帳</dd>
+   <dt>燃油費</dt><dd>每人每晚：9/30 前訂位 NT$300、10/1 起新訂位 NT$450（2 歲以上）；隨油價調整，記在船上帳戶</dd>
+   <dt>出國稅</dt><dd>日本國際觀光旅客稅 2026/7/1 起每人 ¥3,000（約 NT$630），船上代收；6/30 前訂位依日本過渡規定可能只收 ¥1,000，以帳單為準</dd>
+   <dt>港務費</dt><dd>已含在船票（5 晚每人 NT$3,250），不另收</dd>
+   <dt>5 晚合計</dt><dd>每人約：內側／海景 NT$5,900、露台 NT$6,900、皇宮套房 NT$7,900（10/1 起訂位；9/30 前訂位各少 NT$750）</dd>
+  </dl><p class="tz-note">服務費、出國稅依官方指南 v8（2026/7）；燃油費 NT$450 依官網 FAQ，NT$300 與港務費依旅行社公告（2026/10 查詢）；以船上帳單為準。</p>`}
+ ]},
+ {icon:"🎟️",title:"飲料套餐與網路",sub:"吧台或 7F 接待處買",cards:[
+  {icon:"🍹",title:"飲料套餐",sub:"每人每晚 355／1,775／2,365",rows:[
+   {n:"悅享配套",s:"軟飲、瓶裝水、咖啡、茶",p:"355",u:"每人每晚・5 晚 1,775"},
+   {n:"奢華配套",s:"再加杯裝紅酒、啤酒、鮮榨與冰鎮果汁",p:"1,775",u:"每人每晚・5 晚 8,875"},
+   {n:"尊爵配套",s:"再加烈酒、雞尾酒、無酒精雞尾酒、純淨水／氣泡水",p:"2,365",u:"每人每晚・5 晚 11,825"}
+  ],body:`<ul class="box-list">
+   <li>價格<b>已含服務費</b>；含酒精的套餐限 18 歲以上。在吧台或接待處買，「1 晚」＝購買起 24 小時；目前沒有線上預購。</li>
+   <li>2025/4 的價目牌寫「同房旅客都要買（可混搭不同套餐）」，2025 下半年的牌子沒寫，以吧台說明為準。</li>
+   <li>套餐記在房卡，點飲料會核對照片，不能共用；2025 心得：一次點一杯、兩杯間隔 5 分鐘。</li>
+   <li>划不划算：悅享約 3 杯拿鐵回本；奢華大約要喝 10 瓶啤酒才划算（單點價見下方）。</li>
+  </ul>`,src:"官網「船上促銷」探索星號頁籤（2026/10 查詢）、吧台價目牌 2025/11/2 版（yuki）、liz-chiang（2025/4）。"},
+  {icon:"📶",title:"Wi-Fi",sub:"5 晚：1 台 1,450 起・線上預付高級＝標準價",rows:[
+   {h:"船上購買（5 晚全程）"},
+   {n:"標準 1／2 台",p:"1,450／2,546"},
+   {n:"標準 3／4 台",p:"3,880／4,971"},
+   {n:"高級（高速）1／2 台",p:"2,175／4,001"},
+   {n:"高級（高速）3／4 台",p:"6,063／7,639"},
+   {h:"線上預付專享（只有高級，每台每晚 290）"},
+   {n:"高級 1／2 台",p:"1,450／2,900"},
+   {n:"高級 3／4 台",p:"4,350／5,800"},
+   {h:"24 小時券（2025 年中，限 1 台）"},
+   {n:"標準／高級",p:"485／776"}
+  ],body:`<ul class="box-list">
+   <li><b>只買 1 台就線上預付</b>：高速方案只要船上標準價；2 台以上船上買標準比較便宜。2026/4 社團心得：透過旅行社系統預購標準，也會自動升高級。</li>
+   <li>照標價收，不另加 18%（2025/8 帳單）。</li>
+   <li>LINE、傳照片可以，影片會卡，外海常斷；皇宮住客每人送 1 組標準。</li>
+   <li>不買網路也能連船上 Wi-Fi 看郵報與帳單。靠港用日本 eSIM／漫遊。</li>
+  </ul>`,src:"船上價：官方指南 v8（2026/7）；線上預付：官網「出發前須知」探索星號頁籤（2026/10 查詢）；24 小時券：rebeccafamily（2025/7）。"}
+ ]},
+ {icon:"🍽️",title:"付費餐廳",sub:"點菜單價格；免費餐廳不用付",cards:[
+  {fac:"f8_4",sub:"鐵板燒 800 起・和牛套餐 1,400",rows:[
+   {h:"2026 鐵板燒（淨價）"},
+   {n:"雪：沖繩和牛厚燒套餐",s:"沙拉、刺身拼盤、鐵板蔬菜、蒜香炒飯、味噌湯、冰淇淋",p:"1,400",u:"每人"},
+   {n:"天：沖繩和牛厚燒＋半隻龍蝦",s:"附餐同上",p:"1,590",u:"每人"},
+   {n:"一般鐵板燒套餐",p:"800 起"},
+   {h:"2025 菜單（另加 18%）"},
+   {n:"帝王：和牛排＋虎蝦＋帆立貝",p:"2,900"},
+   {n:"海陸：澳洲肋眼＋虎蝦",p:"2,200"},
+   {n:"武士／海洋神道／將軍（雙主菜）",p:"1,600"},
+   {n:"單主菜：澳洲肋眼／鮭魚",s:"都附沙拉、鐵板蔬菜、蛋炒飯、味噌湯",p:"1,100"},
+   {n:"單主菜：雞腿／雜錦蔬菜",p:"680／500"},
+   {n:"加點：日本沙朗和牛／龍蝦",p:"2,200／1,200"},
+   {n:"加點：肋眼／鮭魚／帆立貝",p:"800／700／650"},
+   {n:"加點：虎蝦／雞腿",p:"450／380"},
+   {n:"軍艦握壽司（2 貫）",p:"250–550"},
+   {n:"什錦海鮮丼",p:"800"}
+  ],tip:"鐵板燒只有 2 間、每間 8 席，上船當天就訂。沖繩和牛是 2026/3 的促銷，12 月還有沒有未確認。",
+   src:"2026：dongwa、TVBS 食尚玩家（2026/6）的菜單照；2025：upssmile、oreo.blog（2025/4）。"},
+  {fac:"f8_5",sub:"自助餐 成人 900・兒童 450",lead:"泰式自助：沙拉、烤雞翅、酸辣鮭魚頭湯、約 8 道主菜配茉莉香米、約 5 款甜點與水果，菜色每天換。",rows:[
+   {n:"成人",p:"900",u:"淨價"},
+   {n:"兒童",p:"450",u:"淨價"}
+  ],body:`<p class="fac-desc">熱茶、冰水免費，其他飲料另計（價格未查到）。</p>`,
+   src:"價目牌 V2.1（2026/2/5）：marsfood（2026/5）、PTT（2026/6）。"},
+  {fac:"f7_9",sub:"港點早餐 800・片皮鴨 850",rows:[
+   {h:"2026（淨價）"},
+   {n:"港點早餐：任選 6 款",s:"一份約夠 2–3 人；加點每款 110",p:"800",u:"每份"},
+   {n:"片皮鴨兩吃（半隻）",s:"2025 菜單也是 850，2026 是否已含服務費未確認",p:"850"},
+   {n:"宵夜 23:00–01:00：泡麵／一蘭拉麵",p:"160／250"},
+   {n:"宵夜：滷味拼盤／清粥小菜",p:"250／110"},
+   {n:"包廂低消",p:"5,000"},
+   {h:"2025 晚餐菜單（另加 18%）"},
+   {n:"沖繩和牛（香煎或炒）",p:"2,000"},
+   {n:"蠔皇兩頭鮑",p:"1,600"},
+   {n:"勝瓜龍躉魚煲",p:"1,250"},
+   {n:"辣子蝦／酸菜魚",p:"1,050"},
+   {n:"乾燒伊麵／梅菜扣肉",p:"850"},
+   {n:"鳳梨牛柳",p:"780"},
+   {n:"水煮牛肉／炸子雞（半隻）／咖哩烏冬",p:"680"},
+   {n:"三杯雞／金不換松板肉",p:"550"},
+   {n:"蛋白炒飯／芥末蝦",p:"480"},
+   {n:"蒼蠅頭配饅頭",p:"360"},
+   {n:"時蔬、豆腐、羹湯類",p:"210–280"},
+   {n:"甜品（楊枝甘露、龜苓膏等）",p:"170–250"},
+   {n:"中國茶",p:"100",u:"每壺"}
+  ],src:"2026：marsfood（2026/5）點單照、slimlegman（2026/3）、TVBS 食尚玩家（2026/6）；2025：tiyama（3 月版菜單照）。"},
+  {fac:"f7_10",sub:"午間套餐 668・和牛套餐 1,890",rows:[
+   {h:"2026/5 菜單（淨價）"},
+   {n:"午間套餐（3 道）",p:"668"},
+   {n:"沖繩和牛促銷套餐（5 道）",p:"1,890"},
+   {n:"沖繩和牛 MB4 6oz／8oz",p:"1,010／1,180"},
+   {n:"檸檬烤鱈魚",p:"1,180"},
+   {n:"酥皮焗羊里脊",p:"1,420"},
+   {n:"香煎頂級沙朗 6oz／8oz",p:"1,420／1,530"},
+   {n:"法式羅西尼 6oz／8oz",p:"1,590／1,890"},
+   {n:"凱撒沙拉／焗蝸牛",p:"450／530"},
+   {n:"風乾火腿／香煎鵝肝",p:"590／940"},
+   {n:"雞清湯配鵝肝餃",p:"450"},
+   {n:"龍蝦尾濃湯",s:"另一篇寫 1,580",p:"1,420"},
+   {n:"甜點",p:"300"}
+  ],tip:"座位少，想吃就早點訂；12 月可能換成聖誕套餐。",
+   src:"marsfood、thomaskhh（2026/5）菜單照與文章。"},
+  {fac:"f7_7",sub:"披薩 650–770",rows:[
+   {h:"2026（淨價）"},
+   {n:"披薩",s:"魯庫拉帕爾瑪 770",p:"650–770"},
+   {n:"組合：4 個大披薩＋2L 汽水＋沙拉",s:"只見於社團貼文（約 2026/9），未確認",p:"1,500"},
+   {h:"2025 菜單（另加 18%）"},
+   {n:"卡波納拉／五種芝士披薩",p:"550"},
+   {n:"魯庫拉帕爾瑪／夏威夷披薩",p:"650"},
+   {n:"義大利麵",p:"380–450"},
+   {n:"披薩加料",p:"45–120"}
+  ],src:"2026：TVBS 食尚玩家（2026/6）；2025：tony60533 菜單照（2025/4）、tiffany0118。"},
+  {fac:"f7_8",sub:"一餐約 350–500",rows:[
+   {h:"2026（淨價）"},
+   {n:"咖椰吐司套餐",p:"180"},
+   {n:"肉骨茶套餐",p:"350"},
+   {n:"現剖椰子汁",p:"225"},
+   {h:"2025 菜單（另加 18%）"},
+   {n:"叻沙、海南雞飯、魚片米粉湯、肉骨茶、海鮮滑蛋河粉、星洲米粉、特色炒飯",p:"300"},
+   {n:"安格斯牛肉漢堡",p:"350"},
+   {n:"粥、炸雞翅、四川辣子雞、鹹蛋魚皮",p:"250"},
+   {n:"早餐套餐／咖椰吐司套餐",p:"250／150"},
+   {n:"炸素春捲",p:"200"},
+   {n:"薯條、辣炒土豆絲、龜苓膏",p:"150"},
+   {n:"水果拼盤／單球冰淇淋",p:"120／60"},
+   {n:"天下三絕牛肉麵",s:"2025/10 航次",p:"470"}
+  ],src:"2026：TVBS 食尚玩家、vivianexplore（2026/8）；2025：tony60533 菜單照（2025/4）、weiyingliao（2025/10 航次）。"},
+  {fac:"f13_3",sub:"價格未查到",lead:"2026 心得：原本 Deck 8 的火鍋搬到這裡；有套餐與單點，海鮮拼盤有波士頓龍蝦與帝王蟹。",
+   src:"marsfood（2026/5）、AsiaYo（2026/6 更新）、tsnio（2025/6）；2023–2026 都沒找到價目。"},
+  {icon:"🧁",title:"甜點・咖啡・冰品",sub:"甜品匯、大堂咖啡、抹茶坊、義式冰品",rows:[
+   {h:"甜品匯（Deck 7）"},
+   {n:"下午茶組：蛋糕＋咖啡＋冰淇淋 1 球",s:"2025，另加 18%（帳單 354）",p:"300"},
+   {h:"大堂咖啡（Deck 7 大堂）"},
+   {n:"蛋糕",s:"2025，另加 18%；22:00 後麵包買一送一",p:"80–100"},
+   {h:"抹茶坊（Deck 7）"},
+   {n:"抹茶甜點、冰品",s:"2026",p:"約 100"},
+   {h:"義式手作冰品（Deck 12 泳池旁）"},
+   {n:"日本清酒冰淇淋",s:"2025，另加 18%",p:"80"}
+  ],src:"annieshing（2025/7）、tony60533（2025/4）、itainan（2025/5）、TVBS 食尚玩家（2026/6）。"},
+  {icon:"🎫",title:"跑第二間免費餐廳・餐飲儲值",sub:"第二間 380・儲值 2,000 送 300 起",rows:[
+   {h:"同一餐期跑第二間免費餐廳"},
+   {n:"午餐、晚餐",p:"380",u:"每人"},
+   {n:"早餐",p:"250",u:"每人"},
+   {h:"餐飲儲值券（2025/5 船上告示）"},
+   {n:"付 2,000／3,000",p:"2,300／3,550",u:"可用額度"},
+   {n:"付 4,000／5,000",p:"4,900／6,300",u:"可用額度"}
+  ],body:`<p class="fac-desc">儲值券全船餐廳、酒吧通用，限當航次、不退款；登船日到隔天中午前買，不能用在飲料套餐與其他優惠。2026 年還有沒有、級距是否一樣未確認。</p>`,
+   src:"miemie、oreo.blog（2025/4）、13blog（2025/7）、may1215（2026/7）；儲值券：adontrip（2025/5）告示照。"}
+ ]},
+ {icon:"🍸",title:"酒吧・咖啡單點",sub:"沒買套餐就照杯算",cards:[
+  {icon:"🍸",title:"飲料單點價",sub:"拿鐵 120・啤酒 160・葡萄酒一瓶 500",rows:[
+   {h:"大堂咖啡（2025/4 價目牌，另加 18%）"},
+   {n:"拿鐵／卡布奇諾／摩卡",p:"120"},
+   {n:"美式／單份濃縮",p:"100"},
+   {n:"茶",s:"伯爵、洋甘菊、薄荷、英式早餐、大吉嶺",p:"90"},
+   {n:"熱可可、抹茶拿鐵、焦糖瑪奇朵、美祿恐龍",p:"120"},
+   {n:"冰沙",s:"巧克力、抹茶、草莓、摩卡、Oreo",p:"120"},
+   {h:"啤酒・葡萄酒（2025/4 酒吧菜單，另加 18%）"},
+   {n:"瓶裝啤酒",p:"160",u:"每瓶"},
+   {n:"啤酒桶 3／5／7 瓶",s:"Corona、Carlsberg、Heineken、Asahi、Tiger、台啤",p:"400／650／860"},
+   {n:"海尼根生啤塔 2L／3L",p:"750／1,000"},
+   {n:"精選葡萄酒",s:"Frontera、Villa Maria、Oyster Bay 等",p:"500",u:"每瓶"},
+   {h:"2026 參考"},
+   {n:"泡盛調酒（棕櫚閣促銷）",s:"官網 10/2–11/1 的促銷，當作調酒價位參考",p:"260"}
+  ],body:`<p class="fac-desc">一般雞尾酒、杯裝酒、烈酒、清酒、果汁、瓶裝水都沒找到價目；2026 年酒吧是否也改標淨價未確認。</p>`,
+   src:"tony60533（2025/4）價目牌照、liz-chiang（2025/4）菜單照、官網船上促銷（2026/10）。"},
+  {icon:"🆓",title:"不用錢的飲料",sub:"麗都飲料吧、娛樂場、飲水機",body:`<ul class="box-list">
+   <li><b>麗都自助</b>（Deck 12）：自助飲料吧有百事、七喜、芬達、氣泡水與咖啡（2026 心得）。</li>
+   <li>星夢、百味軒用餐時可請服務生上咖啡或汽水；百味軒早餐咖啡、茶整壺上。</li>
+   <li>泰悅：熱茶、冰水。</li>
+   <li>娛樂場：咖啡、美祿、冰水、熱水、檸檬水；會員約 23:30 有免費泡麵。</li>
+   <li>各層電梯旁飲水機（冷水、常溫，沒有熱水）；<b>房內瓶裝水要付費</b>。</li>
+   <li>露台房以上每人一杯迎賓飲料。</li>
+  </ul>
+  <div class="warn-box"><b>不能自己帶酒</b>：乘客條款寫明帶上船的酒會被沒收、不賠償；在船上商店或港口買的由船方代管到最後一天。開瓶費有，金額沒查到。</div>`,
+   src:"nicolelee（2026/3）、aikolife（2026/6）、PTT（2026/1、2026/6）、官網乘客條款與指南 v8。"}
+ ]},
+ {icon:"🎪",title:"其他自費",cards:[
+  {fac:"f13_2",sub:"每天前 2 小時免費・之後 585–715／小時",rows:[
+   {n:"2–4 歲",p:"715",u:"每小時"},
+   {n:"5–12 歲",p:"585",u:"每小時"},
+   {h:"付費活動（官網）"},
+   {n:"螢光小明星派對",s:"星夢餐廳",p:"300"},
+   {n:"小小科學家",s:"棕櫚閣",p:"300"},
+   {n:"小小手作師",s:"棕櫚閣",p:"500"},
+   {n:"小小主廚",s:"泰悅",p:"500"}
+  ],body:`<p class="fac-desc">「每天前 2 小時免費」是心得的說法，官網只寫前 2 小時免費；2025 心得說時數費另加 18%。</p>`,
+   src:"官網「小小夢想家」探索星號頁籤（2026/10 查詢）；rebeccafamily（2025/7）。"},
+  {icon:"🎭",title:"表演・派對・遊戲",sub:"紳士盛典 225 起・麻將 1,080／2 小時",rows:[
+   {n:"紳士盛典（18 歲以上）",s:"一般／Premium 選位／VVIP；寫的是優惠價，線上買較便宜",p:"225／600／750"},
+   {n:"靜音派對",s:"2025；在 VR 探索館報名、限 100 人，也有心得說免費",p:"325"},
+   {n:"泡沫派對 12 歲以上／4–11 歲",s:"2025",p:"490／230"},
+   {n:"VR 探索館、動感地帶",s:"刷房卡",p:"25 起",u:"每次"},
+   {n:"麻將廳",s:"含水果、熱茶；2025，另加 18%",p:"1,080",u:"每 2 小時"}
+  ],src:"clairetila（2026/6）、chiitravel（2025/5）、bewithnene 帳單（2025/8）、tiffany0118（2025/5）。"},
+  {icon:"🎂",title:"慶祝配套",sub:"生日、紀念日・3 天前預訂",rows:[
+   {n:"愛是永恆配套",p:"3,195"},
+   {n:"浪漫激情配套",s:"含星宴雙人晚餐",p:"12,190"},
+   {n:"花樣年華配套（生日）",p:"3,785"},
+   {n:"美酒佳餚配套（生日）",s:"含星宴雙人晚餐",p:"11,950"},
+   {n:"氣球佈置",s:"求婚或紀念日",p:"1,185"},
+   {n:"蛋糕（0.5–3 kg）",s:"官網只印一個價格，應是最小尺寸",p:"1,290"},
+   {n:"客製蛋糕",p:"6,170"}
+  ],src:"官網「慶祝會配套」探索星號頁籤（2026/10 查詢）。"},
+  {icon:"💆",title:"Spa・醫務室・其他",sub:"Spa 沒有公開價目",body:`<ul class="box-list">
+   <li><b>Spa</b>：沒找到療程價目；露台房以上 9 折，最後一天常有優惠；2025 年心得說另加 18%。</li>
+   <li><b>醫務室</b>（Deck 4）：旅行社 Q&A（年份不明）列門診 NT$740、看診時間外 1,015、夜間 1,325，另收掛號；暈船藥在 7F 接待處免費拿。</li>
+   <li><b>輪椅租借</b>：押金 NT$7,500（可退）。</li>
+   <li>洗衣、照片、賓果卡：要付費，價格沒查到。</li>
+  </ul>`,src:"官方指南 v8、官網出發前準備；醫務室：永信旅遊 Q&A。"}
+ ]}
+];
+
 const qfDecks=q=>D.filter(d=>d.fac.some(q.test)).map(d=>+d.num).sort((a,b)=>a-b);
+// 畫在自己那層平面圖上的設施（跨層連結不算）；卡片有這項才顯示「平面圖位置」
+const PLAN_FAC=new Set(Object.entries(PLAN).flatMap(([k,p])=>p.z.filter(z=>z.f&&z.f.startsWith('f'+k+'_')).map(z=>z.f)));
 
 // ═══ Storage：私密瀏覽或被封鎖時 localStorage 會拋錯，一律容錯 ═══
 // key 一律 sn_ 前綴：與 Costa 版同在 rest950.github.io 網域，localStorage 是共用的
@@ -1429,6 +1797,7 @@ function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} 
 let mode="trip", deckId=7, portId="kobe", filter="all";
 let stars=load("sn_stars",[]), checks=load("sn_checks",[]), aboard=load("sn_aboard",{});
 let shownDay=null;
+let planOpen=load("sn_plan",true), planSel=null;   // 平面圖收合狀態（換層不重開）、目前標亮的設施
 
 // ═══ Init ═══
 document.addEventListener("DOMContentLoaded", () => {
@@ -1461,10 +1830,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ═══ Navigation ═══
-// 網址：#/（行程）、#/ship（速覽）、#/deck/7、#/port/kobe、#/starred
+// 網址：#/（行程）、#/ship（速覽）、#/deck/7、#/port/kobe、#/starred、#/spend
 function hashFor(){
   return mode==='single'?'#/deck/'+deckId : mode==='port'?'#/port/'+portId :
-         mode==='overview'?'#/ship' : mode==='starred'?'#/starred' : '#/';
+         mode==='overview'?'#/ship' : mode==='starred'?'#/starred' : mode==='spend'?'#/spend' : '#/';
 }
 function routeFromHash(){
   const h=(location.hash||'').replace(/^#\/?/,'');
@@ -1474,6 +1843,7 @@ function routeFromHash(){
   if(m && PORTS[m[1]]) return {mode:'port', deckId, portId:m[1]};
   if(h==='starred') return {mode:'starred', deckId, portId};
   if(h==='ship') return {mode:'overview', deckId, portId};
+  if(h==='spend') return {mode:'spend', deckId, portId};
   return {mode:'trip', deckId, portId};          // 無效網址一律回行程頁
 }
 function applyRoute(){
@@ -1489,20 +1859,21 @@ function syncHash(replace){
 }
 window.addEventListener('hashchange',applyRoute);
 
-function go(m, id){
+function go(m, id, replace){
   if(m==='single' && id!==undefined) deckId=id;
   if(m==='port' && id!==undefined) portId=id;
   mode=m; closeMore(); render();
   window.scrollTo({top:0,behavior:'smooth'});
-  syncHash();
+  syncHash(replace);
 }
 function jumpDeck(id){ go("single",id); }
 
 // ═══ Tabs ═══
-const TAB_OF={trip:"Tr",port:"Tr",overview:"Ov",single:"Sg",starred:"St"};
+// 自費頁沒有底部 tab（在「更多」選單裡），只有桌機的 dBtnSp
+const TAB_OF={trip:"Tr",port:"Tr",overview:"Ov",single:"Sg",starred:"St",spend:"Sp"};
 function updateTabs(){
   const cur=TAB_OF[mode];
-  ["Tr","Ov","Sg","St"].forEach(k=>{
+  ["Tr","Ov","Sg","St","Sp"].forEach(k=>{
     const t=document.getElementById("tab"+k); if(t) t.classList.toggle("on",k===cur);
     const b=document.getElementById("dBtn"+k); if(b) b.style.opacity=k===cur?1:0.55;
   });
@@ -1515,7 +1886,8 @@ function render(){
   if(mode==="single") renderDeckBar();
   const mc=document.getElementById("mainContent");
   mc.innerHTML = mode==="trip"?renderTrip() : mode==="port"?renderPort() :
-                 mode==="overview"?renderOverview() : mode==="single"?renderSingle() : renderStarred();
+                 mode==="overview"?renderOverview() : mode==="single"?renderSingle() :
+                 mode==="spend"?renderSpend() : renderStarred();
   shownDay=twToday();
   tick();
 }
@@ -1565,7 +1937,98 @@ function toggleOvDeck(id){ document.getElementById('ovDeck'+id).classList.toggle
 function renderSingle(){
   const d=D.find(x=>x.id===deckId); if(!d) return '';
   const banner=`<div class="sec-banner"><h2><span class="sec-badge">Deck ${d.num}</span> ${d.zh} <span style="font-size:.75rem;color:var(--text-dim);font-family:var(--font-serif)">${d.en}</span></h2><p>${d.desc}</p><div class="sec-tags">${d.tags.map(t=>`<span class="sec-tag">${t}</span>`).join('')}</div></div>`;
-  return `${banner}<div class="fac-list">${d.fac.map(f=>renderFacItem(f,d)).join('')}</div>`;
+  return `${banner}<div class="deck-split">${planHTML(d)}<div class="fac-list">${d.fac.map(f=>renderFacItem(f,d)).join('')}</div></div>`;
+}
+
+// ═══ 平面圖：SVG 字串樣板；點區塊 → 展開並捲到設施卡，卡片的「平面圖位置」→ 換層並標亮區塊 ═══
+const r1=n=>Math.round(n*10)/10;
+function hullPath(p){
+  const {t,b}=p, L=p.bow;
+  const stern=`L160,${b-10} Q160,${b} 150,${b} L10,${b} Q0,${b} 0,${b-10}`;
+  if(!L) return `M0,${t+8} Q80,${t-8} 160,${t+8} ${stern} Z`;
+  return `M80,${t} C102,${r1(t+L*.22)} 160,${r1(t+L*.5)} 160,${t+L} ${stern} L0,${t+L} C0,${r1(t+L*.5)} 58,${r1(t+L*.22)} 80,${t} Z`;
+}
+function planCls(f){ return f.cat==='cabin'&&!f.vip?'t-cabin':pillCls(f); }
+// 標籤自動換行：試 1..n 行（字數平均分配，不留單字孤行），取字最大的排法；'|' 強制換行。拉丁字母約半形
+function planLabel(s,z){
+  const cw=c=>c.charCodeAt(0)<0x2E80?0.62:1, ch=[...s], n=ch.length;
+  const split=L=>{ const out=[]; let i=0; for(let k=0;k<L;k++){ const c=Math.floor(n/L)+(k<n%L?1:0); out.push(ch.slice(i,i+c).join('')); i+=c; } return out; };
+  const opts=s.includes('|')?[s.split('|')]:ch.map((_,i)=>split(i+1));
+  let best=null;
+  for(const ls of opts){
+    const wid=Math.max(...ls.map(l=>[...l].reduce((a,c)=>a+cw(c),0)));
+    const fs=Math.min(7.5,(z.w-3)/wid,(z.h-2)/(ls.length*1.15));
+    if(!best||fs>best.fs) best={fs,ls};
+  }
+  if(best.fs<4.5) return '';
+  const lh=best.fs*1.15, cx=r1(z.x+z.w/2), y0=z.y+z.h/2-(best.ls.length-1)*lh/2+best.fs*0.36;
+  return `<text font-size="${r1(best.fs)}">${best.ls.map((l,i)=>`<tspan x="${cx}" y="${r1(y0+i*lh)}">${l}</tspan>`).join('')}</text>`;
+}
+function planRect(z){ return `<rect x="${r1(z.x+.6)}" y="${r1(z.y+.6)}" width="${r1(z.w-1.2)}" height="${r1(z.h-1.2)}" rx="2"/>`; }
+function planZone(z,d){
+  if(z.d) return `<g class="pz-deco">${planRect(z)}${planLabel(z.d,z)}</g>`;
+  const x=facById(z.f); if(!x) return '';   // id 打錯不讓整頁壞掉；smoke 會抓
+  const link=x.d.id!==d.id;
+  const txt=link?`${z.t||x.f.zh}|${x.d.id<d.id?'↓':'↑'} Deck ${x.d.num}`:(z.t||x.f.zh);
+  return `<g class="pz ${planCls(x.f)}${x.f.vip?' vip':''}${link?' link':''}${planSel===z.f?' sel':''}" data-f="${z.f}" onclick="planTap('${z.f}')"><title>${x.f.zh} ${x.f.en}${link?`（Deck ${x.d.num}）`:''}</title>${planRect(z)}${planLabel(txt,z)}</g>`;
+}
+function liftSVG(y){
+  return `<g class="plan-lift">${[61,74,87].map(x=>`<rect x="${x}" y="${y-2.5}" width="12" height="5"/><path d="M${x},${y-2.5} l12,5 M${x+12},${y-2.5} l-12,5"/>`).join('')}</g>`;
+}
+const PLAN_LEG={'t-free':'免費','t-paid':'付費','t-pool':'泳池・戶外','t-ent':'娛樂・酒吧','t-vip':'皇宮限定','t-cabin':'客房'};
+function planHTML(d){
+  const p=PLAN[d.id]; if(!p) return '';
+  const hull=hullPath(p);
+  const used=new Set(p.z.map(z=>z.f&&facById(z.f)).filter(Boolean).map(x=>planCls(x.f)));
+  const vtxt=(x,s)=>`<text class="plan-dir">${[...s].map((c,i)=>`<tspan x="${x}" y="${197+i*8}">${c}</tspan>`).join('')}</text>`;
+  return `<details class="card plan-card" id="planBox" ${planOpen?'open':''} ontoggle="planToggle(this.open)">
+    <summary><div class="card-ico">🗺️</div><div class="card-title"><b>Deck ${d.num} 平面圖</b><span>點區塊看設施・船頭朝上</span></div><div class="ov-chevron">▼</div></summary>
+    <div class="card-body">
+      <svg class="plan-svg" viewBox="-14 -12 188 424" role="img" aria-label="Deck ${d.num} 平面示意圖">
+        <defs><clipPath id="planClip"><path d="${hull}"/></clipPath></defs>
+        <path class="plan-ghost" d="${hullPath(PLAN[8])}"/>
+        <path class="plan-hull" d="${hull}"/>
+        <g clip-path="url(#planClip)">${p.z.map(z=>planZone(z,d)).join('')}${(p.lift||LIFT_Y).map(liftSVG).join('')}</g>
+        <path class="plan-line" d="${hull}"/>
+        <text class="plan-dir" x="80" y="-4">▲ 船頭</text><text class="plan-dir" x="80" y="409">船尾</text>
+        ${vtxt(-7,'左舷')}${vtxt(167,'右舷')}
+      </svg>
+      <div class="plan-legend">${Object.keys(PLAN_LEG).filter(k=>used.has(k)).map(k=>`<span class="pl-leg ${k}"><i></i>${PLAN_LEG[k]}</span>`).join('')}<span class="pl-leg"><b>☒</b>電梯</span></div>
+      <p class="tz-note">依官方台灣出發版手冊甲板圖簡化的示意圖，寬度放大、非比例尺；實際動線以船上指示牌為準。</p>
+    </div>
+  </details>`;
+}
+function planToggle(open){ planOpen=open; save("sn_plan",open); }
+// 只換標亮，不重繪（重繪會收合已展開的卡片）；scroll＝打開平面圖並把區塊捲到畫面中間
+// force＝不管現在看不看得到都捲（go() 的捲到頂還在進行，此刻的位置不準）；桌機平面圖是 sticky，不必捲
+function planMark(id,scroll,force){
+  planSel=id;
+  const box=document.getElementById('planBox'); if(!box) return;
+  box.querySelectorAll('.pz').forEach(g=>g.classList.toggle('sel',g.dataset.f===id));
+  if(!scroll) return;
+  box.open=true;
+  const z=box.querySelector('.pz.sel'); if(!z || getComputedStyle(box).position==='sticky') return;
+  const r=z.getBoundingClientRect(), top=document.querySelector('.app-header').offsetHeight+60;
+  if(force || r.top<top || r.bottom>innerHeight) window.scrollTo({top:scrollY+r.top-(innerHeight+top)/2+r.height/2, behavior:'smooth'});
+}
+function planTap(id){
+  const x=facById(id); if(!x) return;
+  if(x.d.id!==deckId){ showOnPlan(id); return; }   // 跨層連結：換到那層並標亮
+  planMark(id);
+  const el=document.getElementById('fac_'+id); if(!el) return;
+  // 跳過展開動畫：捲動目標要用展開後的頁長算，否則清單尾端的卡片會停在畫面下緣
+  const b=el.querySelector('.fac-body'); b.style.transition='none';
+  el.classList.add('expanded'); void b.offsetHeight; b.style.transition='';
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');   // 重播閃光動畫
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+// 從任何設施卡（含搜尋、收藏、速覽）跳到該層平面圖；同一層就地標亮，不重繪
+function showOnPlan(id){
+  const x=facById(id); if(!x) return;
+  planSel=id;
+  if(mode==='single' && deckId===x.d.id && !ovClose){ planMark(id,true); return; }
+  ovGo('single',x.d.id);          // 沒有覆蓋層時等同 go()
+  setTimeout(()=>planMark(id,true,true),80);   // 蓋過 go() 的捲到頂
 }
 
 // ═══ Starred ═══
@@ -1585,7 +2048,7 @@ function priceTag(f){
 }
 function renderFacItem(f,d,scope){
   const isOn=stars.includes(f.id);
-  return `<div class="fac-item" id="fac_${scope||''}${f.id}">
+  return `<div class="fac-item" id="fac_${scope||''}${f.id}" data-fid="${f.id}">
     <div class="fac-head" onclick="toggleFac(this)">
       <div class="fac-icon">${f.icon}</div>
       <div class="fac-head-info"><div class="fac-name">${f.zh}</div><div class="fac-name-en">${f.en}</div></div>
@@ -1599,11 +2062,15 @@ function renderFacItem(f,d,scope){
       </div>
       <div class="fac-desc">${f.desc}</div>
       ${f.tips?`<div class="fac-tips"><strong>💡 提醒：</strong>${f.tips}</div>`:''}
-      <div class="fac-star-row"><button class="btn-star ${isOn?'on':''}" data-fac="${f.id}" onclick="event.stopPropagation();toggleStar('${f.id}')">${isOn?'★ 已收藏':'☆ 加入收藏'}</button></div>
+      <div class="fac-star-row">${PLAN_FAC.has(f.id)?`<button class="btn-star" onclick="event.stopPropagation();showOnPlan('${f.id}')">🗺️ 平面圖位置</button>`:''}<button class="btn-star ${isOn?'on':''}" data-fac="${f.id}" onclick="event.stopPropagation();toggleStar('${f.id}')">${isOn?'★ 已收藏':'☆ 加入收藏'}</button></div>
     </div></div>
   </div>`;
 }
-function toggleFac(el){ el.closest('.fac-item').classList.toggle('expanded'); }
+function toggleFac(el){
+  const it=el.closest('.fac-item');
+  // Deck 頁展開卡片時順便在平面圖上標亮（桌機平面圖是 sticky，看得到）
+  if(it.classList.toggle('expanded') && mode==='single' && it.closest('#mainContent')) planMark(it.dataset.fid);
+}
 
 // ═══ Stars ═══
 function toggleStar(id){
@@ -1664,7 +2131,9 @@ function renderTrip(){
     + `<div class="sec-title">🗓️ 每日行程 <small>點開看當天怎麼安排</small></div>` + DAYS.map(d=>dayHTML(d,st)).join('')
     + `<div class="sec-title">⚓ 港口攻略</div>` + portTilesHTML()
     + `<div class="sec-title">✅ 行前清單 <small>勾選只存在這台手機</small></div>` + CHECKS.map(checkGroupHTML).join('')
-    + `<div class="sec-title">💡 船上實用資訊</div>` + INFO.map(cardHTML).join('');
+    + `<div class="sec-title">💡 船上實用資訊</div>`
+    + `<button class="btn-wide" onclick="go('spend')">💰 船上自費價目：服務費、酒水、Wi-Fi、餐廳菜單 →</button>`
+    + INFO.map(cardHTML).join('');
 }
 function heroHTML(st){
   let s;
@@ -1755,6 +2224,29 @@ function setAboard(id,v){
   tick();
 }
 
+// ═══ Spend：自費價目頁（有 fac 的卡片，名稱、圖示、Deck、位置由 D 推導）═══
+function facById(id){ for(const d of D){ const f=d.fac.find(x=>x.id===id); if(f) return {f,d}; } return null; }
+function priceListHTML(rows){
+  return `<ul class="price-list">${rows.map(r=>r.h?`<li class="pl-h">${r.h}</li>`:
+    `<li><span class="pl-n">${r.n}${r.s?`<small>${r.s}</small>`:''}</span><span class="pl-p">${r.p}${r.u?`<small>${r.u}</small>`:''}</span></li>`).join('')}</ul>`;
+}
+function spendCardHTML(c){
+  const x=c.fac&&facById(c.fac);
+  const body=(x?`<div class="fac-meta"><span class="fac-meta-pill deck">📍 Deck ${x.d.num}</span><span class="fac-meta-pill loc">${x.f.loc}</span></div>`:'')
+    +(c.lead?`<div class="fac-desc">${c.lead}</div>`:'')
+    +(c.rows?priceListHTML(c.rows):'')
+    +(c.body||'')
+    +(c.warn?`<div class="warn-box">${c.warn}</div>`:'')
+    +(c.tip?`<div class="info-box">${c.tip}</div>`:'')
+    +(c.src?`<p class="tz-note">${c.src}</p>`:'');
+  return cardHTML({icon:x?x.f.icon:c.icon, title:x?`${x.f.zh}<small>${x.f.en}</small>`:c.title, sub:c.sub, body, open:c.open});
+}
+function renderSpend(){
+  const banner=`<div class="sec-banner"><h2>💰 船上自費價目</h2><p>${SPEND_NOTE}</p></div>`;
+  return banner + SPEND.map(g=>`<div class="sec-title">${g.icon} ${g.title}${g.sub?` <small>${g.sub}</small>`:''}</div>`+g.cards.map(spendCardHTML).join('')).join('')
+    + `<button class="btn-wide" style="margin-top:6px" onclick="go('trip')">← 回到每日行程</button>`;
+}
+
 // ═══ Dining modal：由 D 推導，不手寫第二份清單 ═══
 function renderDine(){
   const all=[]; D.forEach(d=>d.fac.forEach(f=>{ if(f.cat==='dining'||f.cat==='bar') all.push({f,d}); }));
@@ -1767,7 +2259,7 @@ function renderDine(){
   return `<div class="info-box">${DINE_NOTE}</div>` + grp.map(g=>{
     const xs=all.filter(g.test); if(!xs.length) return '';
     return `<p class="dine-h" style="color:${g.c}">${g.h}</p>`+xs.map(({f,d})=>`<div class="dining-card"><div class="dining-card-name">${f.icon} ${f.zh} <span style="font-size:.7rem;color:var(--text-dim);font-family:var(--font-serif)">${f.en}</span></div><div class="dining-card-loc">📍 Deck ${d.num}・${f.loc}</div><div class="dining-card-desc">${f.desc}</div></div>`).join('');
-  }).join('');
+  }).join('') + `<button class="btn-wide" onclick="ovGo('spend')">💰 看付費餐廳與飲料價目 →</button>`;
 }
 
 // ═══ 覆蓋層歷史：手機返回鍵與 Esc 關閉最上層；file:// 下 pushState 會拋錯，退回直接關閉 ═══
@@ -1783,6 +2275,14 @@ function ovBack(){
   if(canHist) history.back();                  // popstate 會執行實際關閉
   else { const c=ovClose; ovClose=null; c(); }
   return true;
+}
+// 從覆蓋層直接換頁：不走 history.back()（非同步，會跟換頁的 pushState 打架），
+// 改成直接關閉，並用 replaceState 蓋掉覆蓋層那筆 entry，返回鍵不會多停一格
+function ovGo(m,id){
+  if(!ovClose) return go(m,id);
+  if(m===mode && (id===undefined || id===(m==='single'?deckId:portId))){ ovBack(); return; }   // 已在目標頁
+  const c=ovClose; ovClose=null; c();
+  go(m,id,true);
 }
 window.addEventListener('popstate',()=>{
   const c=ovClose; ovClose=null;

@@ -6,7 +6,7 @@ const src = html.match(/<script>([\s\S]*)<\/script>/)[1];
 
 const STATIC = new Set(('mainContent deckBar deckBarScroll verLabel verDetail btnTop updateBar tabTr tabOv tabSg tabSt tabMore ' +
   'starBadge moreMenu searchOverlay searchInput searchClear searchChips searchResults navModal navModalBg navBody ' +
-  'dineModal dineModalBg dineBody aboutModal aboutModalBg dBtnTr dBtnOv dBtnSg dBtnSt').split(' '));
+  'dineModal dineModalBg dineBody aboutModal aboutModalBg dBtnTr dBtnOv dBtnSg dBtnSt dBtnSp').split(' '));
 const els = {};
 function el(id) {
   if (!STATIC.has(id)) return null;
@@ -28,7 +28,7 @@ Object.assign(global, {
 });
 
 const A = new Function(src + `
-return {D,QF,DAYS,PORTS,CHECKS,INFO,renderTrip,renderPort,renderOverview,renderSingle,renderStarred,renderDine,portTs,routeFromHash,
+return {D,QF,PLAN,DAYS,PORTS,CHECKS,INFO,SPEND,renderTrip,renderPort,renderOverview,renderSingle,renderStarred,renderDine,renderSpend,portTs,routeFromHash,
   set:(k,v)=>{eval(k+"=v")}};`)();
 (listeners.DOMContentLoaded || []).forEach(f => f());
 
@@ -41,9 +41,15 @@ function check(name, html) {
 check('trip', A.renderTrip());
 for (const k of Object.keys(A.PORTS)) { A.set('portId', k); check('port ' + k, A.renderPort()); }
 check('overview', A.renderOverview());
-for (const d of A.D) { A.set('deckId', d.id); check('deck ' + d.num, A.renderSingle()); }
+for (const d of A.D) {
+  A.set('deckId', d.id); const h = A.renderSingle(); check('deck ' + d.num, h);
+  // 平面圖每塊區域都要有字（區塊太小時 planLabel 會回空字串）
+  h.split('<g class="pz').slice(1).map(s => s.slice(0, s.indexOf('</g>'))).filter(g => !g.includes('<text'))
+    .forEach(g => fail(`deck ${d.num} plan zone ${(/data-f="(\w+)"/.exec(g) || [])[1] || 'deco'} too small for its label`));
+}
 check('starred', A.renderStarred());
 check('dine', A.renderDine());
+check('spend', A.renderSpend());
 
 const CATS = new Set('dining pool entertainment bar spa kids service shopping cabin'.split(' '));
 const ids = A.D.flatMap(d => d.fac.map(f => f.id));
@@ -52,10 +58,20 @@ A.D.forEach(d => d.fac.forEach(f => { if (!CATS.has(f.cat)) fail(`${f.id} unknow
 const cks = A.CHECKS.flatMap(g => g.items.map(i => i.id));
 cks.filter((x, i) => cks.indexOf(x) !== i).forEach(x => fail('duplicate check id ' + x));
 A.DAYS.forEach(d => { if (d.port && !A.PORTS[d.port]) fail(`day ${d.n} port ${d.port} missing`); });
+for (const [k, p] of Object.entries(A.PLAN)) {
+  if (!A.D.some(d => d.id === +k)) fail(`plan deck ${k} not in D`);
+  p.z.forEach(z => {
+    if (z.f ? !ids.includes(z.f) : !z.d) fail(`plan ${k} zone ${z.f || '?'} invalid`);
+    if (z.x < 0 || z.x + z.w > 160 || z.y < p.t || z.y + z.h > p.b) fail(`plan ${k} zone ${z.f || z.d} outside hull`);
+  });
+}
+const onPlan = new Set(Object.entries(A.PLAN).flatMap(([k, p]) => p.z.filter(z => z.f && z.f.startsWith('f' + k + '_')).map(z => z.f)));
+const offPlan = ids.filter(x => !onPlan.has(x));
+A.SPEND.forEach(g => g.cards.forEach(c => { if (c.fac ? !ids.includes(c.fac) : !(c.icon && c.title)) fail(`spend card ${c.fac || c.title} invalid`); }));
 for (const p of Object.values(A.PORTS)) {
   const arr = A.portTs(p, p.arr), dep = A.portTs(p, p.dep), ab = A.portTs(p, p.aboardGuess);
   if (!(arr < ab && ab < dep)) fail(`${p.id} aboardGuess ${p.aboardGuess} not within ${p.arr}–${p.dep}`);
 }
-console.log(`${ids.length} facilities, ${cks.length} checklist items`);
+console.log(`${ids.length} facilities, ${cks.length} checklist items, ${onPlan.size} on deck plans${offPlan.length ? ' (not drawn: ' + offPlan.join(' ') + ')' : ''}`);
 console.log(problems ? `PROBLEMS: ${problems}` : 'ALL CLEAN');
 process.exit(problems ? 1 : 0);
