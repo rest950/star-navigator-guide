@@ -715,7 +715,7 @@
       <button class="hdr-btn" onclick="go('starred')" id="dBtnSt">⭐ 收藏</button>
       <button class="hdr-btn" onclick="openModal('navModal')">🧭 動線</button>
       <button class="hdr-btn" onclick="openModal('dineModal')">🍽️ 餐飲</button>
-      <a class="hdr-btn" href="https://www.vesselfinder.com/vessels/details/9141077" target="_blank" rel="noopener noreferrer" title="在 VesselFinder 查看即時船位（IMO 9141077）">🛰️ 船位</a>
+      <a class="hdr-btn" href="https://www.cruisemapper.com/?imo=9141077" target="_blank" rel="noopener noreferrer" title="在 CruiseMapper 查看即時船位（IMO 9141077）">🛰️ 船位</a>
     </div>
   </div>
 </header>
@@ -769,7 +769,7 @@
   <button class="more-item" onclick="openSearch(); closeMore();">🔍 搜尋設施</button>
   <button class="more-item" onclick="openModal('dineModal'); closeMore();">🍽️ 餐飲速查表</button>
   <button class="more-item" onclick="openModal('navModal'); closeMore();">🧭 防迷路指南</button>
-  <a class="more-item" href="https://www.vesselfinder.com/vessels/details/9141077" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🛰️ 即時船位<span class="ext">↗</span></a>
+  <a class="more-item" href="https://www.cruisemapper.com/?imo=9141077" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🛰️ 即時船位<span class="ext">↗</span></a>
   <a class="more-item" href="https://www.windy.com/?34.0,133.5,6" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🌬️ 風場海況<span class="ext">↗</span></a>
   <a class="more-item" href="https://stardreamcruises.com/tc-tw/our-ship/star-navigator" target="_blank" rel="noopener noreferrer" onclick="closeMore()">🌐 麗星官網<span class="ext">↗</span></a>
   <button class="more-item" onclick="openModal('aboutModal'); closeMore();">ℹ️ 關於與免責聲明</button>
@@ -898,7 +898,7 @@
 // 探索星號導覽 — 資料在上、邏輯在下；改資料不必動邏輯
 // ════════════════════════════════════════════════
 // ═══ Version ═══
-const APP_VERSION="1.0.0", DATA_DATE="2026-10-04";   // 改版時同步 bump sw.js 的 VERSION
+const APP_VERSION="1.0.1", DATA_DATE="2026-10-09";   // 改版時同步 bump sw.js 的 VERSION
 
 // ═══ 甲板與設施 ═══
 // 基準：麗星官方《探索星號》台灣出發版手冊（SNA_Ship_Brochure_Ex_TWN_TC）甲板圖與索引；

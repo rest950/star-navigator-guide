@@ -5,7 +5,7 @@
    改版時務必同步 bump VERSION（與 index.html 的 APP_VERSION 一致），否則舊快取不會被清掉。
    ⚠️ 與 Costa 版同在 rest950.github.io 網域，Cache Storage 是整個網域共用的：
    清舊快取時只能刪自己前綴（PREFIX）的，否則會把別的站的離線快取一起刪掉。 */
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const PREFIX = 'star-navigator-';
 const CACHE = PREFIX + VERSION;
 const SHELL = [
