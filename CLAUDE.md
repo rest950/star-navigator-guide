@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 麗星郵輪探索星號（Star Navigator）設施導覽＋單一航次（2026/11/29 基隆出發神戶・高知 5 晚）攻略的**零相依性靜態站台 / PWA**。無 package.json、無 build step、無測試框架、無 CI。架構沿用姊妹專案 `../costa-serena-guide`（同一套 render / 覆蓋層 / SW 模式），多了「行程」「港口」「自費價目」三種模式。
 
-主體是 `index.html`（CSS + 資料 + JS 全內嵌），另有 `sw.js`、`manifest.webmanifest`、`icons/`、`tools/smoke.js`。預計部署為 GitHub Pages：`https://rest950.github.io/star-navigator-guide/`。
+主體是 `index.html`（CSS + 資料 + JS 全內嵌），另有 `sw.js`、`manifest.webmanifest`、`icons/`、`tools/smoke.js`，以及獨立的 3D 甲板模型 `deck3d.html`（three.js r128，放在 `vendor/three/`）。預計部署為 GitHub Pages：`https://rest950.github.io/star-navigator-guide/`。
 
 ## 開發指令
 
@@ -84,9 +84,18 @@ Fac  = { id, zh, en, cat, loc, free, vip?, icon, desc, tips }
 `#/`（行程）、`#/ship`（速覽）、`#/deck/<n>`、`#/port/<id>`、`#/starred`、`#/spend`（自費價目，入口在「更多」選單、桌機 header、行程頁與餐飲 modal，沒有底部 tab）；無效值一律退回行程頁。
 覆蓋層（搜尋、三個 modal）一律走 `ovOpen()` / `ovBack()`；`popstate` 優先序是「**先關覆蓋層、再回上一個畫面**」，改動時務必保持。從覆蓋層裡直接換頁用 `ovGo()`（直接關閉＋replaceState 蓋掉覆蓋層那筆 entry），不要 `closeModal()` 後再 `go()`——`history.back()` 是非同步的，會跟 `pushState` 打架。`file://` 下 `canHist` 為 false 時退回直接關閉。
 
+## 3D 甲板模型（`deck3d.html`）
+
+獨立頁面，不吃 `index.html` 的資料；入口在「更多」選單、桌機 header（🧊 3D）與每層平面圖底部（`deck3d.html#<n>` 聚焦該層），頁內「← 導覽」與資訊卡連回 `./#/deck/<n>`。
+
+- 座標是手冊甲板圖的像素位置（`DK` 每層換算），用 `room` / `area` / `pool` / `info` 建物件；客房用 `col` / `row` 依分類上色。
+- **設施名稱必須等於 `D` 同層的 `zh`**：`smoke.js` 用 regex 抓 `room(N,…,'cat','名稱'` / `area(…)` / `info(N,'名稱'` / `pool(…)` 比對，`D3_GENERIC` 是允許的非設施名稱（樓梯、未標名區塊、非旅客區域等）；改 `D` 的名稱要同步這裡，也會列出 3D 裡缺少的非客房設施。
+- 手冊沒標名的方塊一律叫「未標名區塊」，不要自己猜用途。Deck 10 兩側是一般露台客房（同 `PLAN` 的判讀），沒有皇宮露台房。
+- three.js 不走 CDN：`vendor/three/` 與 `deck3d.html` 都在 `sw.js` 的 `SHELL`，船上離線也能開。升級 three.js 要確認 `examples/js/`（非 module 版）還存在——r148 之後已移除。
+
 ## 硬編碼、不由 `D` 衍生的內容
 
-改設施資料時不會自動連動，需手動同步：`PLAN` 區塊（新增設施要補一塊，否則平面圖上沒有它、卡片也不會有「平面圖位置」）、動線 modal（`#navModal`）、關於 modal（`#aboutModal`，含船舶規格與免責，與 README 重複）、`DAYS` / `PORTS` 文字裡提到的設施名稱與 Deck 號碼、`SPEND` 裡沒有 `fac` 的卡片（甜點・咖啡的小標寫死了店名與 Deck）。
+改設施資料時不會自動連動，需手動同步：`deck3d.html` 的設施名稱與說明（smoke 會抓名稱不符）、`PLAN` 區塊（新增設施要補一塊，否則平面圖上沒有它、卡片也不會有「平面圖位置」）、動線 modal（`#navModal`）、關於 modal（`#aboutModal`，含船舶規格與免責，與 README 重複）、`DAYS` / `PORTS` 文字裡提到的設施名稱與 Deck 號碼、`SPEND` 裡沒有 `fac` 的卡片（甜點・咖啡的小標寫死了店名與 Deck）。
 
 改靠港時間時同理：`PORTS.*.arr/dep` 只驅動倒數計算，`times` pills（船上與日本兩組）、`when`、`routeNote`、`DAYS` 的 `times` / `sub` / `plan` 都是手寫的時間字串，要一起改。
 

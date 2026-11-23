@@ -5,7 +5,7 @@
    改版時務必同步 bump VERSION（與 index.html 的 APP_VERSION 一致），否則舊快取不會被清掉。
    ⚠️ 與 Costa 版同在 rest950.github.io 網域，Cache Storage 是整個網域共用的：
    清舊快取時只能刪自己前綴（PREFIX）的，否則會把別的站的離線快取一起刪掉。 */
-const VERSION = '1.1.1';
+const VERSION = '1.2.0';
 const PREFIX = 'star-navigator-';
 const CACHE = PREFIX + VERSION;
 const SHELL = [
@@ -16,7 +16,11 @@ const SHELL = [
   './icons/icon-512.png',
   './icons/icon-512-maskable.png',
   './icons/apple-touch-icon.png',
-  './icons/favicon-32.png'
+  './icons/favicon-32.png',
+  // 3D 甲板模型（約 0.6 MB）：船上沒網路也要開得起來，所以裝 SW 時就一併快取
+  './deck3d.html',
+  './vendor/three/three.min.js',
+  './vendor/three/OrbitControls.js'
 ];
 
 self.addEventListener('install', e => {

@@ -72,6 +72,19 @@ for (const p of Object.values(A.PORTS)) {
   const arr = A.portTs(p, p.arr), dep = A.portTs(p, p.dep), ab = A.portTs(p, p.aboardGuess);
   if (!(arr < ab && ab < dep)) fail(`${p.id} aboardGuess ${p.aboardGuess} not within ${p.arr}–${p.dep}`);
 }
+// deck3d.html（3D 甲板模型）的設施名稱必須跟 D 同層的 zh 一致；客房由分類表產生，不在此列
+const d3 = fs.readFileSync(path.join(__dirname, '..', 'deck3d.html'), 'utf8');
+const D3_GENERIC = new Set('樓梯 電梯 未標名區塊 非旅客區域 船長室 煙囪 直升機坪 救生艇 按摩池 泳池甲板 皇宮泳池'.split(' '));
+const d3Names = [...d3.matchAll(/\b(?:room|area)\((\d+),[^']*'[a-z]+','([^']+)'/g), ...d3.matchAll(/\binfo\((\d+),'([^']+)'/g),
+  ...d3.matchAll(/\bpool\((\d+),[\d,]*'([^']+)'/g)].map(m => ({ deck: +m[1], name: m[2] }));
+if (!d3Names.length) fail('deck3d.html: no facility names found (regex out of date?)');
+d3Names.filter(x => !D3_GENERIC.has(x.name)).forEach(({ deck, name }) => {
+  const d = A.D.find(x => x.id === deck);
+  if (!d || !d.fac.some(f => f.zh === name)) fail(`deck3d.html: "${name}" (deck ${deck}) not a facility name in D`);
+});
+const in3d = new Set(d3Names.map(x => x.deck + '|' + x.name));
+const off3d = A.D.flatMap(d => d.fac.filter(f => f.cat !== 'cabin' && !in3d.has(d.id + '|' + f.zh)).map(f => f.id));
 console.log(`${ids.length} facilities, ${cks.length} checklist items, ${onPlan.size} on deck plans${offPlan.length ? ' (not drawn: ' + offPlan.join(' ') + ')' : ''}`);
+console.log(`3D model: ${d3Names.length} named parts${off3d.length ? ' (not in 3D: ' + off3d.join(' ') + ')' : ', every non-cabin facility present'}`);
 console.log(problems ? `PROBLEMS: ${problems}` : 'ALL CLEAN');
 process.exit(problems ? 1 : 0);

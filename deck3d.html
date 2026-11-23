@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#cfdde6">
+<title>探索星號 3D 甲板</title>
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<!--
+  探索星號 3D 甲板模型（導覽站的附屬頁，入口在「更多」選單、桌機 header、各 Deck 平面圖）
+  - 名稱與位置以官方台灣出發版手冊第 7–10 頁為準，設施名稱跟 index.html 的 D 一致；改 D 的名稱要同步這裡
+  - 座標是手冊甲板圖的像素位置換算；示意模型，非比例尺
+  - three.js r128 放在 vendor/three/（MIT），不走 CDN：船上沒網路也要能開，sw.js 的 SHELL 有列
+  - #<n> 開啟時直接聚焦該層（例：deck3d.html#10）
+-->
+<style>
+/* Layout: full-screen 3D stage; title + view toggles on top, deck "elevator" panel on the right, legend bottom-left, info card bottom-right */
+:root{
+  --sea:#cfdde6; --ink:#14263a; --ink-soft:#4b5d70;
+  --panel:rgba(255,255,255,.9); --line:rgba(20,38,58,.14); --accent:#c8202f;
+  --font:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--sea);color:var(--ink);font-family:var(--font);overflow:hidden}
+#stage{position:fixed;inset:0;touch-action:none}
+#stage canvas{display:block;width:100%;height:100%;cursor:grab}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:12px;font-weight:500;
+  color:var(--ink);background:rgba(255,255,255,.85);padding:2px 7px;border-radius:4px;border:1px solid var(--line)}
+.lb.deck{font-size:13px;font-weight:700;color:#fff;background:var(--accent);border:0;transform:translate(-100%,-50%)}
+.lb.bow{background:var(--ink);color:#fff;border:0}
+.lb.core{font-size:11px;padding:1px 5px;color:#fff;border:0}
+.lb.core.stairs{background:#c98a00}
+.lb.core.lift{background:#1e6fb8}
+#tip{position:fixed;z-index:6;pointer-events:none;background:var(--ink);color:#fff;font-size:13px;font-weight:500;
+  padding:4px 9px;border-radius:5px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+#tip small{font-weight:400;opacity:.75;margin-left:6px;font-size:11px}
+.bar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;
+  padding:12px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;pointer-events:none}
+.bar>*{pointer-events:auto}
+h1{margin:0 8px 0 0;font-size:20px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+.grp{display:flex;flex-wrap:wrap;gap:4px;background:var(--panel);padding:4px;border-radius:8px;border:1px solid var(--line);backdrop-filter:blur(6px)}
+button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink);padding:6px 11px;border-radius:5px;cursor:pointer}
+button:hover{background:rgba(20,38,58,.07)}
+button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.back{font-size:13px;font-weight:500;color:#fff;background:var(--ink);text-decoration:none;padding:7px 12px;border-radius:8px;white-space:nowrap}
+.back:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.info a{color:var(--accent);font-weight:500}
+.legend .src{font-size:11px;color:var(--ink-soft);margin:8px 0 0;line-height:1.5}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hint{font-size:12px;color:var(--ink-soft);background:var(--panel);padding:6px 10px;border-radius:6px;border:1px solid var(--line)}
+.decks{position:fixed;z-index:5;right:max(16px,env(safe-area-inset-right,0px));top:calc(70px + env(safe-area-inset-top,0px));
+  display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px;backdrop-filter:blur(6px)}
+.decks button{text-align:left;min-width:64px;font-variant-numeric:tabular-nums}
+.legend{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;backdrop-filter:blur(6px);max-width:calc(100vw - 32px)}
+.legend summary{cursor:pointer;color:var(--ink-soft);font-weight:500}
+.legend .g{display:grid;grid-template-columns:repeat(2,auto);gap:5px 14px;margin-top:6px}
+.legend b{grid-column:1/-1;font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:4px}
+.sw{display:flex;align-items:center;gap:6px}
+.sw i{width:11px;height:11px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.1)}
+.info{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:min(270px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:12px 14px;backdrop-filter:blur(6px)}
+.info .t{font-size:17px;font-weight:700;margin-bottom:4px}
+.info .m{font-size:13px;color:var(--ink-soft);line-height:1.6}
+.info .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;color:#fff;margin-right:6px}
+@media (max-width:700px){
+  h1{font-size:17px;width:100%}
+  .hint,.legend{display:none}
+  .decks{flex-direction:row;flex-wrap:wrap;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));top:auto;
+    bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+  .decks button{min-width:0;padding:5px 8px}
+}
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+<div id="labels"></div>
+<div id="tip" hidden></div>
+
+<div class="bar">
+  <a class="back" id="back" href="./">← 導覽</a>
+  <h1>探索星號 3D 甲板</h1>
+  <div class="grp">
+    <button id="t-cores" aria-pressed="false">樓梯・電梯</button>
+    <button id="t-explode" aria-pressed="true">分層展開</button>
+    <button id="t-labels" aria-pressed="true">標籤</button>
+    <button id="t-spin" aria-pressed="false">自動旋轉</button>
+    <button id="t-reset">重設視角</button>
+  </div>
+  <span class="hint">拖曳旋轉・滾輪/雙指縮放・右鍵拖曳平移・滑鼠移到區域上顯示名稱</span>
+</div>
+
+<nav class="decks" id="decks" aria-label="選擇甲板"></nav>
+
+<details class="legend" open>
+  <summary>圖例</summary>
+  <div class="g">
+    <b>公共區域（牆頂色帶）</b>
+    <span class="sw"><i style="background:#e07a3f"></i>餐飲</span>
+    <span class="sw"><i style="background:#2f9c95"></i>娛樂</span>
+    <span class="sw"><i style="background:#f2b134"></i>親子</span>
+    <span class="sw"><i style="background:#a77bca"></i>美容及健身</span>
+    <span class="sw"><i style="background:#5a9e4b"></i>運動</span>
+    <span class="sw"><i style="background:#3aa7e0"></i>水上活動</span>
+    <span class="sw"><i style="background:#d1607f"></i>零售</span>
+    <span class="sw"><i style="background:#9aa4ae"></i>設施・服務</span>
+    <span class="sw"><i style="background:#e8a400"></i>樓梯</span>
+    <span class="sw"><i style="background:#1e88e5"></i>電梯</span>
+    <b>客房（床罩與地毯顏色）</b>
+    <span class="sw"><i style="background:#b89a52"></i>皇宮庭苑別墅</span>
+    <span class="sw"><i style="background:#79c4c4"></i>皇宮豪華套房</span>
+    <span class="sw"><i style="background:#c5d89a"></i>皇宮套房</span>
+    <span class="sw"><i style="background:#9b4d9b"></i>露台客房</span>
+    <span class="sw"><i style="background:#23305a"></i>海景客房</span>
+    <span class="sw"><i style="background:#4f93cf"></i>內側客房</span>
+    <span class="sw"><i style="background:#a0582e"></i>無障礙內側客房</span>
+  </div>
+  <p class="src">依官方台灣出發版手冊甲板圖製作的示意模型，非比例尺；<br>實際動線以船上指示牌為準。</p>
+</details>
+
+<div class="info" id="info">
+  <div class="t" id="info-t">探索星號 4–13 層</div>
+  <div class="m" id="info-m">從右側選一層甲板可單獨查看並顯示設施名稱；按「樓梯・電梯」可標出各層樓梯與電梯位置。</div>
+</div>
+
+<script src="vendor/three/three.min.js"></script>
+<script src="vendor/three/OrbitControls.js"></script>
+<script>
+(function(){
+/* ---------- plan → world mapping, one entry per deck (plan pixel coords from the brochure pages) ---------- */
+const DK = {
+  13:{S:.1034,cx:225,ys:1440}, 12:{S:.1034,cx:620,ys:1440}, 11:{S:.1034,cx:1015,ys:1440},
+  10:{S:.106,cx:206,ys:1365},  9:{S:.106,cx:566,ys:1365},   8:{S:.106,cx:925,ys:1365},
+   7:{S:.106,cx:205,ys:1365},  6:{S:.106,cx:566,ys:1365},   5:{S:.106,cx:925,ys:1362},
+   4:{S:.106,cx:205,ys:1362}
+};
+const DECK_LIST = [13,12,11,10,9,8,7,6,5,4];
+/* 各層說明＝手冊第 7–10 頁甲板圖下方的圖說 */
+const DECK_DESC = {
+  13:'綜合運動場、餐廳及酒吧', 12:'水上活動、水療中心、健身中心、沙龍、酒廊、動感地帶及 VR 探索館',
+  11:'皇宮、套房、露台及內側客房', 10:'皇宮、雲頂俱樂部、套房、露台及內側客房',
+  9:'套房、露台及內側客房', 8:'餐廳、精品店、海景及內側客房', 7:'大廳、劇院、餐廳及咖啡座',
+  6:'餐廳、海景及內側客房', 5:'海景及內側客房', 4:'海景、內側客房、醫務室'
+};
+const wx = (d,x) => (x - DK[d].cx) * DK[d].S;
+const wz = (d,y) => (y - DK[d].ys) * DK[d].S + 60;
+
+const CAT = {
+  dining:{c:0xe07a3f,n:'餐飲'}, fun:{c:0x2f9c95,n:'娛樂'}, kids:{c:0xf2b134,n:'親子'},
+  well:{c:0xa77bca,n:'美容及健身'}, sport:{c:0x5a9e4b,n:'運動及康樂'}, water:{c:0x3aa7e0,n:'水上活動'},
+  shop:{c:0xd1607f,n:'零售'}, svc:{c:0x9aa4ae,n:'設施・服務'}, deck:{c:0xd9c6a0,n:'戶外甲板'},
+  crew:{c:0x6d7f93,n:'船員區域'}, med:{c:0xd64545,n:'醫療'}, boat:{c:0xf08a24,n:'救生艇'},
+  stairs:{c:0xe8a400,n:'樓梯'}, lift:{c:0x1e88e5,n:'電梯'},
+  villa:{c:0xb89a52,n:'皇宮庭苑別墅'}, dlx:{c:0x79c4c4,n:'皇宮豪華套房'}, psuite:{c:0xc5d89a,n:'皇宮套房'},
+  bal:{c:0x9b4d9b,n:'露台客房'}, ocean:{c:0x23305a,n:'海景客房'},
+  ins:{c:0x4f93cf,n:'內側客房'}, acc:{c:0xa0582e,n:'無障礙內側客房'}
+};
+const CABIN_CATS = new Set(['villa','dlx','psuite','bal','ocean','ins','acc']);
+
+/* ---------- canvas textures ---------- */
+function canvasTex(w,h,draw){
+  const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h);
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4; return t;
+}
+const woodTex = canvasTex(256,256,(x,w,h)=>{
+  for(let i=0;i<16;i++){
+    const l = 58 + ((i*37)%11) - 5;
+    x.fillStyle = `hsl(32,38%,${l}%)`; x.fillRect(0,i*16,w,16);
+    x.fillStyle = 'rgba(60,40,20,.35)'; x.fillRect(0,i*16+15,w,1);
+    const off = (i*73)%256; x.fillRect(off,i*16,1,16); x.fillRect((off+128)%256,i*16,1,16);
+  }
+});
+woodTex.repeat.set(0.22,0.22);
+const carpetTex = canvasTex(64,64,(x,w,h)=>{
+  x.fillStyle='#d8d2c7'; x.fillRect(0,0,w,h);
+  for(let i=0;i<500;i++){ x.fillStyle=`rgba(90,80,70,${Math.random()*.08})`; x.fillRect(Math.random()*w,Math.random()*h,1,1); }
+});
+carpetTex.repeat.set(0.3,0.3);
+function windowTex(style){
+  return canvasTex(128,64,(x,w,h)=>{
+    x.fillStyle='#f5f7f9'; x.fillRect(0,0,w,h);
+    if(style==='balcony'){
+      x.fillStyle='#2b4a66'; x.fillRect(6,6,w-12,h-12);
+      x.fillStyle='rgba(190,220,240,.55)'; x.fillRect(6,h*0.55,w-12,h*0.45-6);
+      x.fillStyle='#f5f7f9'; x.fillRect(w-7,0,7,h); x.fillRect(0,0,7,h);
+    } else if(style==='public'){
+      const g=x.createLinearGradient(0,10,0,h-12); g.addColorStop(0,'#3d6788'); g.addColorStop(1,'#1d3a55');
+      x.fillStyle=g; x.fillRect(0,12,w,h-24);
+      x.fillStyle='#e3e8ec'; x.fillRect(w-3,12,3,h-24);
+    } else {
+      const g=x.createLinearGradient(0,14,0,44); g.addColorStop(0,'#46739a'); g.addColorStop(1,'#1f3d5a');
+      x.fillStyle=g; x.fillRect(22,16,w-44,28);
+    }
+  });
+}
+const WIN = {cabin:windowTex('cabin'), balcony:windowTex('balcony'), public:windowTex('public')};
+const waterTex = canvasTex(128,128,(x,w,h)=>{
+  x.fillStyle='#3aa7e0'; x.fillRect(0,0,w,h);
+  x.strokeStyle='rgba(255,255,255,.35)'; x.lineWidth=2;
+  for(let i=0;i<14;i++){ x.beginPath(); const y=Math.random()*h; x.moveTo(0,y);
+    for(let k=0;k<=8;k++) x.lineTo(k*16, y+Math.sin(k+i)*5); x.stroke(); }
+});
+waterTex.repeat.set(2,2);
+const courtTex = canvasTex(256,512,(x,w,h)=>{
+  x.fillStyle='#3f8a4a'; x.fillRect(0,0,w,h);
+  x.fillStyle='#2f6fa8'; x.fillRect(20,20,w-40,h-40);
+  x.strokeStyle='#fff'; x.lineWidth=5; x.strokeRect(20,20,w-40,h-40);
+  x.beginPath(); x.moveTo(20,h/2); x.lineTo(w-20,h/2); x.stroke();
+  x.beginPath(); x.arc(w/2,h/2,40,0,Math.PI*2); x.stroke();
+  x.beginPath(); x.arc(w/2,20,70,0,Math.PI); x.stroke();
+  x.beginPath(); x.arc(w/2,h-20,70,Math.PI,0); x.stroke();
+});
+const trackTex = canvasTex(64,64,(x,w,h)=>{
+  x.fillStyle='#b5523b'; x.fillRect(0,0,w,h);
+  x.fillStyle='#fff'; x.fillRect(0,0,3,h); x.fillRect(w/2-1,0,2,h); x.fillRect(w-3,0,3,h);
+});
+
+/* ---------- renderer / scene ---------- */
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xcfdde6);
+scene.fog = new THREE.Fog(0xcfdde6, 380, 800);
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 1500);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI*0.49;
+controls.minDistance = 12; controls.maxDistance = 520;
+controls.autoRotateSpeed = 0.8;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8aa3b5, 0.8));
+const sun = new THREE.DirectionalLight(0xfff6e8, 0.85);
+sun.position.set(70,200,50);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.bias = -0.0005;
+Object.assign(sun.shadow.camera,{left:-90,right:90,top:90,bottom:-90,near:10,far:400});
+scene.add(sun);
+
+const sea = new THREE.Mesh(new THREE.CircleGeometry(900,64), new THREE.MeshStandardMaterial({color:0x8fb2c6,roughness:.6,metalness:.1}));
+sea.rotation.x = -Math.PI/2; sea.position.y = -16; sea.receiveShadow = true;
+scene.add(sea);
+
+const decks = {};
+DECK_LIST.forEach(d=>{ decks[d] = new THREE.Group(); scene.add(decks[d]); });
+const pickMeshes = [], labels = [], allInfos = [];
+const labelBox = document.getElementById('labels');
+
+function addLabel(text, deck, x, y, z, cls){
+  const el = document.createElement('div');
+  el.className = 'lb' + (cls ? ' '+cls : '');
+  el.textContent = text;
+  el.hidden = true;
+  labelBox.appendChild(el);
+  labels.push({el, deck, p:new THREE.Vector3(x,y,z), kind:(cls||'area').split(' ')[0]});
+}
+function mat(color, o={}){
+  return new THREE.MeshStandardMaterial(Object.assign({color, roughness:.75}, o));
+}
+function info(d, name, cat, note){
+  const i = {deck:d, name, cat, note, refs:[]}; allInfos.push(i); return i;
+}
+
+/* ---------- instanced builder: every small part goes into one InstancedMesh per deck+kind ---------- */
+const GEO = {
+  box:new THREE.BoxGeometry(1,1,1), cyl:new THREE.CylinderGeometry(.5,.5,1,20),
+  sph:new THREE.SphereGeometry(.5,18,12), cone:new THREE.ConeGeometry(.5,1,18)
+};
+const KIND = {
+  box:{g:'box'}, cyl:{g:'cyl'}, sph:{g:'sph'}, cone:{g:'cone'},
+  metal:{g:'box', m:{metalness:.6, roughness:.3}}, mcyl:{g:'cyl', m:{metalness:.6, roughness:.3}},
+  glass:{g:'box', m:{roughness:.05, metalness:.1, transparent:true, opacity:.32}, op:.32, noShadow:true},
+  water:{g:'box', m:{map:waterTex, roughness:.1, metalness:.1, transparent:true, opacity:.88}, op:.88},
+  wcyl:{g:'cyl', m:{map:waterTex, roughness:.1, metalness:.1, transparent:true, opacity:.88}, op:.88},
+  wood:{g:'box', m:{map:woodTex, roughness:.8}}
+};
+const BUF = {};
+const _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _s = new THREE.Vector3();
+/* put: y is the bottom of the part */
+function put(d, kind, x, y, z, sx, sy, sz, color, inf, rot){
+  const key = d+'|'+kind;
+  (BUF[key] = BUF[key] || {d, kind, items:[]}).items.push({x,y,z,sx,sy,sz,color,inf,rot});
+}
+function finalize(){
+  Object.values(BUF).forEach(b=>{
+    const K = KIND[b.kind];
+    const material = mat(0xffffff, K.m || {});
+    const mesh = new THREE.InstancedMesh(GEO[K.g], material, b.items.length);
+    const M = new THREE.Matrix4();
+    mesh.userData = {deck:b.d, baseOpacity:K.op ?? 1, infos:[]};
+    b.items.forEach((it,i)=>{
+      _e.set(...(it.rot || [0,0,0])); _q.setFromEuler(_e);
+      _p.set(it.x, it.y + it.sy/2, it.z); _s.set(it.sx, it.sy, it.sz);
+      M.compose(_p,_q,_s); mesh.setMatrixAt(i, M);
+      const c = new THREE.Color(it.color); mesh.setColorAt(i, c);
+      mesh.userData.infos[i] = it.inf || null;
+      if(it.inf) it.inf.refs.push({m:mesh, i, c});
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if(mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    mesh.castShadow = !K.noShadow; mesh.receiveShadow = true;
+    decks[b.d].add(mesh);
+    if(mesh.userData.infos.some(Boolean)) pickMeshes.push(mesh);
+  });
+}
+/* single (non-instanced) meshes that can still be hovered */
+function single(d, mesh, inf, op=1){
+  mesh.castShadow = mesh.receiveShadow = true;
+  mesh.userData = {deck:d, baseOpacity:op, info:inf};
+  decks[d].add(mesh);
+  if(inf){ inf.refs.push({m:mesh, i:-1}); pickMeshes.push(mesh); }
+  return mesh;
+}
+
+/* world rectangle from plan pixels */
+function R(d,x0,y0,x1,y1){
+  const a=wx(d,x0), b=wx(d,x1), c=wz(d,y0), e=wz(d,y1);
+  const r = {x0:Math.min(a,b), x1:Math.max(a,b), z0:Math.min(c,e), z1:Math.max(c,e)};
+  r.w = r.x1-r.x0; r.dz = r.z1-r.z0; r.cx = (r.x0+r.x1)/2; r.cz = (r.z0+r.z1)/2;
+  return r;
+}
+function sub(r, x0,z0,x1,z1){ // fractional sub-rectangle
+  return R2(r.x0+r.w*x0, r.z0+r.dz*z0, r.x0+r.w*x1, r.z0+r.dz*z1);
+}
+function R2(x0,z0,x1,z1){ const r={x0,z0,x1,z1}; r.w=x1-x0; r.dz=z1-z0; r.cx=(x0+x1)/2; r.cz=(z0+z1)/2; return r; }
+function grid(r, m, sx, sz, fn){
+  const nx = Math.max(1, Math.floor((r.w-2*m)/sx)+1), nz = Math.max(1, Math.floor((r.dz-2*m)/sz)+1);
+  const ox = r.cx-(nx-1)*sx/2, oz = r.cz-(nz-1)*sz/2;
+  for(let i=0;i<nx;i++) for(let j=0;j<nz;j++) fn(ox+i*sx, oz+j*sz, i, j);
+}
+const lighten = (hex, t) => new THREE.Color(hex).lerp(new THREE.Color(0xffffff), t).getHex();
+const pickc = (a,n) => a[((n%a.length)+a.length)%a.length];
+const darken  = (hex, t) => new THREE.Color(hex).lerp(new THREE.Color(0x000000), t).getHex();
+
+/* ---------- furniture kits (world rect r, info inf) ---------- */
+const WOOD = 0x8a5f3c, WHITE = 0xf7f6f2, STEEL = 0xc3cad1, DARK = 0x2d3640;
+function chair(d,x,z,inf,rotY=0,color=WOOD){
+  put(d,'box',x,0.1,z,.42,.42,.42,color,inf,[0,rotY,0]);
+  const bx = x - Math.sin(rotY)*.2, bz = z - Math.cos(rotY)*.2;
+  put(d,'box',bx,0.52,bz,.42,.45,.07,color,inf,[0,rotY,0]);
+}
+const F = {
+  tables(d,r,inf,o={}){
+    const sp = o.sp || 2.3, top = o.top || WHITE, cc = o.chair || WOOD;
+    grid(r, 1.0, sp, sp, (x,z)=>{
+      if(o.square) put(d,'box',x,0.72,z,1.0,.06,1.0,top,inf);
+      else put(d,'cyl',x,0.72,z,1.1,.06,1.1,top,inf);
+      put(d,'mcyl',x,0.1,z,.1,.62,.1,0x777777,inf);
+      chair(d,x,z+.8,inf,Math.PI,cc); chair(d,x,z-.8,inf,0,cc);
+      chair(d,x+.8,z,inf,-Math.PI/2,cc); chair(d,x-.8,z,inf,Math.PI/2,cc);
+    });
+  },
+  buffet(d,r,inf){
+    const L = r.dz*0.62;
+    put(d,'metal',r.cx,0.1,r.cz,1.3,.85,L,STEEL,inf);
+    put(d,'glass',r.cx,0.95,r.cz,1.1,.45,L,0xdff3ff,inf);
+    for(let k=0;k<6;k++) put(d,'mcyl',r.cx,0.95,r.cz-L/2+L*(k+.5)/6,.5,.12,.5,0xe9ecef,inf);
+    F.tables(d,R2(r.x0,r.z0,r.cx-1.2,r.z1),inf,{sp:2.2});
+    F.tables(d,R2(r.cx+1.2,r.z0,r.x1,r.z1),inf,{sp:2.2});
+  },
+  bar(d,r,inf,o={}){
+    const L = Math.min(r.dz*0.75, 9), x = r.x1-1.0;
+    put(d,'box',x,0.1,r.cz,.7,1.05,L,o.counter||0x5a3d2b,inf);
+    put(d,'box',x,1.15,r.cz,.9,.06,L+.2,0x2a2a2a,inf);
+    put(d,'box',r.x1-.25,0.1,r.cz,.3,2.0,L,0x6b4a33,inf);
+    for(let k=0;k<6;k++) put(d,'sph',r.x1-.25,1.3+((k%2)*.3),r.cz-L/2+L*(k+.5)/6,.16,.28,.16,[0x3d8a5a,0xa8402b,0xd8b84a][k%3],inf);
+    const n = Math.max(2, Math.floor(L/0.9));
+    for(let k=0;k<n;k++){ const z=r.cz-L/2+L*(k+.5)/n; put(d,'mcyl',x-.8,0.1,z,.08,.6,.08,0x666666,inf); put(d,'cyl',x-.8,0.7,z,.38,.08,.38,0x2a2a2a,inf); }
+    if(r.w > 4) F.tables(d,R2(r.x0,r.z0,r.x1-2.4,r.z1),inf,{sp:2.1,top:o.top});
+  },
+  lounge(d,r,inf,o={}){
+    const sofa = o.sofa || 0x8d7d6b;
+    grid(r, 1.4, 3.6, 3.2, (x,z)=>{
+      put(d,'box',x,0.1,z-.9,2.0,.4,.8,sofa,inf); put(d,'box',x,0.1,z-1.25,2.0,.85,.18,darken(sofa,.15),inf);
+      put(d,'box',x-1.2,0.1,z,.8,.4,1.4,sofa,inf); put(d,'box',x+1.2,0.1,z,.8,.4,1.4,sofa,inf);
+      put(d,'cyl',x,0.1,z,.9,.38,.9,o.table||0x3b2f28,inf);
+      if(o.lamp) put(d,'sph',x,1.0,z,.3,.3,.3,0xffe7a8,inf);
+    });
+  },
+  theatre(d,r,inf){
+    const sd = Math.min(3.2, r.dz*0.22), sz = r.z0 + sd/2;
+    put(d,'wood',r.cx,0.1,sz,r.w*0.62,.9,sd,0x9a6a40,inf);
+    put(d,'box',r.cx,0.1,r.z0+.15,r.w*0.7,3.0,.25,0x9e1b2b,inf);
+    put(d,'box',r.cx-r.w*0.31,0.1,r.z0+.6,.5,2.8,.6,0x7c1522,inf);
+    put(d,'box',r.cx+r.w*0.31,0.1,r.z0+.6,.5,2.8,.6,0x7c1522,inf);
+    const cz = r.z0 + sd*0.5;
+    let row = 0;
+    for(let rad = sd+1.2; rad < r.dz-0.5; rad += 0.72, row++){
+      const step = 0.56/rad;
+      for(let a=-1.25; a<=1.25; a+=step){
+        const x = r.cx + Math.sin(a)*rad, z = cz + Math.cos(a)*rad;
+        if(x < r.x0+.4 || x > r.x1-.4 || z > r.z1-.3) continue;
+        put(d,'box',x,0.1+row*0.05,z,.46,.42,.42,0xb3263a,inf,[0,a,0]);
+        put(d,'box',x+Math.sin(a)*.22,0.4+row*0.05,z+Math.cos(a)*.22,.46,.45,.08,0x8c1d2d,inf,[0,a,0]);
+      }
+    }
+  },
+  casino(d,r,inf){
+    const inner = R2(r.x0+1.6, r.z0+.8, r.x1-1.6, r.z1-.8);
+    grid(inner, 1.4, 3.4, 3.0, (x,z)=>{
+      put(d,'cyl',x,0.1,z,2.0,.72,1.1,0x6b4a33,inf);
+      put(d,'cyl',x,0.82,z,1.8,.04,.95,0x1f6b3a,inf);
+      [[-.7,.75],[0,.85],[.7,.75]].forEach(([dx,dz])=>{ put(d,'mcyl',x+dx,0.1,z+dz,.08,.55,.08,0x666,inf); put(d,'cyl',x+dx,0.65,z+dz,.36,.08,.36,0x7a1f2b,inf); });
+    });
+    for(let z=r.z0+.6; z<r.z1-.4; z+=0.7){
+      [r.x0+.5, r.x1-.5].forEach((x,k)=>{
+        put(d,'box',x,0.1,z,.55,1.35,.55,0x2a2340,inf);
+        put(d,'box',x+(k?-.29:.29),0.85,z,.02,.4,.42,0x58c8ff,inf);
+        put(d,'cyl',x,1.45,z,.18,.12,.18,pickc([0xff4f6d,0xffd34f,0x5ce1a5],Math.floor(z*3)),inf);
+      });
+    }
+  },
+  arcade(d,r,inf){
+    for(let z=r.z0+.6; z<r.z1-.4; z+=0.85){
+      [r.x0+.55, r.x1-.55].forEach((x,k)=>{
+        put(d,'box',x,0.1,z,.65,1.6,.6,pickc([0x3b2a6b,0x1d4f7a,0x6b2a4a],Math.floor(z*2)),inf);
+        put(d,'box',x+(k?-.34:.34),1.0,z,.02,.45,.45,0x7cf0ff,inf);
+      });
+    }
+    put(d,'box',r.cx,0.1,r.cz,Math.min(2.2,r.w-2),.8,Math.min(1.2,r.dz-1),0x2f9c95,inf);
+  },
+  shop(d,r,inf){
+    for(let z=r.z0+.5; z<r.z1-.3; z+=1.1){
+      put(d,'box',r.x0+.35,0.1,z,.5,1.8,1.0,WHITE,inf);
+      put(d,'box',r.x1-.35,0.1,z,.5,1.8,1.0,WHITE,inf);
+      [0.5,1.0,1.5].forEach((h,k)=>{ put(d,'box',r.x0+.4,0.1+h,z,.35,.22,.8,pickc([0xd1607f,0x5a8ec9,0xe3b04b],k+Math.floor(z)),inf);
+                                     put(d,'box',r.x1-.4,0.1+h,z,.35,.22,.8,pickc([0x6bb38a,0xd1607f,0x9a7bd1],k+Math.floor(z)),inf); });
+    }
+    if(r.w > 2.6) grid(R2(r.x0+1.2,r.z0,r.x1-1.2,r.z1), .8, 1.8, 1.8, (x,z)=>{
+      put(d,'box',x,0.1,z,.9,.85,.9,0xece6dc,inf); put(d,'glass',x,0.95,z,.85,.35,.85,0xffffff,inf);
+    });
+  },
+  gym(d,r,inf){
+    grid(r, .9, 1.2, 2.2, (x,z)=>{
+      put(d,'box',x,0.1,z,.7,.3,1.7,0x2c2f33,inf);
+      put(d,'box',x,0.4,z,.62,.04,1.4,0x111111,inf);
+      put(d,'box',x,0.1,z-.8,.08,1.1,.08,0x8a8f96,inf);
+      put(d,'box',x,1.15,z-.8,.6,.25,.12,0x3c4652,inf);
+    });
+  },
+  spa(d,r,inf){
+    grid(r, 1.0, 1.6, 2.6, (x,z)=>{
+      put(d,'box',x,0.1,z,.8,.55,2.0,0xf1ede6,inf);
+      put(d,'box',x,0.65,z-.7,.6,.12,.35,0xffffff,inf);
+      put(d,'box',x,0.66,z+.3,.78,.04,.9,0xc8b4d8,inf);
+    });
+    put(d,'cyl',r.x1-1.3,0.1,r.z1-1.3,2.0,.5,2.0,0xe8e4dc,inf);
+    put(d,'wcyl',r.x1-1.3,0.3,r.z1-1.3,1.7,.32,1.7,0x6cc6ef,inf);
+  },
+  salon(d,r,inf){
+    for(let z=r.z0+.7; z<r.z1-.5; z+=1.1){
+      put(d,'cyl',r.x0+1.0,0.1,z,.6,.5,.6,0x2a2a2a,inf);
+      put(d,'box',r.x0+1.0,0.6,z,.6,.15,.6,0xb07c5a,inf);
+      put(d,'box',r.x0+.65,0.6,z,.12,.6,.6,0xb07c5a,inf);
+      put(d,'glass',r.x0+.22,0.9,z,.05,1.0,.8,0xe8f6ff,inf);
+    }
+  },
+  kids(d,r,inf){
+    const cols = [0xff6b6b,0xffd93d,0x6bcB77,0x4d96ff,0xc77dff];
+    grid(r, 1.0, 1.6, 1.6, (x,z,i,j)=>{
+      const c = cols[(i*3+j)%5];
+      if((i+j)%3===0) put(d,'box',x,0.1,z,.9,.9,.9,c,inf);
+      else if((i+j)%3===1) put(d,'cyl',x,0.1,z,.9,.5,.9,c,inf);
+      else put(d,'sph',x,0.1,z,.7,.7,.7,c,inf);
+    });
+    put(d,'box',r.cx,0.1,r.z0+1.2,1.0,1.8,1.0,0xffd93d,inf);
+    put(d,'box',r.cx,0.6,r.z0+2.6,.8,.12,2.6,0xff6b6b,inf,[0.55,0,0]);
+  },
+  mahjong(d,r,inf){ F.tables(d,r,inf,{square:true,top:0x1f6b3a,sp:2.2}); },
+  vr(d,r,inf){
+    grid(r, 1.0, 1.8, 1.8, (x,z)=>{
+      put(d,'cyl',x,0.1,z,1.3,.12,1.3,0x2b3440,inf);
+      put(d,'mcyl',x,0.22,z,1.2,.06,1.2,0x67e8f9,inf);
+      put(d,'mcyl',x+.55,0.22,z,.06,1.1,.06,0x8a8f96,inf);
+      put(d,'box',x+.45,1.25,z,.3,.12,.3,0x2f9c95,inf);
+    });
+  },
+  reception(d,r,inf){
+    put(d,'box',r.cx,0.1,r.cz,Math.min(r.w*0.7,6),1.05,.7,0xf1ece2,inf);
+    put(d,'box',r.cx,1.15,r.cz,Math.min(r.w*0.7,6)+.2,.06,.9,0x5a3d2b,inf);
+    put(d,'box',r.cx,0.1,r.cz-.9,Math.min(r.w*0.7,6),2.2,.12,0xc9a96e,inf);
+  },
+  med(d,r,inf){
+    grid(r, 1.0, 1.6, 2.6, (x,z)=>{
+      put(d,'box',x,0.1,z,.9,.6,2.0,0xffffff,inf);
+      put(d,'box',x,0.7,z-.7,.7,.12,.4,0xdfe9f2,inf);
+      put(d,'box',x+.7,0.1,z,.04,2.0,2.2,0xbfe0e6,inf);
+    });
+  },
+  bridge(d,r,inf){
+    for(let x=r.x0+1.5; x<r.x1-1.0; x+=1.4){
+      put(d,'box',x,0.1,r.z0+.9,1.1,.95,.7,DARK,inf);
+      put(d,'box',x,1.05,r.z0+.75,1.0,.4,.06,0x58c8ff,inf,[-.4,0,0]);
+    }
+    put(d,'cyl',r.cx,0.1,r.cz+.3,.8,.9,.8,0x444b55,inf);
+    put(d,'glass',r.cx,0.1,r.z0+.1,r.w-.4,2.4,.08,0xbfe6ff,inf);
+  }
+};
+
+/* ---------- room / area / cabin / stairs / lift builders ---------- */
+function walls(d, r, h, inf, band){
+  const t=.14, wc = 0xf3f1ec;
+  put(d,'box',r.cx,0,r.z0+t/2,r.w,h,t,wc,inf); put(d,'box',r.cx,0,r.z1-t/2,r.w,h,t,wc,inf);
+  put(d,'box',r.x0+t/2,0,r.cz,t,h,r.dz,wc,inf); put(d,'box',r.x1-t/2,0,r.cz,t,h,r.dz,wc,inf);
+  if(band!=null){
+    put(d,'box',r.cx,h,r.z0+t/2,r.w,.12,t+.04,band,inf); put(d,'box',r.cx,h,r.z1-t/2,r.w,.12,t+.04,band,inf);
+    put(d,'box',r.x0+t/2,h,r.cz,t+.04,.12,r.dz,band,inf); put(d,'box',r.x1-t/2,h,r.cz,t+.04,.12,r.dz,band,inf);
+  }
+}
+/* indoor room with walls, a coloured wall-top band and furniture */
+function room(d, x0,y0,x1,y1, cat, name, o={}){
+  const r = R(d,x0,y0,x1,y1), inf = o.inf || info(d, name.trim(), cat, o.note);
+  const h = o.h || 2.6;
+  put(d, o.floorWood ? 'wood' : 'box', r.cx, 0, r.cz, r.w-.05, .08, r.dz-.05, o.floor || lighten(CAT[cat].c,.55), inf);
+  if(o.walls!==false) walls(d, r, h, inf, CAT[cat].c);
+  if(o.f) F[o.f](d, r, inf, o.fo||{});
+  if(!o.noLabel) addLabel(o.label || name.trim(), d, r.cx, (o.walls===false?1.2:h+.4), r.cz);
+  return inf;
+}
+/* open area: floor only */
+function area(d, x0,y0,x1,y1, cat, name, o={}){
+  const r = R(d,x0,y0,x1,y1), inf = o.inf || info(d, name.trim(), cat, o.note);
+  put(d, o.kind||'box', r.cx, 0, r.cz, r.w, o.h||.12, r.dz, o.color ?? CAT[cat].c, inf);
+  if(!o.noLabel) addLabel(o.label || name.trim(), d, r.cx, (o.h||.12)+.6, r.cz);
+  return inf;
+}
+const CAB_H = 2.2;
+function cabin(d, x0,y0,x1,y1, cat){
+  const r = R(d,x0,y0,x1,y1), inf = info(d, CAT[cat].n, cat, null), c = CAT[cat].c;
+  const alongX = r.w >= r.dz;                    // long axis of the cabin
+  const L = alongX ? r.w : r.dz, Wd = alongX ? r.dz : r.w;
+  put(d,'box',r.cx,0,r.cz,r.w-.04,.06,r.dz-.04,lighten(c,.45),inf);
+  const t=.1;
+  if(alongX){ put(d,'box',r.cx,0,r.z0+t/2,r.w,CAB_H,t,0xf4f2ee,inf); put(d,'box',r.cx,0,r.z1-t/2,r.w,CAB_H,t,0xf4f2ee,inf); }
+  else      { put(d,'box',r.x0+t/2,0,r.cz,t,CAB_H,r.dz,0xf4f2ee,inf); put(d,'box',r.x1-t/2,0,r.cz,t,CAB_H,r.dz,0xf4f2ee,inf); }
+  const bw = Math.min(Wd*0.62, 1.8), bl = Math.min(L*0.42, 2.1);
+  const bx = alongX ? [bl, bw] : [bw, bl];
+  put(d,'box',r.cx,0.06,r.cz,bx[0],.42,bx[1],WHITE,inf);
+  put(d,'box',r.cx + (alongX?bl*0.12:0),0.48,r.cz + (alongX?0:bl*0.12),alongX?bl*0.72:bw*1.01,.06,alongX?bw*1.01:bl*0.72,c,inf);
+  if(Wd > 1.6 && L > 3.4) put(d,'box',r.cx + (alongX?-L*0.33:0),0.06,r.cz + (alongX?0:-L*0.33),alongX?.6:1.0,.42,alongX?1.0:.6,0x9c8b78,inf);
+}
+function col(d,x0,x1,y0,y1,n,cat){ const st=(y1-y0)/n; for(let i=0;i<n;i++) cabin(d,x0,y0+i*st,x1,y0+(i+1)*st,cat); }
+function row(d,x0,x1,y0,y1,n,cat){ const st=(x1-x0)/n; for(let i=0;i<n;i++) cabin(d,x0+i*st,y0,x0+(i+1)*st,y1,cat); }
+
+const cores = [];
+function stairs(d, x0,y0,x1,y1){
+  const r = R(d,x0,y0,x1,y1), inf = info(d,'樓梯','stairs','上下樓層的樓梯間');
+  const n = 9, alongX = r.w > r.dz;
+  const L = alongX ? r.w : r.dz;
+  for(let k=0;k<n;k++){
+    const h = 0.25 + k*0.27, f = (k+.5)/n;
+    if(alongX) put(d,'box',r.x0+L*f,0,r.cz,L/n,h,r.dz*0.86,k%2?0xd9d2c4:0xcfc6b5,inf);
+    else       put(d,'box',r.cx,0,r.z0+L*f,r.w*0.86,h,L/n,k%2?0xd9d2c4:0xcfc6b5,inf);
+  }
+  put(d,'box',r.cx,0,r.cz,r.w,.08,r.dz,0xb8ad99,inf);
+  if(alongX){ put(d,'metal',r.cx,2.6,r.z0+.05,r.w,.06,.06,0x8a8f96,inf); put(d,'metal',r.cx,2.6,r.z1-.05,r.w,.06,.06,0x8a8f96,inf); }
+  else      { put(d,'metal',r.x0+.05,2.6,r.cz,.06,.06,r.dz,0x8a8f96,inf); put(d,'metal',r.x1-.05,2.6,r.cz,.06,.06,r.dz,0x8a8f96,inf); }
+  cores.push(inf);
+  addLabel('樓梯', d, r.cx, 3.1, r.cz, 'core stairs');
+}
+function lift(d, x0,y0,x1,y1, n=3){
+  const r = R(d,x0,y0,x1,y1), inf = info(d,'電梯','lift',`${n} 部電梯`);
+  const alongX = r.w >= r.dz, L = alongX ? r.w : r.dz, Wd = alongX ? r.dz : r.w;
+  for(let k=0;k<n;k++){
+    const c = (k+.5)/n, s = L/n - .25;
+    const x = alongX ? r.x0+L*c : r.cx, z = alongX ? r.cz : r.z0+L*c;
+    put(d,'metal',x,0,z,alongX?s:Wd*.9,2.75,alongX?Wd*.9:s,0xaeb7c0,inf);
+    put(d,'box',x+(alongX?0:Wd*.46),0.05,z+(alongX?Wd*.46:0),alongX?s*.6:.04,2.1,alongX?.04:s*.6,0x5b6670,inf);
+    put(d,'box',x,2.75,z,alongX?s:Wd*.9,.08,alongX?Wd*.9:s,0x2b6cb0,inf);
+  }
+  cores.push(inf);
+  addLabel('電梯', d, r.cx, 3.3, r.cz, 'core lift');
+}
+function loungers(d, xs, y0, y1, step, inf, umbrella){
+  let k=0;
+  for(let y=y0;y<y1;y+=step, k++) xs.forEach(px=>{
+    const x = wx(d,px), z = wz(d,y);
+    put(d,'box',x,0.2,z,1.5,.12,.62,WHITE,inf);
+    put(d,'box',x-.55,0.35,z,.6,.12,.62,WHITE,inf,[0,0,0.75]);
+    put(d,'mcyl',x+.6,0,z,.06,.22,.06,0x999999,inf); put(d,'mcyl',x-.5,0,z,.06,.22,.06,0x999999,inf);
+    if(umbrella && k%3===1){ put(d,'mcyl',x+1.0,0,z+.6,.06,2.0,.06,0xdddddd,inf); put(d,'cone',x+1.0,1.75,z+.6,1.8,.55,1.8,0xffffff,inf); }
+  });
+}
+function pool(d, x0,y0,x1,y1, name, note){
+  const r = R(d,x0,y0,x1,y1), inf = info(d,name,'water',note);
+  put(d,'box',r.cx,0,r.cz,r.w+.8,.35,r.dz+.8,0xf4f1ea,inf);
+  put(d,'water',r.cx,0.05,r.cz,r.w,.38,r.dz,0xffffff,inf);
+  put(d,'metal',r.x0+.3,0.35,r.z0+.6,.05,.6,.05,0xcfd5db,inf); put(d,'metal',r.x0+.7,0.35,r.z0+.6,.05,.6,.05,0xcfd5db,inf);
+  addLabel(name,d,r.cx,1.0,r.cz);
+  return inf;
+}
+
+/* ---------- deck outlines (plan pixels) ---------- */
+function sternArc(cx, half, yBot, r){
+  const out=[]; for(let i=0;i<=6;i++){ const a=i/6*Math.PI/2; out.push([cx+half-r+r*Math.cos(a), yBot-r+r*Math.sin(a)]); }
+  return out;
+}
+function closeSym(cx, Rr){
+  const last = Rr[Rr.length-1]; Rr.push([cx,last[1]]);
+  const L = Rr.slice(1,-1).map(([x,y])=>[2*cx-x,y]).reverse();
+  return Rr.concat(L);
+}
+function roundedOutline(cx, half, yTop, yBot, rT, rB){
+  const Rr=[[cx,yTop]];
+  for(let i=0;i<=6;i++){ const a=-Math.PI/2+i/6*Math.PI/2; Rr.push([cx+half-rT+rT*Math.cos(a), yTop+rT+rT*Math.sin(a)]); }
+  return closeSym(cx, Rr.concat(sternArc(cx,half,yBot,rB)));
+}
+function pointedOutline(cx, half, yTip, yFull, yBot, rB, inset){
+  const Rr=[];
+  for(let i=0;i<=16;i++){ const t=i/16; Rr.push([cx+half*(1-Math.pow(1-t,2.2)), yTip+(yFull-yTip)*t]); }
+  if(inset){ const [a,b,dx]=inset; Rr.push([cx+half,a-8],[cx+half-dx,a],[cx+half-dx,b],[cx+half,b+8]); }
+  return closeSym(cx, Rr.concat(sternArc(cx,half,yBot,rB)));
+}
+const UPPER = [[-35,282],[35,282],[58,300],[112,316],[116,346],[100,352],[100,1395],[92,1425],[72,1440],
+  [-72,1440],[-92,1425],[-100,1395],[-100,352],[-116,346],[-112,316],[-58,300]];
+const OUTLINE = {
+  13: UPPER.map(([dx,y])=>[225+dx,y]), 12: UPPER.map(([dx,y])=>[620+dx,y]), 11: UPPER.map(([dx,y])=>[1015+dx,y]),
+  10: roundedOutline(206, 89, 233, 1365, 45, 60),
+   9: roundedOutline(566, 89, 232, 1365, 45, 45),
+   8: pointedOutline(925, 89, 78, 255, 1365, 50, [520,1135,12]),
+   7: pointedOutline(205, 90, 88, 330, 1365, 50),
+   6: pointedOutline(566, 89, 113, 330, 1365, 50),
+   5: pointedOutline(925, 89, 158, 330, 1362, 50),
+   4: pointedOutline(205, 89, 198, 440, 1362, 50)
+};
+function shapeOf(d, pts){
+  const s = new THREE.Shape();
+  pts.forEach(([x,y],i)=>{ const X=wx(d,x), Y=-wz(d,y); i? s.lineTo(X,Y) : s.moveTo(X,Y); });
+  s.closePath(); return s;
+}
+function holePath(d, x0,y0,x1,y1){
+  const p = new THREE.Path();
+  [[x0,y0],[x0,y1],[x1,y1],[x1,y0]].forEach(([x,y],i)=>{ const X=wx(d,x), Y=-wz(d,y); i? p.lineTo(X,Y) : p.moveTo(X,Y); });
+  p.closePath(); return p;
+}
+/* perimeter wall strip with a repeating window texture (or a glass railing) */
+function perimeter(d, h, style){
+  const pts = OUTLINE[d].map(([x,y])=>[wx(d,x),wz(d,y)]);
+  const pos=[], uv=[], idx=[]; let acc=0; const rep = 1.6;
+  for(let i=0;i<pts.length;i++){
+    const a=pts[i], b=pts[(i+1)%pts.length], len=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    const v=pos.length/3;
+    pos.push(a[0],0,a[1], b[0],0,b[1], b[0],h,b[1], a[0],h,a[1]);
+    uv.push(acc/rep,0, (acc+len)/rep,0, (acc+len)/rep,1, acc/rep,1);
+    idx.push(v,v+1,v+2, v,v+2,v+3);
+    acc+=len;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
+  g.setIndex(idx); g.computeVertexNormals();
+  const m = style==='glass'
+    ? new THREE.MeshStandardMaterial({color:0xcfeaf7, transparent:true, opacity:.3, side:THREE.DoubleSide, roughness:.05})
+    : new THREE.MeshStandardMaterial({map:WIN[style], side:THREE.DoubleSide, roughness:.5});
+  const mesh = new THREE.Mesh(g,m);
+  mesh.userData = {deck:d, baseOpacity: style==='glass'?.3:1};
+  mesh.castShadow = style!=='glass'; mesh.receiveShadow = true;
+  decks[d].add(mesh);
+  const top = OUTLINE[d].map(([x,y])=>new THREE.Vector3(wx(d,x),h,wz(d,y))); top.push(top[0].clone());
+  const rail = new THREE.Line(new THREE.BufferGeometry().setFromPoints(top), new THREE.LineBasicMaterial({color:0x14263a, transparent:true, opacity:.5}));
+  rail.userData = {deck:d, baseOpacity:.5};
+  decks[d].add(rail);
+}
+function slab(d, o={}){
+  const s = shapeOf(d, OUTLINE[d]);
+  if(o.hole) s.holes.push(holePath(d, ...o.hole));
+  const g = new THREE.ExtrudeGeometry(s,{depth:0.6, bevelEnabled:false});
+  g.rotateX(-Math.PI/2); g.translate(0,-0.6,0);
+  const m = o.wood ? new THREE.MeshStandardMaterial({map:woodTex, roughness:.85}) : new THREE.MeshStandardMaterial({map:carpetTex, color:0xffffff, roughness:.95});
+  const mesh = new THREE.Mesh(g, [m, new THREE.MeshStandardMaterial({color:0xf2f2f0})]);
+  mesh.receiveShadow = true; mesh.userData = {deck:d, baseOpacity:1};
+  decks[d].add(mesh);
+  perimeter(d, o.wall || 2.8, o.style || 'cabin');
+}
+/* hull body under the lowest deck */
+(function(){
+  const g = new THREE.ExtrudeGeometry(shapeOf(4, OUTLINE[4]),{depth:7,bevelEnabled:false});
+  g.rotateX(-Math.PI/2); g.translate(0,-7.6,0);
+  const hull = new THREE.Mesh(g,[mat(0xf4f6f8),mat(0x1d3557,{roughness:.4,metalness:.2})]);
+  hull.castShadow = hull.receiveShadow = true; hull.userData = {deck:4, baseOpacity:1};
+  decks[4].add(hull);
+  const g2 = new THREE.ExtrudeGeometry(shapeOf(4, OUTLINE[4]),{depth:2.2,bevelEnabled:false});
+  g2.rotateX(-Math.PI/2); g2.translate(0,-9.8,0); g2.scale(0.97,1,0.985);
+  const red = new THREE.Mesh(g2, mat(0x9c2a2a));
+  red.userData = {deck:4, baseOpacity:1}; decks[4].add(red);
+})();
+
+/* ============ DECK 13 ============ */
+slab(13, {hole:[145,715,305,975], wood:true, wall:1.1, style:'glass'});
+area(13,140,330,310,425,'deck','瞭望台甲板',{kind:'wood',color:0xffffff,note:'船頭最高處的露天平台（駕駛台上方）'});
+(function(){ const r=R(13,140,330,310,425), inf=allInfos[allInfos.length-1];
+  for(let x=r.x0+2; x<r.x1-1; x+=3) put(13,'mcyl',x,0.1,r.z0+1,.12,1.0,.12,0x8a8f96,inf); })();
+room(13,182,445,270,545,'kids','小小夢想家天地',{f:'kids',note:'兒童俱樂部'});
+room(13,285,460,312,540,'kids','小小夢想家天地',{f:'kids',noLabel:true,note:'兒童俱樂部（右舷側）'});
+stairs(13,200,560,240,598);
+room(13,162,610,288,650,'dining','露天吧',{walls:false,f:'bar',floorWood:true,floor:0xffffff,note:'海鮮燒烤餐廳旁的露天酒吧；入座免費，飲品自費'});
+room(13,162,650,288,690,'dining','海鮮燒烤餐廳',{walls:false,f:'tables',floorWood:true,floor:0xffffff,fo:{sp:2.1},note:'露天炭烤海鮮與輕食（付費）'});
+(function(){ const inf=info(13,'日光甲板','deck','泳池上方兩舷日光浴區');
+  loungers(13,[139],770,985,11,inf,false); loungers(13,[311],770,985,11,inf,false);
+  addLabel('日光甲板',13,wx(13,139),1.2,wz(13,870)); addLabel('日光甲板',13,wx(13,311),1.2,wz(13,870)); })();
+room(13,198,898,252,944,'svc','未標名區塊',{noLabel:true,note:'手冊甲板圖未標示用途'});
+lift(13,200,948,250,966,3);
+stairs(13,203,972,247,1000);
+(function(){ // funnel
+  const r=R(13,195,1005,255,1275), inf=info(13,'煙囪','svc','船隻煙囪結構');
+  put(13,'cyl',r.cx,0,r.cz,r.w,7.5,r.dz,0xc8202f,inf);
+  put(13,'cyl',r.cx,7.5,r.cz,r.w*0.95,.9,r.dz*0.95,0x1a1a1a,inf);
+  put(13,'box',r.cx,0,r.cz,r.w*0.6,1.4,r.dz*1.02,0xf3f1ec,inf);
+})();
+(function(){ // jogging track
+  const inf = info(13,'緩跑徑','sport','沿船尾兩側的露天跑道');
+  [[132,700,140,1300],[310,700,318,1300],[132,1288,318,1298]].forEach(a=>{
+    const r=R(13,...a); put(13,'box',r.cx,0,r.cz,r.w,.12,r.dz,0xb5523b,inf);
+    if(r.dz>r.w){ put(13,'box',r.cx,0.12,r.cz,.06,.02,r.dz,0xffffff,inf); }
+  });
+  addLabel('緩跑徑',13,wx(13,136),1,wz(13,1100));
+})();
+(function(){ // sports courts
+  [[268,1160,308,1268],[142,1160,182,1268]].forEach((a,k)=>{
+    // 手冊只在右舷那塊標「綜合運動場」，左舷同位置的方塊沒標名
+    const r=R(13,...a), inf = k===0 ? info(13,'綜合運動場','sport','船尾的圍網多功能球場') : info(13,'未標名區塊','svc','手冊甲板圖未標示用途（與右舷綜合運動場對稱）');
+    const p = single(13, new THREE.Mesh(new THREE.BoxGeometry(r.w,.15,r.dz), [mat(0x3f8a4a),mat(0x3f8a4a),new THREE.MeshStandardMaterial({map:courtTex,roughness:.8}),mat(0x3f8a4a),mat(0x3f8a4a),mat(0x3f8a4a)]), inf);
+    p.position.set(r.cx,.075,r.cz);
+    [r.z0+.3, r.z1-.3].forEach(z=>{ put(13,'mcyl',r.cx,0,z,.12,2.8,.12,0x666666,inf); put(13,'box',r.cx,2.6,z,1.4,.9,.06,0xffffff,inf); put(13,'cyl',r.cx,2.6,z+(z<r.cz?.35:-.35),.5,.04,.5,0xff6a00,inf); });
+    for(let z=r.z0;z<=r.z1;z+=1.2){ put(13,'box',r.x0,0,z,.04,2.2,.04,0x777777,null); put(13,'box',r.x1,0,z,.04,2.2,.04,0x777777,null); }
+    if(k===0) addLabel('綜合運動場',13,r.cx,3.2,r.cz);
+  });
+})();
+(function(){ // helipad
+  const c = document.createElement('canvas'); c.width=c.height=256;
+  const x = c.getContext('2d');
+  x.fillStyle='#4a5a6a'; x.fillRect(0,0,256,256);
+  x.strokeStyle='#f3c73a'; x.lineWidth=12; x.beginPath(); x.arc(128,128,100,0,Math.PI*2); x.stroke();
+  x.fillStyle='#fff'; x.font='bold 150px sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('H',128,136);
+  const inf = info(13,'直升機坪','svc','船尾直升機起降區（非旅客設施）');
+  const pad = single(13, new THREE.Mesh(new THREE.CylinderGeometry(7.5,7.5,0.3,48),
+    [mat(0x4a5a6a), new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(c),roughness:.8}), mat(0x4a5a6a)]), inf);
+  pad.position.set(0,0.15,wz(13,1352));
+  for(let a=0;a<Math.PI*2;a+=Math.PI/8) put(13,'sph',Math.cos(a)*7.2,.25,wz(13,1352)+Math.sin(a)*7.2,.25,.2,.25,0x9cff9c,inf);
+  addLabel('直升機坪',13,0,1,wz(13,1352));
+})();
+
+/* ============ DECK 12 ============ */
+slab(12, {wood:true, wall:1.1, style:'glass'});
+room(12,540,330,700,455,'dining','棕櫚閣',{f:'lounge',fo:{sofa:0xc9b48e,lamp:true},note:'船頭觀景廊；入座免費，晚上有表演'});
+room(12,527,450,572,505,'dining','醇夢雪茄廊',{f:'lounge',fo:{sofa:0x5a3a28,table:0x2a1d14},note:'雪茄與烈酒小酒廊（付費）'});
+room(12,668,462,718,520,'kids','動感地帶',{f:'arcade',note:'青少年與兒童遊戲區（街機多數付費）'});
+room(12,692,522,718,578,'shop','寫真廊',{f:'shop',note:'船上攝影師照片展示與販售'});
+lift(12,592,527,650,545,4);
+stairs(12,595,555,645,580);
+room(12,527,580,588,628,'well','水療中心',{f:'spa',note:'按摩、臉部保養等療程（付費）'});
+room(12,603,585,652,632,'well','美髮沙龍',{f:'salon',note:'洗髮、造型、美甲（付費）'});
+room(12,670,610,718,688,'fun','VR探索館',{f:'vr',note:'VR、AR 沉浸式遊戲（按遊戲計費）'});
+room(12,527,632,590,698,'well','健身中心',{f:'gym',note:'有氧與重訓器材（免費，需穿運動鞋）'});
+(function(){
+  const deckInf = area(12,566,700,676,955,'deck','泳池甲板',{color:0xe7e1d3,noLabel:true,note:'泳池周邊休憩區'});
+  loungers(12,[540,553,685,698],745,935,12,deckInf,true);
+  const poolInf = pool(12,592,722,648,935,'羅馬泳池','羅馬主題露天泳池，有 4 個按摩池與樂隊舞台');
+  // 手冊圖上泳池中段後方的大圓（未標名）歸泳池本體；四角小圓＝4 個按摩池
+  const z=wz(12,858);
+  put(12,'cyl',0,0,z,3.6,.5,3.6,0xf4f1ea,poolInf); put(12,'wcyl',0,0.1,z,3.1,.45,3.1,0xffffff,poolInf);
+  const j = info(12,'按摩池','water','羅馬泳池四角的按摩池（共 4 個）');
+  [[600,748],[640,748],[600,850],[640,850]].forEach(([px,py])=>{ const x=wx(12,px), zz=wz(12,py);
+    put(12,'cyl',x,0,zz,1.9,.55,1.9,0xf4f1ea,j); put(12,'wcyl',x,0.1,zz,1.5,.5,1.5,0xffffff,j); });
+  // water slide
+  const pts=[], cz=wz(12,905), cx=wx(12,640);
+  for(let i=0;i<=80;i++){ const t=i/80, a=t*Math.PI*5; pts.push(new THREE.Vector3(cx+Math.cos(a)*2.4, 8-t*7, cz+Math.sin(a)*2.4)); }
+  const sInf = info(12,'「凱撒」滑水梯','water','羅馬泳池的滑水梯，有一段透明管；身高 115 cm 以上（造型為示意）');
+  single(12, new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),220,0.5,14,false), mat(0xf2b134,{roughness:.3,transparent:true,opacity:.92,side:THREE.DoubleSide})), sInf, .92);
+  put(12,'mcyl',cx,0,cz,.45,8.6,.45,0x8a94a0,sInf);
+  put(12,'box',cx,8.3,cz,2.2,.15,2.2,0xd8dde2,sInf);
+  for(let k=0;k<4;k++) put(12,'mcyl',cx+(k<2?-1:1)*1,0,cz+(k%2?-1:1)*1,.15,8.3,.15,0xb0b8c0,sInf);
+  addLabel('「凱撒」滑水梯',12,cx,9.6,cz);
+})();
+room(12,672,740,722,782,'dining','義式手作冰品',{f:'bar',fo:{counter:0xf2d1dc},note:'泳池旁的義式冰淇淋（付費）'});
+lift(12,595,946,650,962,3);
+stairs(12,595,975,645,998);
+(function(){
+  const inf = room(12,575,1003,665,1088,'dining','麗都自助餐廳',{f:'buffet',note:'最大的免費自助餐廳'});
+  room(12,582,1100,662,1195,'dining','麗都自助餐廳',{f:'tables',inf,noLabel:true});
+})();
+lift(12,593,1203,648,1218,3);
+stairs(12,595,1232,645,1256);
+room(12,572,1262,668,1312,'dining','麗都戶外燒烤餐廳',{walls:false,f:'tables',fo:{top:0xe9e2d0},note:'船尾戶外燒烤區（免費）'});
+
+/* ============ DECK 11 ============ */
+slab(11, {style:'balcony'});
+room(11,905,300,1125,352,'crew','船長室',{f:'bridge',note:'手冊標「船長室」，即駕駛台（非開放區域）'});
+for(let i=0;i<54;i++){ const y=422+i*15.07; cabin(11,920,y,962,y+15.07,'bal'); cabin(11,1068,y,1110,y+15.07,'bal'); }
+[[968,1002],[1028,1062]].forEach(([x0,x1])=>{
+  col(11,x0,x1,422,500,5,'ins'); col(11,x0,x1,590,645,4,'ins'); col(11,x0,x1,695,740,3,'ins');
+  col(11,x0,x1,1065,1140,5,'ins'); col(11,x0,x1,1140,1160,1,'acc'); col(11,x0,x1,1160,1182,1,'ins');
+  col(11,x0,x1,1280,1325,3,'ins');
+});
+[[970,985],[1046,1061]].forEach(([x0,x1])=>[[555,585],[660,690],[765,800],[820,880],[970,1000]].forEach(([a,b])=>col(11,x0,x1,a,b,1,'ins')));
+[[920,962],[1068,1110]].forEach(([x0,x1])=>{ col(11,x0,x1,1240,1325,3,'dlx'); col(11,x0,x1,1326,1342,1,'ocean'); });
+cabin(11,915,1342,962,1465,'villa'); cabin(11,1068,1342,1115,1465,'villa');
+lift(11,988,522,1042,545,4); stairs(11,990,556,1040,580);
+lift(11,990,944,1040,962,3); stairs(11,992,970,1038,996);
+lift(11,990,1198,1040,1218,3); stairs(11,990,1228,1040,1256);
+room(11,1003,760,1027,860,'svc','未標名區塊',{noLabel:true,note:'手冊甲板圖未標示用途'});
+addLabel('露台客房',11,wx(11,941),CAB_H+.5,wz(11,700)); addLabel('內側客房',11,wx(11,985),CAB_H+.5,wz(11,460));
+addLabel('皇宮豪華套房',11,wx(11,1089),CAB_H+.5,wz(11,1282)); addLabel('皇宮庭苑別墅',11,wx(11,938),CAB_H+.5,wz(11,1400));
+
+/* ============ DECK 10 ============ */
+slab(10, {style:'balcony'});
+row(10,120,292,240,290,5,'psuite');
+[[117,157],[255,295]].forEach(([x0,x1])=>{
+  col(10,x0,x1,292,304,1,'ocean');
+  // 手冊第 8 頁：10510–10616 兩側全是紫色一般露台客房（沒有淡黃的皇宮露台房），10618–10636 是皇宮豪華套房
+  [[305,330,'psuite',1],[330,346,'bal',1],[348,372,'psuite',1],[373,388,'bal',1],[390,412,'psuite',1],
+   [413,428,'bal',1],[430,453,'psuite',1],[455,907,'bal',33],[910,1082,'dlx',8]]
+   .forEach(([a,b,c,n])=>col(10,x0,x1,a,b,n,c));
+});
+col(10,162,192,305,428,9,'ins'); col(10,217,248,318,428,8,'ins');
+col(10,162,192,510,645,10,'ins'); col(10,217,248,510,645,10,'ins');
+col(10,162,192,683,735,4,'ins'); col(10,217,248,683,735,4,'ins');
+col(10,165,180,735,835,4,'ins'); col(10,232,247,735,835,4,'ins');
+col(10,163,180,858,882,1,'ins');
+lift(10,180,448,232,466,3); stairs(10,180,476,232,498);
+stairs(10,182,855,230,882);
+lift(10,180,1063,232,1080,3); stairs(10,180,1092,232,1112);
+room(10,120,1120,185,1215,'fun','貴賓廳',{f:'casino',note:'貴賓娛樂場（雲頂俱樂部），限特定貴賓'});
+room(10,222,1120,295,1160,'svc','皇宮接待處',{f:'reception',note:'皇宮貴賓專屬接待櫃檯（皇宮限定）'});
+room(10,210,1162,295,1215,'dining','皇宮餐廳',{f:'tables',fo:{top:0xffffff,chair:0x6d4c7d},note:'皇宮貴賓專屬餐廳（皇宮限定）'});
+(function(){
+  const deckInf = area(10,120,1222,292,1355,'deck','皇宮泳池及日光甲板',{kind:'wood',color:0xffffff,note:'皇宮專屬的船尾泳池與日光甲板（皇宮限定）'});
+  const inf = info(10,'皇宮泳池','water','皇宮泳池及日光甲板（皇宮限定）'), x=wx(10,205), z=wz(10,1288);
+  put(10,'cyl',x,0,z,7.4,.4,7.4,0xf4f1ea,inf); put(10,'wcyl',x,0.1,z,6.6,.36,6.6,0xffffff,inf);
+  for(let a=0;a<Math.PI*2;a+=Math.PI/6){ const lx=x+Math.cos(a)*5.6, lz=z+Math.sin(a)*5.6;
+    put(10,'box',lx,0.2,lz,1.4,.12,.6,WHITE,deckInf,[0,-a,0]); }
+})();
+addLabel('皇宮套房',10,wx(10,206),CAB_H+.5,wz(10,265)); addLabel('露台客房',10,wx(10,137),CAB_H+.5,wz(10,545));
+addLabel('露台客房',10,wx(10,275),CAB_H+.5,wz(10,770)); addLabel('皇宮豪華套房',10,wx(10,137),CAB_H+.5,wz(10,995));
+addLabel('內側客房',10,wx(10,232),CAB_H+.5,wz(10,580));
+
+/* ============ DECK 9 ============ */
+slab(9, {style:'balcony'});
+[[480,518],[615,653]].forEach(([x0,x1])=>{ col(9,x0,x1,275,1135,63,'bal'); col(9,x0,x1,1135,1148,1,'ocean'); col(9,x0,x1,1148,1290,10,'bal'); });
+row(9,528,552,245,285,2,'ocean'); row(9,563,590,245,285,2,'ocean');
+col(9,497,512,1290,1318,1,'ins'); col(9,620,635,1290,1318,1,'ins');
+row(9,497,635,1320,1360,5,'psuite');
+col(9,523,552,290,440,11,'ins'); col(9,578,607,290,440,11,'ins');
+col(9,523,537,488,520,1,'ins'); col(9,593,607,488,520,1,'ins');
+col(9,523,552,522,660,10,'ins'); col(9,578,607,522,660,10,'ins');
+row(9,523,610,685,715,5,'ins'); row(9,523,610,718,750,5,'ins');
+col(9,523,552,752,850,4,'ins'); col(9,578,607,752,850,4,'ins');
+col(9,578,607,960,1055,7,'ins');
+col(9,523,552,1190,1275,6,'ins'); col(9,578,607,1190,1275,6,'ins'); col(9,590,605,1275,1310,1,'ins');
+lift(9,540,460,592,475,3); stairs(9,540,488,592,507);
+lift(9,540,840,592,855,3); stairs(9,540,868,592,887);
+lift(9,540,1075,592,1090,3); stairs(9,540,1103,592,1122);
+addLabel('露台客房',9,wx(9,499),CAB_H+.5,wz(9,600)); addLabel('內側客房',9,wx(9,537),CAB_H+.5,wz(9,370)); addLabel('皇宮套房',9,wx(9,566),CAB_H+.5,wz(9,1340));
+
+/* ============ DECK 8 ============ */
+slab(8, {style:'public'});
+col(8,838,868,268,500,17,'ocean'); col(8,980,1012,268,500,17,'ocean');
+col(8,838,852,240,265,1,'ocean'); col(8,998,1012,240,265,1,'ocean');
+row(8,868,905,240,265,3,'ins'); row(8,945,980,240,265,3,'ins');
+col(8,876,906,268,405,10,'ins'); col(8,945,975,268,392,9,'ins');
+col(8,906,920,268,310,1,'ins'); col(8,930,944,268,310,1,'ins');
+lift(8,890,452,958,472,4); stairs(8,890,484,958,507);
+room(8,862,530,990,685,'fun','娛樂場',{f:'casino',floor:0x6e2a35,note:'與 7 層相連的娛樂場；18 歲以上，駛入公海才開'});
+(function(){
+  const inf = room(8,880,688,958,722,'shop','精品廊',{f:'shop',note:'免稅精品、香水化妝品、日本成藥與零食'});
+  room(8,862,735,900,840,'shop','精品廊',{f:'shop',inf});
+  room(8,950,735,990,840,'shop','精品廊',{f:'shop',inf});
+})();
+lift(8,903,845,948,862,3); stairs(8,900,870,950,895);
+room(8,945,895,975,955,'shop','星空廊',{f:'shop',note:'禮品與糖果（一般版手冊稱「禮品廊」）'});
+room(8,862,955,975,1005,'dining','海馬日本料理',{f:'tables',fo:{square:true,top:0x3b2a1e,chair:0x1f1f1f},note:'日式料理與鐵板燒（付費）'});
+room(8,862,1005,975,1075,'dining','泰悅',{f:'tables',fo:{top:0xe7c98a,chair:0x6b3a1f},note:'Rua Thai 泰式自助（付費）；2026 年手冊仍標「火鍋」'});
+lift(8,903,1075,948,1092,3); stairs(8,900,1100,950,1122);
+room(8,850,1140,1000,1335,'fun','星座劇院（上層）',{f:'theatre',floor:0x3a2228,note:'主劇院上層座位，從 8 層進場'});
+(function(){
+  // 手冊第 8 頁：每舷 9 艘（7 艘救生艇＋船尾側 2 艘較大的艇）
+  const inf = info(8,'救生艇','boat','兩舷吊掛的救生艇（每舷 9 艘）');
+  [572,637,700,806,869,926,984,1044,1106].forEach(py=>{
+    const z = wz(8, py);
+    [-1,1].forEach(s=>{
+      const x = s*(89-6)*DK[8].S + s*1.1;
+      put(8,'sph',x,-1.6,z,1.9,1.3,4.6,0xf07f1a,inf);
+      put(8,'sph',x,-1.1,z,1.7,1.2,4.0,0xffffff,inf);
+      put(8,'metal',x - s*.9,-0.6,z-1.6,.15,1.6,.15,0x9aa3ab,inf); put(8,'metal',x - s*.9,-0.6,z+1.6,.15,1.6,.15,0x9aa3ab,inf);
+    });
+  });
+})();
+addLabel('海景客房',8,wx(8,853),CAB_H+.5,wz(8,380)); addLabel('內側客房',8,wx(8,891),CAB_H+.5,wz(8,330));
+
+/* ============ DECK 7 ============ */
+slab(7, {style:'public'});
+area(7,185,90,228,165,'deck','觀景處',{kind:'wood',color:0xffffff,note:'船頭最前端的觀景點；是否開放依船方安排'});
+room(7,125,230,285,456,'fun','娛樂場',{f:'casino',floor:0x6e2a35,note:'主娛樂場，與 8 層相連；18 歲以上，駛入公海才開'});
+lift(7,175,460,240,476,4); stairs(7,175,486,240,506);
+room(7,150,508,200,540,'dining','甜品匯',{f:'bar',fo:{counter:0xf2d1dc},note:'蛋糕甜點與咖啡（付費）'});
+room(7,208,508,262,540,'dining','抹茶坊',{f:'bar',fo:{counter:0x7a9a5a},note:'抹茶甜點與冰品（付費）'});
+room(7,146,545,170,620,'dining','義大利披薩餐廳',{f:'tables',fo:{top:0xd9483b},note:'手工義大利麵與披薩（付費）'});
+room(7,172,545,238,590,'fun','麻將廳',{f:'mahjong',note:'自動麻將桌，按時段收費'});
+room(7,240,545,266,620,'dining','藍湖美食',{f:'tables',note:'南洋小吃，近 24 小時營業（付費）'});
+room(7,150,628,195,680,'shop','紀念品商店',{f:'shop',note:'船上紀念品與日用品'});
+room(7,165,712,245,765,'svc','接待處和岸上觀光櫃檯',{f:'reception',note:'帳務、失物招領、岸上觀光報名'});
+(function(){
+  const inf = area(7,180,770,245,840,'svc','大堂',{color:0xeadfc8,note:'主要活動舞台：賓果、電影、說明會'});
+  const r = R(7,180,770,245,840);
+  put(7,'cyl',r.cx,0.12,r.cz,3.4,.06,3.4,0xc9a96e,inf);
+  put(7,'mcyl',r.cx,1.8,r.cz,.05,1.0,.05,0xc9a96e,inf);
+  put(7,'sph',r.cx,1.6,r.cz,1.4,.6,1.4,0xffe6a6,inf);
+})();
+room(7,158,770,179,840,'dining','大堂咖啡',{f:'bar',note:'大堂旁的咖啡吧（付費）'});
+room(7,120,760,142,890,'svc','劇院售票處／賓果櫃檯',{f:'reception',note:'付費表演票與賓果卡'});
+(function(){
+  const inf = info(7,'悠閒大道','deck','沿船身兩側的露天步道（一般版手冊稱「海濱長廊」）');
+  [[118,600,142,720],[268,600,292,720],[118,1010,142,1100],[268,1010,292,1100]].forEach(a=>{
+    const r=R(7,...a); put(7,'box',r.cx,0,r.cz,r.w,.1,r.dz,0xd9ccb0,inf);
+    for(let z=r.z0+1.5;z<r.z1;z+=3){ put(7,'cyl',r.cx,0.1,z,.7,.5,.7,0x8a6a4a,inf); put(7,'sph',r.cx,0.6,z,.9,1.1,.9,0x4f8a4f,inf); }
+  });
+  addLabel('悠閒大道',7,wx(7,130),1.5,wz(7,660)); addLabel('悠閒大道',7,wx(7,280),1.5,wz(7,1055));
+})();
+lift(7,180,842,235,858,3); stairs(7,178,868,238,890);
+room(7,140,898,166,945,'dining','星宴',{f:'tables',fo:{sp:2.0},note:'西式套餐與品酒晚宴（付費）'});
+room(7,245,872,266,942,'shop','紀念品商店',{f:'shop',note:'船上紀念品與日用品'});
+room(7,170,935,248,1005,'dining','絲路花舞中餐廳',{f:'tables',fo:{top:0xf2e6d0,chair:0x8c2f2f},note:'中式餐廳，招牌片皮鴨（付費）'});
+lift(7,180,1072,235,1090,3); stairs(7,178,1100,238,1120);
+room(7,130,1135,280,1328,'fun','星座劇院',{f:'theatre',floor:0x3a2228,h:3,note:'主劇院（7–8 層），每晚免費製作秀'});
+
+/* ============ DECK 6 ============ */
+slab(6, {style:'cabin'});
+col(6,480,510,310,775,34,'ocean'); col(6,620,652,310,775,34,'ocean');
+col(6,515,546,322,432,8,'ins'); col(6,553,583,322,418,7,'ins'); col(6,585,615,322,432,8,'ins');
+col(6,517,532,485,512,1,'ins'); col(6,595,610,485,512,1,'ins');
+col(6,515,546,513,622,8,'ins'); col(6,585,615,513,622,8,'ins');
+col(6,515,548,628,658,2,'ins'); col(6,549,560,628,658,1,'ins'); col(6,571,583,628,658,1,'ins'); col(6,585,615,628,658,2,'ins');
+col(6,515,546,690,770,6,'ins'); col(6,585,615,690,770,6,'ins');
+col(6,548,562,745,775,1,'ins'); col(6,570,583,745,775,1,'ins');
+lift(6,540,456,592,473,3); stairs(6,540,484,592,505);
+room(6,482,778,650,838,'dining','百味軒',{f:'tables',note:'免費西式套餐'});
+lift(6,540,843,592,858,3); stairs(6,540,866,592,888);
+area(6,490,895,642,1062,'crew','非旅客區域',{color:0xb9c2cb,note:'前後不相通：百味軒（船頭側）與星夢餐廳（船尾側）要從 7 層繞'});
+lift(6,540,1072,592,1088,3);
+room(6,495,1100,640,1350,'dining','星夢餐廳',{f:'tables',fo:{top:0xffffff,chair:0x2f4a6b},note:'免費中式桌菜主餐廳'});
+addLabel('海景客房',6,wx(6,495),CAB_H+.5,wz(6,540)); addLabel('內側客房',6,wx(6,568),CAB_H+.5,wz(6,370));
+
+/* ============ DECK 5 ============ */
+slab(5, {style:'cabin'});
+col(5,838,868,305,875,42,'ocean'); col(5,978,1012,305,808,37,'ocean');
+col(5,880,910,318,425,8,'ins'); col(5,920,933,318,345,1,'ins'); col(5,945,975,318,425,8,'ins');
+col(5,878,908,515,622,8,'ins'); col(5,948,962,485,512,1,'ins'); col(5,945,975,515,622,8,'ins');
+col(5,878,908,630,658,2,'ins'); col(5,910,922,630,658,1,'ins'); col(5,932,944,630,658,1,'ins'); col(5,945,975,630,658,2,'ins');
+col(5,878,908,672,822,11,'ins'); col(5,945,975,685,810,9,'ins');
+lift(5,900,458,952,475,3); stairs(5,900,486,952,505);
+lift(5,900,838,952,855,3); stairs(5,900,866,952,892);
+area(5,845,905,1005,1330,'crew','非旅客區域',{color:0xb9c2cb,note:'5 層後半段不開放旅客'});
+addLabel('海景客房',5,wx(5,853),CAB_H+.5,wz(5,600)); addLabel('內側客房',5,wx(5,893),CAB_H+.5,wz(5,370));
+
+/* ============ DECK 4 ============ */
+slab(4, {style:'cabin'});
+col(4,117,148,663,840,13,'ocean'); col(4,156,184,663,828,12,'ins');
+room(4,155,515,230,610,'med','醫務室',{f:'med',note:'醫師與護理師駐診；看診與用藥自費'});
+room(4,117,458,150,660,'crew','未標名區塊',{noLabel:true,note:'手冊甲板圖未標示用途'});
+lift(4,180,458,232,475,3); stairs(4,180,486,232,505);
+lift(4,180,836,232,852,3); stairs(4,180,866,232,892);
+area(4,125,925,285,1330,'crew','非旅客區域',{color:0xb9c2cb,note:'4 層後半段不開放旅客'});
+(function(){
+  const inf = info(4,'接駁船接送處','svc','需要搭接駁小艇上岸時的登艇處（神戶、高知都靠碼頭，通常用不到）');
+  [[117,855,150,915],[258,855,292,915]].forEach(a=>{ const r=R(4,...a);
+    put(4,'box',r.cx,0,r.cz,r.w,.1,r.dz,0x9fb0bf,inf);
+    put(4,'metal',r.cx,0.1,r.z0+.2,r.w,1.0,.06,0xc3cad1,inf); put(4,'metal',r.cx,0.1,r.z1-.2,r.w,1.0,.06,0xc3cad1,inf); });
+  addLabel('接駁船接送處',4,wx(4,133),1.5,wz(4,885));
+})();
+addLabel('海景・內側客房',4,wx(4,150),CAB_H+.5,wz(4,750));
+
+finalize();
+
+/* deck titles + bow marker */
+DECK_LIST.forEach(d=>addLabel(d+'層', d, -11.5, 0.3, wz(d,800), 'deck'));
+addLabel('▲ 船頭', 8, 0, 2, wz(8,70), 'bow');
+
+/* ---------- state ---------- */
+let explode = true, showLabels = true, showCores = false, focus = 'all';
+const GAP = {compact:3.4, exploded:11};
+const deckY = d => (d-4) * (explode ? GAP.exploded : GAP.compact);
+const fade = {}; DECK_LIST.forEach(d=>{ fade[d]=1; decks[d].position.y = deckY(d); });
+
+function setOpacity(group, f){
+  group.traverse(o=>{
+    if(!o.material) return;
+    const base = o.userData.baseOpacity ?? 1;
+    (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{
+      const v = base*f; m.opacity = v; m.transparent = v < 1; m.depthWrite = v > 0.5;
+    });
+    o.visible = f > 0.02;
+  });
+}
+
+/* hover / selection / core highlight colouring */
+let hovered = null, selected = null;
+const WHITE_C = new THREE.Color(0xffffff);
+const CORE_HL = {stairs:new THREE.Color(0xffb000), lift:new THREE.Color(0x1e88e5)};
+function paint(inf){
+  const on = inf===hovered || inf===selected;
+  const hl = showCores && CORE_HL[inf.cat];
+  inf.refs.forEach(ref=>{
+    if(ref.i < 0){
+      (Array.isArray(ref.m.material)?ref.m.material:[ref.m.material]).forEach(x=>x.emissive && x.emissive.setHex(on?0x444444:0));
+      return;
+    }
+    let c = hl ? ref.c.clone().lerp(hl,.75) : ref.c;
+    if(on) c = c.clone().lerp(WHITE_C,.45);
+    ref.m.setColorAt(ref.i, c); ref.m.instanceColor.needsUpdate = true;
+  });
+}
+
+const nav = document.getElementById('decks');
+['all',...DECK_LIST].forEach(d=>{
+  const b = document.createElement('button');
+  b.id = 'deck-'+d; b.dataset.deck = d; b.textContent = d==='all' ? '全部' : d+' 層';
+  b.setAttribute('aria-pressed', d==='all');
+  b.addEventListener('click',()=>setFocus(String(d)));
+  nav.appendChild(b);
+});
+
+const camGoal = {target:null, pos:null};
+function homeView(){
+  const top = deckY(13);
+  return {target:new THREE.Vector3(0, top*0.45, 0), pos:new THREE.Vector3(150, top*0.45+110, 170)};
+}
+const infoT = document.getElementById('info-t'), infoM = document.getElementById('info-m');
+const backA = document.getElementById('back');
+/* 導覽站的 Deck 頁網址；導覽頁與本頁同資料夾 */
+const guideHref = d => d==='all' ? './#/ship' : './#/deck/'+d;
+function guideLink(d){
+  const a = document.createElement('a'); a.href = guideHref(d); a.textContent = `在導覽中看 Deck ${d} →`; return a;
+}
+function setFocus(d){
+  focus = d;
+  nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.deck===d));
+  backA.href = guideHref(d);
+  try{ history.replaceState(null,'', d==='all' ? location.pathname+location.search : '#'+d); }catch(e){}
+  if(d==='all'){
+    const h = homeView(); camGoal.target = h.target; camGoal.pos = h.pos;
+    infoT.textContent = '探索星號 4–13 層';
+    infoM.textContent = '從右側選一層甲板可單獨查看並顯示設施名稱；按「樓梯・電梯」可標出各層樓梯與電梯位置。';
+  } else {
+    const ty = deckY(+d);
+    camGoal.target = new THREE.Vector3(0, ty, 0);
+    camGoal.pos = new THREE.Vector3(60, ty+75, 85);
+    infoT.textContent = d+'層甲板';
+    infoM.textContent = DECK_DESC[d] + '　';
+    infoM.appendChild(guideLink(d));
+  }
+}
+function toggle(id, fn){
+  const b = document.getElementById(id);
+  b.addEventListener('click',()=>{ const on = b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); fn(on); });
+}
+toggle('t-cores', on=>{ showCores = on; cores.forEach(paint); });
+toggle('t-explode', on=>{ explode = on; setFocus(focus); });
+toggle('t-labels', on=>{ showLabels = on; });
+toggle('t-spin', on=>{ controls.autoRotate = on; });
+document.getElementById('t-reset').addEventListener('click',()=>setFocus('all'));
+
+/* ---------- picking + tooltip ---------- */
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+const tip = document.getElementById('tip');
+let downAt = null;
+function hit(ev){
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.set(((ev.clientX-r.left)/r.width)*2-1, -((ev.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(mouse, camera);
+  const cand = pickMeshes.filter(m=>fade[m.userData.deck] > 0.5);
+  for(const h of ray.intersectObjects(cand,false)){
+    const u = h.object.userData;
+    const inf = h.instanceId != null && u.infos ? u.infos[h.instanceId] : u.info;
+    if(inf) return inf;
+  }
+  return null;
+}
+function describe(inf){
+  return CABIN_CATS.has(inf.cat) ? `${inf.deck}層・客房` : `${inf.deck}層・${CAT[inf.cat].n}`;
+}
+renderer.domElement.addEventListener('pointermove',ev=>{
+  if(ev.pointerType!=='mouse') return;
+  if(ev.buttons){ tip.hidden = true; return; }
+  const inf = hit(ev);
+  if(inf!==hovered){ const old=hovered; hovered=inf; if(old) paint(old); if(inf) paint(inf); }
+  renderer.domElement.style.cursor = inf ? 'pointer' : '';
+  if(!inf){ tip.hidden = true; return; }
+  tip.innerHTML = '';
+  tip.appendChild(document.createTextNode(inf.name));
+  const s = document.createElement('small'); s.textContent = describe(inf); tip.appendChild(s);
+  tip.hidden = false;
+  const tw = tip.offsetWidth;
+  tip.style.left = Math.min(ev.clientX + 14, innerWidth - tw - 8) + 'px';
+  tip.style.top = (ev.clientY + 16) + 'px';
+});
+renderer.domElement.addEventListener('pointerleave',()=>{ tip.hidden = true; if(hovered){ const o=hovered; hovered=null; paint(o); } });
+renderer.domElement.addEventListener('pointerdown',ev=>{ downAt=[ev.clientX,ev.clientY]; });
+renderer.domElement.addEventListener('pointerup',ev=>{
+  if(!downAt || Math.hypot(ev.clientX-downAt[0],ev.clientY-downAt[1])>5) return;
+  const inf = hit(ev);
+  const old = selected; selected = inf; if(old) paint(old);
+  if(!inf) return;
+  paint(inf);
+  const c = CAT[inf.cat];
+  infoT.textContent = inf.name;
+  infoM.innerHTML = '';
+  const t = document.createElement('span'); t.className='tag';
+  t.style.background = '#'+c.c.toString(16).padStart(6,'0'); t.textContent = c.n;
+  infoM.appendChild(t);
+  infoM.appendChild(document.createTextNode(inf.deck+'層甲板' + (inf.note ? '・' + inf.note : '') + '　'));
+  infoM.appendChild(guideLink(inf.deck));
+});
+
+/* ---------- loop ---------- */
+function resize(){
+  renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+}
+addEventListener('resize',resize); resize();
+const h0 = homeView(); camera.position.copy(h0.pos); controls.target.copy(h0.target);
+/* deck3d.html#10 → 直接聚焦該層（從導覽的 Deck 平面圖連過來） */
+const h1 = location.hash.slice(1);
+if(DECK_LIST.includes(+h1)) setFocus(String(+h1));
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const v = new THREE.Vector3();
+controls.addEventListener('start',()=>{ camGoal.target=null; camGoal.pos=null; tip.hidden = true; });
+
+function tick(t){
+  requestAnimationFrame(tick);
+  const k = reduce ? 1 : 0.1;
+  if(!reduce) waterTex.offset.set((t||0)*0.00002, (t||0)*0.00004);
+  DECK_LIST.forEach(d=>{
+    const g = decks[d];
+    g.position.y += (deckY(d) - g.position.y) * k;
+    const goal = focus==='all' ? 1 : (String(d)===focus ? 1 : (d > +focus ? 0 : 0.08));
+    if(Math.abs(fade[d]-goal) > 0.003){ fade[d] += (goal-fade[d])*k; setOpacity(g, fade[d]); }
+  });
+  if(camGoal.target){
+    controls.target.lerp(camGoal.target, k);
+    if(camGoal.pos) camera.position.lerp(camGoal.pos, k);
+    if(controls.target.distanceTo(camGoal.target) < 0.05 && (!camGoal.pos || camera.position.distanceTo(camGoal.pos) < 0.1)){
+      camGoal.target = null; camGoal.pos = null;
+    }
+  }
+  controls.update();
+  renderer.render(scene,camera);
+  const w = innerWidth, h = innerHeight;
+  labels.forEach(L=>{
+    let show = showLabels && fade[L.deck] > 0.6;
+    if(show){
+      if(L.kind==='deck' || L.kind==='bow') show = focus==='all';
+      else if(L.kind==='core') show = focus===String(L.deck) || (showCores && focus==='all');
+      else show = focus===String(L.deck);
+    }
+    if(!show){ L.el.hidden = true; return; }
+    v.copy(L.p); v.y += decks[L.deck].position.y; v.project(camera);
+    if(v.z > 1){ L.el.hidden = true; return; }
+    L.el.hidden = false;
+    L.el.style.left = ((v.x+1)/2*w) + 'px';
+    L.el.style.top = ((1-v.y)/2*h) + 'px';
+  });
+}
+requestAnimationFrame(tick);
+})();
+</script>
+
+</body></html>
