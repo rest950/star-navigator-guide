@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#cfdde6">
+<meta name="theme-color" content="#d8e6ed">
 <title>探索星號 3D 甲板</title>
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
 <!--
   探索星號 3D 甲板模型（導覽站的附屬頁，入口在「更多」選單、桌機 header、各 Deck 平面圖）
   - 名稱以官方一般版手冊 sna-ship-brochure-tc-v1 第 7–10 頁為準（座標沿用台灣出發版甲板圖，兩版圖面相同），設施名稱跟 index.html 的 D 一致；改 D 的名稱要同步這裡
@@ -16,69 +18,152 @@
   - #<n> 開啟時直接聚焦該層（例：deck3d.html#10）
 -->
 <style>
-/* Layout: full-screen 3D stage; title + view toggles on top, deck "elevator" panel on the right, legend bottom-left, info card bottom-right */
+/* Layout: full-screen 3D stage; 日系簡約插畫紙模型風格，與導覽手冊統一 */
 :root{
-  --sea:#cfdde6; --ink:#14263a; --ink-soft:#4b5d70;
-  --panel:rgba(255,255,255,.9); --line:rgba(20,38,58,.14); --accent:#c8202f;
-  --font:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  --sea:#d8e6ed; --ink:#1c2938; --ink-soft:#526273;
+  --indigo:#25567b; --indigo-soft:#e6f0f6;
+  --paper:rgba(255,253,249,.94); --paper-solid:#fffdf9;
+  --line:#d5cdbe; --ink-line:#243447; --accent:#c94a3f; --gold:#c68336;
+  --shadow:2px 3px 0 rgba(36,52,71,.12);
+  --font:'Noto Sans TC',-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-serif:'Noto Serif TC',Georgia,'Songti TC',serif;
   color-scheme:light;
   box-sizing:border-box;
 }
 *,*::before,*::after{box-sizing:inherit}
 [hidden]{display:none!important}
 html,body{height:100%}
-body{margin:0;background:var(--sea);color:var(--ink);font-family:var(--font);overflow:hidden}
+body{margin:0;background:var(--sea);color:var(--ink);font-family:var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
 #stage{position:fixed;inset:0;touch-action:none}
 #stage canvas{display:block;width:100%;height:100%;cursor:grab}
 #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-.lb{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:12px;font-weight:500;
-  color:var(--ink);background:rgba(255,255,255,.85);padding:2px 7px;border-radius:4px;border:1px solid var(--line)}
-.lb.deck{font-size:13px;font-weight:700;color:#fff;background:var(--accent);border:0;transform:translate(-100%,-50%)}
-.lb.bow{background:var(--ink);color:#fff;border:0}
-.lb.core{font-size:11px;padding:1px 5px;color:#fff;border:0}
-.lb.core.stairs{background:#c98a00}
-.lb.core.lift{background:#1e6fb8}
-.lb.mine{background:#e5322d;color:#fff;border:0;font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-#tip{position:fixed;z-index:6;pointer-events:none;background:var(--ink);color:#fff;font-size:13px;font-weight:500;
-  padding:4px 9px;border-radius:5px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-#tip small{font-weight:400;opacity:.75;margin-left:6px;font-size:11px}
-.bar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;
-  padding:12px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));
-  display:flex;flex-wrap:wrap;gap:10px;align-items:center;pointer-events:none}
+.lb{
+  position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:12px;font-weight:600;
+  color:var(--ink);background:rgba(255,253,249,.93);padding:3px 8px;border-radius:6px;
+  border:1.2px solid rgba(36,52,71,.42);box-shadow:1px 2px 0 rgba(36,52,71,.13);letter-spacing:.01em;
+}
+.lb.deck{
+  font-family:var(--font-serif);font-size:13px;font-weight:700;color:#fffdf9;
+  background:var(--accent);border:1.5px solid var(--paper-solid);
+  box-shadow:2px 2px 0 rgba(36,52,71,.2);transform:translate(-100%,-50%);
+}
+.lb.bow{background:var(--indigo);color:#fffdf9;border:1.2px solid var(--paper-solid);font-weight:700}
+.lb.core{font-size:11px;padding:2px 6px;color:#fffdf9;border:1px solid rgba(255,253,249,.75)}
+.lb.core.stairs{background:var(--gold)}
+.lb.core.lift{background:var(--indigo)}
+.lb.mine{
+  background:var(--accent);color:#fffdf9;border:1.5px solid var(--paper-solid);
+  font-weight:700;font-size:13px;box-shadow:2px 3px 0 rgba(36,52,71,.26);
+}
+#tip{
+  position:fixed;z-index:6;pointer-events:none;background:var(--ink);color:#fffdf9;
+  font-size:13px;font-weight:600;padding:5px 10px;border-radius:7px;white-space:nowrap;
+  border:1px solid rgba(255,253,249,.25);box-shadow:2px 3px 0 rgba(28,41,56,.22);
+}
+#tip small{font-weight:400;opacity:.82;margin-left:6px;font-size:11px}
+
+.bar{
+  position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;
+  padding:12px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;pointer-events:none;
+}
 .bar>*{pointer-events:auto}
-h1{margin:0 8px 0 0;font-size:20px;font-weight:700;color:var(--accent);letter-spacing:.04em}
-.grp{display:flex;flex-wrap:wrap;gap:4px;background:var(--panel);padding:4px;border-radius:8px;border:1px solid var(--line);backdrop-filter:blur(6px)}
-button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink);padding:6px 11px;border-radius:5px;cursor:pointer}
-button:hover{background:rgba(20,38,58,.07)}
-button[aria-pressed="true"]{background:var(--ink);color:#fff}
-.back{font-size:13px;font-weight:500;color:#fff;background:var(--ink);text-decoration:none;padding:7px 12px;border-radius:8px;white-space:nowrap}
-.back:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.info a{color:var(--accent);font-weight:500}
-.legend .src{font-size:11px;color:var(--ink-soft);margin:8px 0 0;line-height:1.5}
+h1{
+  margin:0 4px 0 0;font-family:var(--font-serif);font-size:17px;font-weight:700;
+  color:var(--ink);letter-spacing:.04em;
+  background:var(--paper);padding:5px 12px;border-radius:9px;
+  border:1.5px solid var(--ink-line);box-shadow:var(--shadow);
+  display:inline-flex;align-items:center;gap:6px;
+}
+h1::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.grp{
+  display:flex;flex-wrap:wrap;gap:4px;background:var(--paper);padding:4px;border-radius:10px;
+  border:1.5px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(8px);
+}
+button{
+  font:inherit;font-size:13px;font-weight:500;border:1px solid transparent;background:transparent;
+  color:var(--ink);padding:6px 11px;border-radius:7px;cursor:pointer;transition:all .14s;
+  touch-action:manipulation;
+}
+button:hover{background:var(--indigo-soft);color:var(--indigo)}
+button[aria-pressed="true"]{background:var(--indigo);color:#fffdf9;border-color:var(--ink-line);font-weight:700}
+.back{
+  font-size:13px;font-weight:700;color:#fffdf9;background:var(--indigo);text-decoration:none;
+  padding:7px 12px;border-radius:9px;white-space:nowrap;border:1.5px solid var(--ink-line);
+  box-shadow:var(--shadow);transition:transform .12s;
+}
+.back:active{transform:translate(1px,1px)}
+.back:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.info a{color:var(--indigo);font-weight:700;text-underline-offset:2px}
+.legend .src{font-size:11px;color:var(--ink-soft);margin:8px 0 0;line-height:1.55;border-top:1px dashed var(--line);padding-top:6px}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.hint{font-size:12px;color:var(--ink-soft);background:var(--panel);padding:6px 10px;border-radius:6px;border:1px solid var(--line)}
-.decks{position:fixed;z-index:5;right:max(16px,env(safe-area-inset-right,0px));top:calc(70px + env(safe-area-inset-top,0px));
-  display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px;backdrop-filter:blur(6px)}
-.decks button{text-align:left;min-width:64px;font-variant-numeric:tabular-nums}
-.legend{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
-  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;backdrop-filter:blur(6px);max-width:calc(100vw - 32px)}
-.legend summary{cursor:pointer;color:var(--ink-soft);font-weight:500}
-.legend .g{display:grid;grid-template-columns:repeat(2,auto);gap:5px 14px;margin-top:6px}
-.legend b{grid-column:1/-1;font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:4px}
-.sw{display:flex;align-items:center;gap:6px}
-.sw i{width:11px;height:11px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.1)}
-.info{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
-  width:min(270px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:8px;
-  padding:12px 14px;backdrop-filter:blur(6px)}
-.info .t{font-size:17px;font-weight:700;margin-bottom:4px}
-.info .m{font-size:13px;color:var(--ink-soft);line-height:1.6}
-.info .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;color:#fff;margin-right:6px}
+.hint{
+  font-size:12px;color:var(--ink-soft);background:var(--paper);padding:6px 11px;border-radius:9px;
+  border:1.5px solid var(--line);box-shadow:var(--shadow);
+}
+
+.decks{
+  position:fixed;z-index:5;right:max(14px,env(safe-area-inset-right,0px));
+  top:calc(68px + env(safe-area-inset-top,0px));
+  display:flex;flex-direction:column;gap:2px;background:var(--paper);
+  border:1.5px solid var(--ink-line);border-radius:11px;padding:5px;
+  box-shadow:var(--shadow);backdrop-filter:blur(8px);
+}
+.decks button{text-align:left;min-width:66px;font-variant-numeric:tabular-nums;padding:5px 10px}
+
+.legend{
+  position:fixed;left:max(14px,env(safe-area-inset-left,0px));
+  bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  background:var(--paper);border:1.5px solid var(--line);border-radius:11px;
+  padding:9px 13px;font-size:12px;box-shadow:var(--shadow);backdrop-filter:blur(8px);
+  max-width:calc(100vw - 28px);
+}
+.legend summary{cursor:pointer;color:var(--ink);font-family:var(--font-serif);font-weight:700;letter-spacing:.03em}
+.legend .g{display:grid;grid-template-columns:repeat(2,auto);gap:5px 14px;margin-top:7px}
+.legend b{grid-column:1/-1;font-size:11.5px;color:var(--indigo);font-weight:700;margin-top:4px}
+.sw{display:flex;align-items:center;gap:6px;color:var(--ink)}
+.sw i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(28,41,56,.28)}
+
+.info{
+  position:fixed;right:max(14px,env(safe-area-inset-right,0px));
+  bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  width:min(290px,calc(100vw - 28px));background:var(--paper);
+  border:1.5px solid var(--ink-line);border-radius:12px;
+  padding:12px 14px;box-shadow:var(--shadow);backdrop-filter:blur(8px);
+}
+.info .t{font-family:var(--font-serif);font-size:16px;font-weight:700;margin-bottom:4px;color:var(--ink)}
+.info .m{font-size:13px;color:var(--ink-soft);line-height:1.62}
+.info .tag{
+  display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;
+  color:#fffdf9;margin-right:6px;vertical-align:1px;border:1px solid rgba(28,41,56,.18);
+}
+
 @media (max-width:700px){
-  h1{font-size:17px;width:100%}
+  .bar{padding:10px max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));gap:6px}
+  h1{font-size:15px;padding:5px 10px}
+  .back{padding:6px 10px;font-size:12.5px}
+  .grp{width:100%;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .grp::-webkit-scrollbar{display:none}
+  .grp button{flex-shrink:0;padding:5px 9px;font-size:12px}
+  .lb{font-size:10.5px;padding:1.5px 5.5px;border-radius:5px}
+  .lb.deck{font-size:11.5px;padding:2px 6px}
+  .lb.core{font-size:9.5px;padding:1px 4px}
   .hint,.legend{display:none}
-  .decks{flex-direction:row;flex-wrap:wrap;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));top:auto;
-    bottom:calc(150px + env(safe-area-inset-bottom,0px))}
-  .decks button{min-width:0;padding:5px 8px}
+  .decks{
+    flex-direction:row;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));
+    top:auto;bottom:calc(114px + env(safe-area-inset-bottom,0px));
+    gap:4px;padding:4px 5px;
+  }
+  .decks::-webkit-scrollbar{display:none}
+  .decks button{flex-shrink:0;min-width:0;padding:5px 10px;font-size:12.5px;text-align:center}
+  .info{
+    left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));
+    bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    width:auto;padding:10px 12px;max-height:96px;overflow-y:auto;
+  }
+  .info .t{font-size:15px;margin-bottom:2px}
+  .info .m{font-size:12.5px;line-height:1.5}
 }
 </style>
 </head>
@@ -109,25 +194,25 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   <summary>圖例</summary>
   <div class="g">
     <b>公共區域（牆頂色帶）</b>
-    <span class="sw"><i style="background:#e07a3f"></i>餐飲</span>
-    <span class="sw"><i style="background:#2f9c95"></i>娛樂</span>
-    <span class="sw"><i style="background:#f2b134"></i>親子</span>
-    <span class="sw"><i style="background:#a77bca"></i>美容及健身</span>
-    <span class="sw"><i style="background:#5a9e4b"></i>運動</span>
-    <span class="sw"><i style="background:#3aa7e0"></i>水上活動</span>
-    <span class="sw"><i style="background:#d1607f"></i>零售</span>
-    <span class="sw"><i style="background:#9aa4ae"></i>設施・服務</span>
-    <span class="sw"><i style="background:#e8a400"></i>樓梯</span>
-    <span class="sw"><i style="background:#1e88e5"></i>電梯</span>
+    <span class="sw"><i style="background:#d97a4a"></i>餐飲</span>
+    <span class="sw"><i style="background:#3d948f"></i>娛樂</span>
+    <span class="sw"><i style="background:#e3a83b"></i>親子</span>
+    <span class="sw"><i style="background:#9b7bb8"></i>美容及健身</span>
+    <span class="sw"><i style="background:#5d9957"></i>運動</span>
+    <span class="sw"><i style="background:#4ea5cf"></i>水上活動</span>
+    <span class="sw"><i style="background:#c76984"></i>零售</span>
+    <span class="sw"><i style="background:#8c9aa6"></i>設施・服務</span>
+    <span class="sw"><i style="background:#c68336"></i>樓梯</span>
+    <span class="sw"><i style="background:#25567b"></i>電梯</span>
     <b>客房（床罩與地毯顏色）</b>
-    <span class="sw"><i style="background:#b89a52"></i>皇宮庭苑別墅</span>
-    <span class="sw"><i style="background:#79c4c4"></i>皇宮豪華套房</span>
-    <span class="sw"><i style="background:#c5d89a"></i>皇宮套房</span>
-    <span class="sw"><i style="background:#e6ecae"></i>皇宮露台房</span>
-    <span class="sw"><i style="background:#9b4d9b"></i>露台客房</span>
-    <span class="sw"><i style="background:#23305a"></i>海景客房</span>
-    <span class="sw"><i style="background:#4f93cf"></i>內側客房</span>
-    <span class="sw"><i style="background:#a0582e"></i>無障礙內側客房</span>
+    <span class="sw"><i style="background:#b89656"></i>皇宮庭苑別墅</span>
+    <span class="sw"><i style="background:#76b8b8"></i>皇宮豪華套房</span>
+    <span class="sw"><i style="background:#b9cf8e"></i>皇宮套房</span>
+    <span class="sw"><i style="background:#dfe6a3"></i>皇宮露台房</span>
+    <span class="sw"><i style="background:#955e99"></i>露台客房</span>
+    <span class="sw"><i style="background:#324b73"></i>海景客房</span>
+    <span class="sw"><i style="background:#5c96c7"></i>內側客房</span>
+    <span class="sw"><i style="background:#a66542"></i>無障礙內側客房</span>
   </div>
   <p class="src">依官方手冊甲板圖製作的示意模型，非比例尺；<br>實際動線以船上指示牌為準。</p>
 </details>
@@ -160,73 +245,90 @@ const wx = (d,x) => (x - DK[d].cx) * DK[d].S;
 const wz = (d,y) => (y - DK[d].ys) * DK[d].S + 60;
 
 const CAT = {
-  dining:{c:0xe07a3f,n:'餐飲'}, fun:{c:0x2f9c95,n:'娛樂'}, kids:{c:0xf2b134,n:'親子'},
-  well:{c:0xa77bca,n:'美容及健身'}, sport:{c:0x5a9e4b,n:'運動及康樂'}, water:{c:0x3aa7e0,n:'水上活動'},
-  shop:{c:0xd1607f,n:'零售'}, svc:{c:0x9aa4ae,n:'設施・服務'}, deck:{c:0xd9c6a0,n:'戶外甲板'},
-  crew:{c:0x6d7f93,n:'船員區域'}, med:{c:0xd64545,n:'醫療'}, boat:{c:0xf08a24,n:'救生艇'},
-  stairs:{c:0xe8a400,n:'樓梯'}, lift:{c:0x1e88e5,n:'電梯'},
-  villa:{c:0xb89a52,n:'皇宮庭苑別墅'}, dlx:{c:0x79c4c4,n:'皇宮豪華套房'}, psuite:{c:0xc5d89a,n:'皇宮套房'},
-  pbal:{c:0xe6ecae,n:'皇宮露台房'}, bal:{c:0x9b4d9b,n:'露台客房'}, ocean:{c:0x23305a,n:'海景客房'},
-  ins:{c:0x4f93cf,n:'內側客房'}, acc:{c:0xa0582e,n:'無障礙內側客房'}
+  dining:{c:0xd97a4a,n:'餐飲'}, fun:{c:0x3d948f,n:'娛樂'}, kids:{c:0xe3a83b,n:'親子'},
+  well:{c:0x9b7bb8,n:'美容及健身'}, sport:{c:0x5d9957,n:'運動及康樂'}, water:{c:0x4ea5cf,n:'水上活動'},
+  shop:{c:0xc76984,n:'零售'}, svc:{c:0x8c9aa6,n:'設施・服務'}, deck:{c:0xdfd2b8,n:'戶外甲板'},
+  crew:{c:0x7c8d9e,n:'船員區域'}, med:{c:0xc94a3f,n:'醫療'}, boat:{c:0xd97d38,n:'救生艇'},
+  stairs:{c:0xc68336,n:'樓梯'}, lift:{c:0x25567b,n:'電梯'},
+  villa:{c:0xb89656,n:'皇宮庭苑別墅'}, dlx:{c:0x76b8b8,n:'皇宮豪華套房'}, psuite:{c:0xb9cf8e,n:'皇宮套房'},
+  pbal:{c:0xdfe6a3,n:'皇宮露台房'}, bal:{c:0x955e99,n:'露台客房'}, ocean:{c:0x324b73,n:'海景客房'},
+  ins:{c:0x5c96c7,n:'內側客房'}, acc:{c:0xa66542,n:'無障礙內側客房'}
 };
 const CABIN_CATS = new Set(['villa','dlx','psuite','pbal','bal','ocean','ins','acc']);
 
-/* ---------- canvas textures ---------- */
+/* ---------- canvas textures（日系檜木・和紙・清線插畫質感）---------- */
 function canvasTex(w,h,draw){
   const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4; return t;
 }
 const woodTex = canvasTex(256,256,(x,w,h)=>{
   for(let i=0;i<16;i++){
-    const l = 58 + ((i*37)%11) - 5;
-    x.fillStyle = `hsl(32,38%,${l}%)`; x.fillRect(0,i*16,w,16);
-    x.fillStyle = 'rgba(60,40,20,.35)'; x.fillRect(0,i*16+15,w,1);
+    const l = 73 + ((i*37)%9) - 4;
+    x.fillStyle = `hsl(36,38%,${l}%)`; x.fillRect(0,i*16,w,16);
+    x.fillStyle = 'rgba(72,56,38,.22)'; x.fillRect(0,i*16+15,w,1);
     const off = (i*73)%256; x.fillRect(off,i*16,1,16); x.fillRect((off+128)%256,i*16,1,16);
   }
 });
 woodTex.repeat.set(0.22,0.22);
 const carpetTex = canvasTex(64,64,(x,w,h)=>{
-  x.fillStyle='#d8d2c7'; x.fillRect(0,0,w,h);
-  for(let i=0;i<500;i++){ x.fillStyle=`rgba(90,80,70,${Math.random()*.08})`; x.fillRect(Math.random()*w,Math.random()*h,1,1); }
+  x.fillStyle='#ede7db'; x.fillRect(0,0,w,h);
+  for(let i=0;i<360;i++){ x.fillStyle=`rgba(92,82,68,${Math.random()*.055})`; x.fillRect(Math.random()*w,Math.random()*h,1,1); }
 });
 carpetTex.repeat.set(0.3,0.3);
 function windowTex(style){
   return canvasTex(128,64,(x,w,h)=>{
-    x.fillStyle='#f5f7f9'; x.fillRect(0,0,w,h);
+    x.fillStyle='#faf6ee'; x.fillRect(0,0,w,h);
     if(style==='balcony'){
-      x.fillStyle='#2b4a66'; x.fillRect(6,6,w-12,h-12);
-      x.fillStyle='rgba(190,220,240,.55)'; x.fillRect(6,h*0.55,w-12,h*0.45-6);
-      x.fillStyle='#f5f7f9'; x.fillRect(w-7,0,7,h); x.fillRect(0,0,7,h);
+      x.fillStyle='#3c6485'; x.fillRect(7,7,w-14,h-14);
+      x.fillStyle='rgba(220,238,248,.62)'; x.fillRect(7,h*0.54,w-14,h*0.46-7);
+      x.strokeStyle='rgba(36,52,71,.35)'; x.lineWidth=2; x.strokeRect(7,7,w-14,h-14);
+      x.fillStyle='#faf6ee'; x.fillRect(w-7,0,7,h); x.fillRect(0,0,7,h);
     } else if(style==='public'){
-      const g=x.createLinearGradient(0,10,0,h-12); g.addColorStop(0,'#3d6788'); g.addColorStop(1,'#1d3a55');
+      const g=x.createLinearGradient(0,10,0,h-12); g.addColorStop(0,'#5d8aa8'); g.addColorStop(1,'#345c7a');
       x.fillStyle=g; x.fillRect(0,12,w,h-24);
-      x.fillStyle='#e3e8ec'; x.fillRect(w-3,12,3,h-24);
+      x.fillStyle='#ebe5d9'; x.fillRect(w-4,12,4,h-24);
     } else {
-      const g=x.createLinearGradient(0,14,0,44); g.addColorStop(0,'#46739a'); g.addColorStop(1,'#1f3d5a');
+      const g=x.createLinearGradient(0,14,0,44); g.addColorStop(0,'#6391b0'); g.addColorStop(1,'#365f7d');
       x.fillStyle=g; x.fillRect(22,16,w-44,28);
+      x.strokeStyle='rgba(36,52,71,.35)'; x.lineWidth=2; x.strokeRect(22,16,w-44,28);
     }
   });
 }
 const WIN = {cabin:windowTex('cabin'), balcony:windowTex('balcony'), public:windowTex('public')};
 const waterTex = canvasTex(128,128,(x,w,h)=>{
-  x.fillStyle='#3aa7e0'; x.fillRect(0,0,w,h);
-  x.strokeStyle='rgba(255,255,255,.35)'; x.lineWidth=2;
-  for(let i=0;i<14;i++){ x.beginPath(); const y=Math.random()*h; x.moveTo(0,y);
-    for(let k=0;k<=8;k++) x.lineTo(k*16, y+Math.sin(k+i)*5); x.stroke(); }
+  x.fillStyle='#5eb5db'; x.fillRect(0,0,w,h);
+  x.strokeStyle='rgba(255,253,249,.48)'; x.lineWidth=2; x.lineCap='round';
+  for(let i=0;i<10;i++){
+    const y=8+i*12.5;
+    x.beginPath(); x.moveTo(0,y);
+    for(let k=0;k<=8;k++) x.lineTo(k*16, y+Math.sin(k*1.1+i)*3.5);
+    x.stroke();
+  }
 });
 waterTex.repeat.set(2,2);
+const seaTex = canvasTex(256,256,(x,w,h)=>{
+  x.fillStyle='#a8c5d4'; x.fillRect(0,0,w,h);
+  x.strokeStyle='rgba(255,253,249,.46)'; x.lineWidth=2.2; x.lineCap='round';
+  for(let r=0;r<8;r++){
+    for(let c=0;c<4;c++){
+      const ox=c*64+(r%2)*32, oy=r*32+16;
+      x.beginPath(); x.moveTo(ox+8,oy); x.quadraticCurveTo(ox+20,oy-5,ox+32,oy); x.quadraticCurveTo(ox+44,oy+5,ox+56,oy); x.stroke();
+    }
+  }
+});
+seaTex.repeat.set(30,30);
 const courtTex = canvasTex(256,512,(x,w,h)=>{
-  x.fillStyle='#3f8a4a'; x.fillRect(0,0,w,h);
-  x.fillStyle='#2f6fa8'; x.fillRect(20,20,w-40,h-40);
-  x.strokeStyle='#fff'; x.lineWidth=5; x.strokeRect(20,20,w-40,h-40);
+  x.fillStyle='#5d9957'; x.fillRect(0,0,w,h);
+  x.fillStyle='#4a82a8'; x.fillRect(20,20,w-40,h-40);
+  x.strokeStyle='#faf6ef'; x.lineWidth=5; x.strokeRect(20,20,w-40,h-40);
   x.beginPath(); x.moveTo(20,h/2); x.lineTo(w-20,h/2); x.stroke();
   x.beginPath(); x.arc(w/2,h/2,40,0,Math.PI*2); x.stroke();
   x.beginPath(); x.arc(w/2,20,70,0,Math.PI); x.stroke();
   x.beginPath(); x.arc(w/2,h-20,70,Math.PI,0); x.stroke();
 });
 const trackTex = canvasTex(64,64,(x,w,h)=>{
-  x.fillStyle='#b5523b'; x.fillRect(0,0,w,h);
-  x.fillStyle='#fff'; x.fillRect(0,0,3,h); x.fillRect(w/2-1,0,2,h); x.fillRect(w-3,0,3,h);
+  x.fillStyle='#c46952'; x.fillRect(0,0,w,h);
+  x.fillStyle='#faf6ef'; x.fillRect(0,0,3,h); x.fillRect(w/2-1,0,2,h); x.fillRect(w-3,0,3,h);
 });
 
 /* ---------- renderer / scene ---------- */
@@ -238,8 +340,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xcfdde6);
-scene.fog = new THREE.Fog(0xcfdde6, 380, 800);
+scene.background = new THREE.Color(0xd8e6ed);
+scene.fog = new THREE.Fog(0xd8e6ed, 420, 880);
 
 const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 1500);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -248,8 +350,8 @@ controls.maxPolarAngle = Math.PI*0.49;
 controls.minDistance = 12; controls.maxDistance = 520;
 controls.autoRotateSpeed = 0.8;
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x8aa3b5, 0.8));
-const sun = new THREE.DirectionalLight(0xfff6e8, 0.85);
+scene.add(new THREE.HemisphereLight(0xfffdf8, 0x9ab3c2, 0.78));
+const sun = new THREE.DirectionalLight(0xfff5e2, 0.68);
 sun.position.set(70,200,50);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048,2048);
@@ -257,7 +359,7 @@ sun.shadow.bias = -0.0005;
 Object.assign(sun.shadow.camera,{left:-90,right:90,top:90,bottom:-90,near:10,far:400});
 scene.add(sun);
 
-const sea = new THREE.Mesh(new THREE.CircleGeometry(900,64), new THREE.MeshStandardMaterial({color:0x8fb2c6,roughness:.6,metalness:.1}));
+const sea = new THREE.Mesh(new THREE.CircleGeometry(900,64), new THREE.MeshStandardMaterial({map:seaTex,color:0xffffff,roughness:.92,metalness:0}));
 sea.rotation.x = -Math.PI/2; sea.position.y = -16; sea.receiveShadow = true;
 scene.add(sea);
 
@@ -275,7 +377,7 @@ function addLabel(text, deck, x, y, z, cls){
   labels.push({el, deck, p:new THREE.Vector3(x,y,z), kind:(cls||'area').split(' ')[0]});
 }
 function mat(color, o={}){
-  return new THREE.MeshStandardMaterial(Object.assign({color, roughness:.75}, o));
+  return new THREE.MeshStandardMaterial(Object.assign({color, roughness:.86, metalness:.02}, o));
 }
 function info(d, name, cat, note){
   const i = {deck:d, name, cat, note, refs:[]}; allInfos.push(i); return i;
@@ -677,31 +779,35 @@ function perimeter(d, h, style){
   mesh.castShadow = style!=='glass'; mesh.receiveShadow = true;
   decks[d].add(mesh);
   const top = OUTLINE[d].map(([x,y])=>new THREE.Vector3(wx(d,x),h,wz(d,y))); top.push(top[0].clone());
-  const rail = new THREE.Line(new THREE.BufferGeometry().setFromPoints(top), new THREE.LineBasicMaterial({color:0x14263a, transparent:true, opacity:.5}));
-  rail.userData = {deck:d, baseOpacity:.5};
+  const rail = new THREE.Line(new THREE.BufferGeometry().setFromPoints(top), new THREE.LineBasicMaterial({color:0x243447, transparent:true, opacity:.76}));
+  rail.userData = {deck:d, baseOpacity:.76};
   decks[d].add(rail);
+  const bot = OUTLINE[d].map(([x,y])=>new THREE.Vector3(wx(d,x),0.02,wz(d,y))); bot.push(bot[0].clone());
+  const rim = new THREE.Line(new THREE.BufferGeometry().setFromPoints(bot), new THREE.LineBasicMaterial({color:0x243447, transparent:true, opacity:.34}));
+  rim.userData = {deck:d, baseOpacity:.34};
+  decks[d].add(rim);
 }
 function slab(d, o={}){
   const s = shapeOf(d, OUTLINE[d]);
   if(o.hole) s.holes.push(holePath(d, ...o.hole));
   const g = new THREE.ExtrudeGeometry(s,{depth:0.6, bevelEnabled:false});
   g.rotateX(-Math.PI/2); g.translate(0,-0.6,0);
-  const m = o.wood ? new THREE.MeshStandardMaterial({map:woodTex, roughness:.85}) : new THREE.MeshStandardMaterial({map:carpetTex, color:0xffffff, roughness:.95});
-  const mesh = new THREE.Mesh(g, [m, new THREE.MeshStandardMaterial({color:0xf2f2f0})]);
+  const m = o.wood ? new THREE.MeshStandardMaterial({map:woodTex, roughness:.9}) : new THREE.MeshStandardMaterial({map:carpetTex, color:0xffffff, roughness:.96});
+  const mesh = new THREE.Mesh(g, [m, new THREE.MeshStandardMaterial({color:0xf8f4ec, roughness:.88})]);
   mesh.receiveShadow = true; mesh.userData = {deck:d, baseOpacity:1};
   decks[d].add(mesh);
   perimeter(d, o.wall || 2.8, o.style || 'cabin');
 }
-/* hull body under the lowest deck */
+/* hull body under the lowest deck（清線藍白紅日系船身）*/
 (function(){
   const g = new THREE.ExtrudeGeometry(shapeOf(4, OUTLINE[4]),{depth:7,bevelEnabled:false});
   g.rotateX(-Math.PI/2); g.translate(0,-7.6,0);
-  const hull = new THREE.Mesh(g,[mat(0xf4f6f8),mat(0x1d3557,{roughness:.4,metalness:.2})]);
+  const hull = new THREE.Mesh(g,[mat(0xfaf6ef),mat(0x25496b,{roughness:.72,metalness:.06})]);
   hull.castShadow = hull.receiveShadow = true; hull.userData = {deck:4, baseOpacity:1};
   decks[4].add(hull);
   const g2 = new THREE.ExtrudeGeometry(shapeOf(4, OUTLINE[4]),{depth:2.2,bevelEnabled:false});
   g2.rotateX(-Math.PI/2); g2.translate(0,-9.8,0); g2.scale(0.97,1,0.985);
-  const red = new THREE.Mesh(g2, mat(0x9c2a2a));
+  const red = new THREE.Mesh(g2, mat(0xc94a3f,{roughness:.78}));
   red.userData = {deck:4, baseOpacity:1}; decks[4].add(red);
 })();
 
@@ -723,9 +829,9 @@ lift(13,200,948,250,966,3);
 stairs(13,203,972,247,1000);
 (function(){ // funnel
   const r=R(13,195,1005,255,1275), inf=info(13,'煙囪','svc','船隻煙囪結構');
-  put(13,'cyl',r.cx,0,r.cz,r.w,7.5,r.dz,0xc8202f,inf);
-  put(13,'cyl',r.cx,7.5,r.cz,r.w*0.95,.9,r.dz*0.95,0x1a1a1a,inf);
-  put(13,'box',r.cx,0,r.cz,r.w*0.6,1.4,r.dz*1.02,0xf3f1ec,inf);
+  put(13,'cyl',r.cx,0,r.cz,r.w,7.5,r.dz,0xc94a3f,inf);
+  put(13,'cyl',r.cx,7.5,r.cz,r.w*0.95,.9,r.dz*0.95,0x243447,inf);
+  put(13,'box',r.cx,0,r.cz,r.w*0.6,1.4,r.dz*1.02,0xfaf6ef,inf);
 })();
 (function(){ // jogging track
   const inf = info(13,'慢跑跑道','sport','沿船尾兩側的露天跑道');
@@ -1159,7 +1265,7 @@ controls.addEventListener('start',()=>{ camGoal.target=null; camGoal.pos=null; t
 function tick(t){
   requestAnimationFrame(tick);
   const k = reduce ? 1 : 0.1;
-  if(!reduce) waterTex.offset.set((t||0)*0.00002, (t||0)*0.00004);
+  if(!reduce){ waterTex.offset.set((t||0)*0.00002, (t||0)*0.00004); seaTex.offset.set((t||0)*0.000008, (t||0)*0.000012); }
   DECK_LIST.forEach(d=>{
     const g = decks[d];
     g.position.y += (deckY(d) - g.position.y) * k;
