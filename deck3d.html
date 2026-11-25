@@ -129,7 +129,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 
 <div class="info" id="info">
   <div class="t" id="info-t">探索星號 4–13 層</div>
-  <div class="m" id="info-m">從右側選一層甲板可單獨查看並顯示設施名稱；按「樓梯・電梯」可標出各層樓梯與電梯位置。</div>
+  <div class="m" id="info-m">選一層甲板可單獨查看並顯示設施名稱；按「樓梯・電梯」可標出各層樓梯與電梯位置。</div>
 </div>
 
 <script src="vendor/three/three.min.js"></script>
@@ -1035,9 +1035,18 @@ const nav = document.getElementById('decks');
 });
 
 const camGoal = {target:null, pos:null};
+/* 直式螢幕（手機）水平視角很窄，鏡頭位置要依畫面比例調整，否則船頭船尾會出畫面 */
+const portrait = () => camera.aspect < 1;
+const narrow = () => Math.max(1, 0.62 / camera.aspect);   // 比 0.62 更窄（手機直放約 0.46）就按比例拉遠
 function homeView(){
-  const top = deckY(13);
-  return {target:new THREE.Vector3(0, top*0.45, 0), pos:new THREE.Vector3(150, top*0.45+110, 170)};
+  const top = deckY(13), k = narrow();
+  return {target:new THREE.Vector3(0, top*0.45, 0), pos:new THREE.Vector3(150*k, top*0.45+110*k, 170*k)};
+}
+/* 單層：橫式從斜側面看；直式改從船尾後上方看，船身沿畫面上下延伸（船頭朝上，與平面圖同向） */
+function deckView(ty){
+  if(!portrait()) return {target:new THREE.Vector3(0, ty, 0), pos:new THREE.Vector3(60, ty+75, 85)};
+  const D = 245 * narrow(), z = 6;   // z 略偏船尾：畫面下方有甲板列與資訊卡，船身往上移
+  return {target:new THREE.Vector3(0, ty, z), pos:new THREE.Vector3(D*0.1, ty+D*0.85, z+D*0.52)};
 }
 const infoT = document.getElementById('info-t'), infoM = document.getElementById('info-m');
 const backA = document.getElementById('back');
@@ -1054,11 +1063,9 @@ function setFocus(d){
   if(d==='all'){
     const h = homeView(); camGoal.target = h.target; camGoal.pos = h.pos;
     infoT.textContent = '探索星號 4–13 層';
-    infoM.textContent = '從右側選一層甲板可單獨查看並顯示設施名稱；按「樓梯・電梯」可標出各層樓梯與電梯位置。';
+    infoM.textContent = '選一層甲板可單獨查看並顯示設施名稱；按「樓梯・電梯」可標出各層樓梯與電梯位置。';
   } else {
-    const ty = deckY(+d);
-    camGoal.target = new THREE.Vector3(0, ty, 0);
-    camGoal.pos = new THREE.Vector3(60, ty+75, 85);
+    const v = deckView(deckY(+d)); camGoal.target = v.target; camGoal.pos = v.pos;
     infoT.textContent = d+'層甲板';
     infoM.textContent = DECK_DESC[d] + '　';
     infoM.appendChild(guideLink(d));
@@ -1127,8 +1134,12 @@ renderer.domElement.addEventListener('pointerup',ev=>{
 });
 
 /* ---------- loop ---------- */
+let wasPortrait = null;
 function resize(){
   renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  /* 手機轉向（直↔橫）時重新取景 */
+  if(wasPortrait !== null && wasPortrait !== portrait()) setFocus(focus);
+  wasPortrait = portrait();
 }
 addEventListener('resize',resize); resize();
 const h0 = homeView(); camera.position.copy(h0.pos); controls.target.copy(h0.target);
