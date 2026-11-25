@@ -49,7 +49,8 @@ function ask(q) {
   }
 
   // 明文外洩檢查：會發布的檔案裡不能出現 guard 字串
-  const pub = ['index.html', 'deck3d.html', 'sw.js', 'README.md', 'CLAUDE.md', 'manifest.webmanifest', 'tools/smoke.js'];
+  const pub = ['index.html', 'deck3d.html', 'sw.js', 'manifest.webmanifest', 'tools/smoke.js', 'tools/lock.js',
+    ...fs.readdirSync(ROOT).filter(f => f.endsWith('.md'))];   // 根目錄所有文件（AGENTS.md、CLAUDE.md、README.md…）
   const leaks = [];
   for (const f of pub) {
     const p = path.join(ROOT, f); if (!fs.existsSync(p)) continue;

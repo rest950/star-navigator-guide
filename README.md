@@ -34,7 +34,9 @@
 ├── manifest.webmanifest   # PWA 設定
 ├── icons/                 # PWA 圖示
 ├── tools/smoke.js         # 無框架 smoke test：node tools/smoke.js
-├── CLAUDE.md              # 給 AI 協作者的專案說明
+├── tools/lock.js          # 🔒 我的訂位：把 private/ 的個資加密進頁面
+├── AGENTS.md              # 給 AI 協作者的專案說明（所有 agent 共用的唯一來源）
+├── CLAUDE.md              # Claude Code 入口，只匯入 AGENTS.md
 └── README.md
 ```
 
