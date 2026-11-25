@@ -9,7 +9,8 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <!--
   探索星號 3D 甲板模型（導覽站的附屬頁，入口在「更多」選單、桌機 header、各 Deck 平面圖）
-  - 名稱與位置以官方台灣出發版手冊第 7–10 頁為準，設施名稱跟 index.html 的 D 一致；改 D 的名稱要同步這裡
+  - 名稱以官方一般版手冊 sna-ship-brochure-tc-v1 第 7–10 頁為準（座標沿用台灣出發版甲板圖，兩版圖面相同），設施名稱跟 index.html 的 D 一致；改 D 的名稱要同步這裡
+  - 🏠 我們的房間：位置在加密的 LOCKED 裡（tools/lock.js 產生），用導覽頁存的 sn_lock 密碼解開才畫
   - 座標是手冊甲板圖的像素位置換算；示意模型，非比例尺
   - three.js r128 放在 vendor/three/（MIT），不走 CDN：船上沒網路也要能開，sw.js 的 SHELL 有列
   - #<n> 開啟時直接聚焦該層（例：deck3d.html#10）
@@ -37,6 +38,7 @@ body{margin:0;background:var(--sea);color:var(--ink);font-family:var(--font);ove
 .lb.core{font-size:11px;padding:1px 5px;color:#fff;border:0}
 .lb.core.stairs{background:#c98a00}
 .lb.core.lift{background:#1e6fb8}
+.lb.mine{background:#e5322d;color:#fff;border:0;font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 #tip{position:fixed;z-index:6;pointer-events:none;background:var(--ink);color:#fff;font-size:13px;font-weight:500;
   padding:4px 9px;border-radius:5px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 #tip small{font-weight:400;opacity:.75;margin-left:6px;font-size:11px}
@@ -95,6 +97,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <button id="t-labels" aria-pressed="true">標籤</button>
     <button id="t-spin" aria-pressed="false">自動旋轉</button>
     <button id="t-reset">重設視角</button>
+    <button id="t-mine" hidden>🏠 我們的房間</button>
+    <button id="t-unlock" title="輸入導覽站「我的訂位」的密碼，標出我們的房間">🔒 標出房間</button>
   </div>
   <span class="hint">拖曳旋轉・滾輪/雙指縮放・右鍵拖曳平移・滑鼠移到區域上顯示名稱</span>
 </div>
@@ -119,12 +123,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <span class="sw"><i style="background:#b89a52"></i>皇宮庭苑別墅</span>
     <span class="sw"><i style="background:#79c4c4"></i>皇宮豪華套房</span>
     <span class="sw"><i style="background:#c5d89a"></i>皇宮套房</span>
+    <span class="sw"><i style="background:#e6ecae"></i>皇宮露台房</span>
     <span class="sw"><i style="background:#9b4d9b"></i>露台客房</span>
     <span class="sw"><i style="background:#23305a"></i>海景客房</span>
     <span class="sw"><i style="background:#4f93cf"></i>內側客房</span>
     <span class="sw"><i style="background:#a0582e"></i>無障礙內側客房</span>
   </div>
-  <p class="src">依官方台灣出發版手冊甲板圖製作的示意模型，非比例尺；<br>實際動線以船上指示牌為準。</p>
+  <p class="src">依官方手冊甲板圖製作的示意模型，非比例尺；<br>實際動線以船上指示牌為準。</p>
 </details>
 
 <div class="info" id="info">
@@ -146,10 +151,10 @@ const DK = {
 const DECK_LIST = [13,12,11,10,9,8,7,6,5,4];
 /* 各層說明＝手冊第 7–10 頁甲板圖下方的圖說 */
 const DECK_DESC = {
-  13:'綜合運動場、餐廳及酒吧', 12:'水上活動、水療中心、健身中心、沙龍、酒廊、動感地帶及 VR 探索館',
-  11:'皇宮、套房、露台及內側客房', 10:'皇宮、雲頂俱樂部、套房、露台及內側客房',
-  9:'套房、露台及內側客房', 8:'餐廳、精品店、海景及內側客房', 7:'大廳、劇院、餐廳及咖啡座',
-  6:'餐廳、海景及內側客房', 5:'海景及內側客房', 4:'海景、內側客房、醫務室'
+  13:'運動設施、餐廳及酒吧', 12:'水上活動、水療中心、健身房、美髮沙龍、休閒酒廊、VR 探索館及動感地帶',
+  11:'皇宮套房、套房、露台客房及內艙客房', 10:'皇宮、雲頂俱樂部、套房、皇宮露台房、露台客房及內艙客房',
+  9:'套房、露台客房及內艙客房', 8:'餐廳、零售精品店、海景客房及內艙客房', 7:'主大堂、主劇院、餐廳及咖啡廳',
+  6:'餐廳、海景客房及內艙客房', 5:'海景客房及內艙客房', 4:'海景客房及內艙客房、醫務室'
 };
 const wx = (d,x) => (x - DK[d].cx) * DK[d].S;
 const wz = (d,y) => (y - DK[d].ys) * DK[d].S + 60;
@@ -161,10 +166,10 @@ const CAT = {
   crew:{c:0x6d7f93,n:'船員區域'}, med:{c:0xd64545,n:'醫療'}, boat:{c:0xf08a24,n:'救生艇'},
   stairs:{c:0xe8a400,n:'樓梯'}, lift:{c:0x1e88e5,n:'電梯'},
   villa:{c:0xb89a52,n:'皇宮庭苑別墅'}, dlx:{c:0x79c4c4,n:'皇宮豪華套房'}, psuite:{c:0xc5d89a,n:'皇宮套房'},
-  bal:{c:0x9b4d9b,n:'露台客房'}, ocean:{c:0x23305a,n:'海景客房'},
+  pbal:{c:0xe6ecae,n:'皇宮露台房'}, bal:{c:0x9b4d9b,n:'露台客房'}, ocean:{c:0x23305a,n:'海景客房'},
   ins:{c:0x4f93cf,n:'內側客房'}, acc:{c:0xa0582e,n:'無障礙內側客房'}
 };
-const CABIN_CATS = new Set(['villa','dlx','psuite','bal','ocean','ins','acc']);
+const CABIN_CATS = new Set(['villa','dlx','psuite','pbal','bal','ocean','ins','acc']);
 
 /* ---------- canvas textures ---------- */
 function canvasTex(w,h,draw){
@@ -702,13 +707,13 @@ function slab(d, o={}){
 
 /* ============ DECK 13 ============ */
 slab(13, {hole:[145,715,305,975], wood:true, wall:1.1, style:'glass'});
-area(13,140,330,310,425,'deck','瞭望台甲板',{kind:'wood',color:0xffffff,note:'船頭最高處的露天平台（駕駛台上方）'});
+area(13,140,330,310,425,'deck','觀景甲板',{kind:'wood',color:0xffffff,note:'船頭最高處的露天平台（駕駛台上方）'});
 (function(){ const r=R(13,140,330,310,425), inf=allInfos[allInfos.length-1];
   for(let x=r.x0+2; x<r.x1-1; x+=3) put(13,'mcyl',x,0.1,r.z0+1,.12,1.0,.12,0x8a8f96,inf); })();
-room(13,182,445,270,545,'kids','小小夢想家天地',{f:'kids',note:'兒童俱樂部'});
-room(13,285,460,312,540,'kids','小小夢想家天地',{f:'kids',noLabel:true,note:'兒童俱樂部（右舷側）'});
+room(13,182,445,270,545,'kids','小小夢想家俱樂部',{f:'kids',note:'兒童俱樂部'});
+room(13,285,460,312,540,'kids','小小夢想家俱樂部',{f:'kids',noLabel:true,note:'兒童俱樂部（右舷側）'});
 stairs(13,200,560,240,598);
-room(13,162,610,288,650,'dining','露天吧',{walls:false,f:'bar',floorWood:true,floor:0xffffff,note:'海鮮燒烤餐廳旁的露天酒吧；入座免費，飲品自費'});
+room(13,162,610,288,650,'dining','日光甲板酒吧',{walls:false,f:'bar',floorWood:true,floor:0xffffff,note:'海鮮燒烤餐廳旁的露天酒吧；入座免費，飲品自費'});
 room(13,162,650,288,690,'dining','海鮮燒烤餐廳',{walls:false,f:'tables',floorWood:true,floor:0xffffff,fo:{sp:2.1},note:'露天炭烤海鮮與輕食（付費）'});
 (function(){ const inf=info(13,'日光甲板','deck','泳池上方兩舷日光浴區');
   loungers(13,[139],770,985,11,inf,false); loungers(13,[311],770,985,11,inf,false);
@@ -723,12 +728,12 @@ stairs(13,203,972,247,1000);
   put(13,'box',r.cx,0,r.cz,r.w*0.6,1.4,r.dz*1.02,0xf3f1ec,inf);
 })();
 (function(){ // jogging track
-  const inf = info(13,'緩跑徑','sport','沿船尾兩側的露天跑道');
+  const inf = info(13,'慢跑跑道','sport','沿船尾兩側的露天跑道');
   [[132,700,140,1300],[310,700,318,1300],[132,1288,318,1298]].forEach(a=>{
     const r=R(13,...a); put(13,'box',r.cx,0,r.cz,r.w,.12,r.dz,0xb5523b,inf);
     if(r.dz>r.w){ put(13,'box',r.cx,0.12,r.cz,.06,.02,r.dz,0xffffff,inf); }
   });
-  addLabel('緩跑徑',13,wx(13,136),1,wz(13,1100));
+  addLabel('慢跑跑道',13,wx(13,136),1,wz(13,1100));
 })();
 (function(){ // sports courts
   [[268,1160,308,1268],[142,1160,182,1268]].forEach((a,k)=>{
@@ -758,7 +763,7 @@ stairs(13,203,972,247,1000);
 /* ============ DECK 12 ============ */
 slab(12, {wood:true, wall:1.1, style:'glass'});
 room(12,540,330,700,455,'dining','棕櫚閣',{f:'lounge',fo:{sofa:0xc9b48e,lamp:true},note:'船頭觀景廊；入座免費，晚上有表演'});
-room(12,527,450,572,505,'dining','醇夢雪茄廊',{f:'lounge',fo:{sofa:0x5a3a28,table:0x2a1d14},note:'雪茄與烈酒小酒廊（付費）'});
+room(12,527,450,572,505,'dining','雪茄吧',{f:'lounge',fo:{sofa:0x5a3a28,table:0x2a1d14},note:'雪茄與烈酒小酒廊（付費）'});
 room(12,668,462,718,520,'kids','動感地帶',{f:'arcade',note:'青少年與兒童遊戲區（街機多數付費）'});
 room(12,692,522,718,578,'shop','寫真廊',{f:'shop',note:'船上攝影師照片展示與販售'});
 lift(12,592,527,650,545,4);
@@ -766,7 +771,7 @@ stairs(12,595,555,645,580);
 room(12,527,580,588,628,'well','水療中心',{f:'spa',note:'按摩、臉部保養等療程（付費）'});
 room(12,603,585,652,632,'well','美髮沙龍',{f:'salon',note:'洗髮、造型、美甲（付費）'});
 room(12,670,610,718,688,'fun','VR探索館',{f:'vr',note:'VR、AR 沉浸式遊戲（按遊戲計費）'});
-room(12,527,632,590,698,'well','健身中心',{f:'gym',note:'有氧與重訓器材（免費，需穿運動鞋）'});
+room(12,527,632,590,698,'well','健身房',{f:'gym',note:'有氧與重訓器材（免費，需穿運動鞋）'});
 (function(){
   const deckInf = area(12,566,700,676,955,'deck','泳池甲板',{color:0xe7e1d3,noLabel:true,note:'泳池周邊休憩區'});
   loungers(12,[540,553,685,698],745,935,12,deckInf,true);
@@ -780,14 +785,14 @@ room(12,527,632,590,698,'well','健身中心',{f:'gym',note:'有氧與重訓器�
   // water slide
   const pts=[], cz=wz(12,905), cx=wx(12,640);
   for(let i=0;i<=80;i++){ const t=i/80, a=t*Math.PI*5; pts.push(new THREE.Vector3(cx+Math.cos(a)*2.4, 8-t*7, cz+Math.sin(a)*2.4)); }
-  const sInf = info(12,'「凱撒」滑水梯','water','羅馬泳池的滑水梯，有一段透明管；身高 115 cm 以上（造型為示意）');
+  const sInf = info(12,'凱撒滑水梯','water','羅馬泳池的滑水梯，有一段透明管；身高 115 cm 以上（造型為示意）');
   single(12, new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),220,0.5,14,false), mat(0xf2b134,{roughness:.3,transparent:true,opacity:.92,side:THREE.DoubleSide})), sInf, .92);
   put(12,'mcyl',cx,0,cz,.45,8.6,.45,0x8a94a0,sInf);
   put(12,'box',cx,8.3,cz,2.2,.15,2.2,0xd8dde2,sInf);
   for(let k=0;k<4;k++) put(12,'mcyl',cx+(k<2?-1:1)*1,0,cz+(k%2?-1:1)*1,.15,8.3,.15,0xb0b8c0,sInf);
-  addLabel('「凱撒」滑水梯',12,cx,9.6,cz);
+  addLabel('凱撒滑水梯',12,cx,9.6,cz);
 })();
-room(12,672,740,722,782,'dining','義式手作冰品',{f:'bar',fo:{counter:0xf2d1dc},note:'泳池旁的義式冰淇淋（付費）'});
+room(12,672,740,722,782,'dining','意式冰淇淋店',{f:'bar',fo:{counter:0xf2d1dc},note:'泳池旁的義式冰淇淋（付費）'});
 lift(12,595,946,650,962,3);
 stairs(12,595,975,645,998);
 (function(){
@@ -796,11 +801,11 @@ stairs(12,595,975,645,998);
 })();
 lift(12,593,1203,648,1218,3);
 stairs(12,595,1232,645,1256);
-room(12,572,1262,668,1312,'dining','麗都戶外燒烤餐廳',{walls:false,f:'tables',fo:{top:0xe9e2d0},note:'船尾戶外燒烤區（免費）'});
+room(12,572,1262,668,1312,'dining','麗都燒烤餐廳',{walls:false,f:'tables',fo:{top:0xe9e2d0},note:'船尾戶外燒烤區（免費）'});
 
 /* ============ DECK 11 ============ */
 slab(11, {style:'balcony'});
-room(11,905,300,1125,352,'crew','船長室',{f:'bridge',note:'手冊標「船長室」，即駕駛台（非開放區域）'});
+room(11,905,300,1125,352,'crew','駕駛台',{f:'bridge',note:'非開放區域（台灣版手冊標「船長室」）'});
 for(let i=0;i<54;i++){ const y=422+i*15.07; cabin(11,920,y,962,y+15.07,'bal'); cabin(11,1068,y,1110,y+15.07,'bal'); }
 [[968,1002],[1028,1062]].forEach(([x0,x1])=>{
   col(11,x0,x1,422,500,5,'ins'); col(11,x0,x1,590,645,4,'ins'); col(11,x0,x1,695,740,3,'ins');
@@ -822,9 +827,9 @@ slab(10, {style:'balcony'});
 row(10,120,292,240,290,5,'psuite');
 [[117,157],[255,295]].forEach(([x0,x1])=>{
   col(10,x0,x1,292,304,1,'ocean');
-  // 手冊第 8 頁：10510–10616 兩側全是紫色一般露台客房（沒有淡黃的皇宮露台房），10618–10636 是皇宮豪華套房
+  // 一般版手冊第 8 頁：10526–10566 是紫色露台客房（13 間），10568–10616 是淡黃的皇宮露台房（20 間），10618–10636 是皇宮豪華套房
   [[305,330,'psuite',1],[330,346,'bal',1],[348,372,'psuite',1],[373,388,'bal',1],[390,412,'psuite',1],
-   [413,428,'bal',1],[430,453,'psuite',1],[455,907,'bal',33],[910,1082,'dlx',8]]
+   [413,428,'bal',1],[430,453,'psuite',1],[455,455+452*13/33,'bal',13],[455+452*13/33,907,'pbal',20],[910,1082,'dlx',8]]
    .forEach(([a,b,c,n])=>col(10,x0,x1,a,b,n,c));
 });
 col(10,162,192,305,428,9,'ins'); col(10,217,248,318,428,8,'ins');
@@ -835,7 +840,7 @@ col(10,163,180,858,882,1,'ins');
 lift(10,180,448,232,466,3); stairs(10,180,476,232,498);
 stairs(10,182,855,230,882);
 lift(10,180,1063,232,1080,3); stairs(10,180,1092,232,1112);
-room(10,120,1120,185,1215,'fun','貴賓廳',{f:'casino',note:'貴賓娛樂場（雲頂俱樂部），限特定貴賓'});
+room(10,120,1120,185,1215,'fun','貴賓娛樂場',{f:'casino',note:'貴賓娛樂場（雲頂俱樂部），限特定貴賓'});
 room(10,222,1120,295,1160,'svc','皇宮接待處',{f:'reception',note:'皇宮貴賓專屬接待櫃檯（皇宮限定）'});
 room(10,210,1162,295,1215,'dining','皇宮餐廳',{f:'tables',fo:{top:0xffffff,chair:0x6d4c7d},note:'皇宮貴賓專屬餐廳（皇宮限定）'});
 (function(){
@@ -846,7 +851,7 @@ room(10,210,1162,295,1215,'dining','皇宮餐廳',{f:'tables',fo:{top:0xffffff,c
     put(10,'box',lx,0.2,lz,1.4,.12,.6,WHITE,deckInf,[0,-a,0]); }
 })();
 addLabel('皇宮套房',10,wx(10,206),CAB_H+.5,wz(10,265)); addLabel('露台客房',10,wx(10,137),CAB_H+.5,wz(10,545));
-addLabel('露台客房',10,wx(10,275),CAB_H+.5,wz(10,770)); addLabel('皇宮豪華套房',10,wx(10,137),CAB_H+.5,wz(10,995));
+addLabel('皇宮露台房',10,wx(10,275),CAB_H+.5,wz(10,770)); addLabel('皇宮豪華套房',10,wx(10,137),CAB_H+.5,wz(10,995));
 addLabel('內側客房',10,wx(10,232),CAB_H+.5,wz(10,580));
 
 /* ============ DECK 9 ============ */
@@ -877,14 +882,14 @@ col(8,906,920,268,310,1,'ins'); col(8,930,944,268,310,1,'ins');
 lift(8,890,452,958,472,4); stairs(8,890,484,958,507);
 room(8,862,530,990,685,'fun','娛樂場',{f:'casino',floor:0x6e2a35,note:'與 7 層相連的娛樂場；18 歲以上，駛入公海才開'});
 (function(){
-  const inf = room(8,880,688,958,722,'shop','精品廊',{f:'shop',note:'免稅精品、香水化妝品、日本成藥與零食'});
-  room(8,862,735,900,840,'shop','精品廊',{f:'shop',inf});
-  room(8,950,735,990,840,'shop','精品廊',{f:'shop',inf});
+  const inf = room(8,880,688,958,722,'shop','精品店',{f:'shop',note:'免稅精品、香水化妝品、日本成藥與零食'});
+  room(8,862,735,900,840,'shop','精品店',{f:'shop',inf});
+  room(8,950,735,990,840,'shop','精品店',{f:'shop',inf});
 })();
 lift(8,903,845,948,862,3); stairs(8,900,870,950,895);
-room(8,945,895,975,955,'shop','星空廊',{f:'shop',note:'禮品與糖果（一般版手冊稱「禮品廊」）'});
+room(8,945,895,975,955,'shop','禮品廊',{f:'shop',note:'禮品與糖果（台灣版手冊稱「星空廊」）'});
 room(8,862,955,975,1005,'dining','海馬日本料理',{f:'tables',fo:{square:true,top:0x3b2a1e,chair:0x1f1f1f},note:'日式料理與鐵板燒（付費）'});
-room(8,862,1005,975,1075,'dining','泰悅',{f:'tables',fo:{top:0xe7c98a,chair:0x6b3a1f},note:'Rua Thai 泰式自助（付費）；2026 年手冊仍標「火鍋」'});
+room(8,862,1005,975,1075,'dining','泰悅',{f:'tables',fo:{top:0xe7c98a,chair:0x6b3a1f},note:'Rua Thai 泰式自助（付費）；台灣版手冊仍標「火鍋」'});
 lift(8,903,1075,948,1092,3); stairs(8,900,1100,950,1122);
 room(8,850,1140,1000,1335,'fun','星座劇院（上層）',{f:'theatre',floor:0x3a2228,note:'主劇院上層座位，從 8 層進場'});
 (function(){
@@ -904,16 +909,16 @@ addLabel('海景客房',8,wx(8,853),CAB_H+.5,wz(8,380)); addLabel('內側客房'
 
 /* ============ DECK 7 ============ */
 slab(7, {style:'public'});
-area(7,185,90,228,165,'deck','觀景處',{kind:'wood',color:0xffffff,note:'船頭最前端的觀景點；是否開放依船方安排'});
+area(7,185,90,228,165,'deck','觀景台',{kind:'wood',color:0xffffff,note:'船頭最前端的觀景點；是否開放依船方安排'});
 room(7,125,230,285,456,'fun','娛樂場',{f:'casino',floor:0x6e2a35,note:'主娛樂場，與 8 層相連；18 歲以上，駛入公海才開'});
 lift(7,175,460,240,476,4); stairs(7,175,486,240,506);
-room(7,150,508,200,540,'dining','甜品匯',{f:'bar',fo:{counter:0xf2d1dc},note:'蛋糕甜點與咖啡（付費）'});
-room(7,208,508,262,540,'dining','抹茶坊',{f:'bar',fo:{counter:0x7a9a5a},note:'抹茶甜點與冰品（付費）'});
-room(7,146,545,170,620,'dining','義大利披薩餐廳',{f:'tables',fo:{top:0xd9483b},note:'手工義大利麵與披薩（付費）'});
+room(7,150,508,200,540,'dining','小蛋糕咖啡館',{f:'bar',fo:{counter:0xf2d1dc},note:'蛋糕甜點與咖啡（付費）'});
+room(7,208,508,262,540,'dining','抹茶冰品',{f:'bar',fo:{counter:0x7a9a5a},note:'抹茶甜點與冰品（付費）'});
+room(7,146,545,170,620,'dining','意式披薩餐廳',{f:'tables',fo:{top:0xd9483b},note:'手工義大利麵與披薩（付費）'});
 room(7,172,545,238,590,'fun','麻將廳',{f:'mahjong',note:'自動麻將桌，按時段收費'});
 room(7,240,545,266,620,'dining','藍湖美食',{f:'tables',note:'南洋小吃，近 24 小時營業（付費）'});
 room(7,150,628,195,680,'shop','紀念品商店',{f:'shop',note:'船上紀念品與日用品'});
-room(7,165,712,245,765,'svc','接待處和岸上觀光櫃檯',{f:'reception',note:'帳務、失物招領、岸上觀光報名'});
+room(7,165,712,245,765,'svc','接待處／岸上觀光櫃檯',{f:'reception',note:'帳務、失物招領、岸上觀光報名'});
 (function(){
   const inf = area(7,180,770,245,840,'svc','大堂',{color:0xeadfc8,note:'主要活動舞台：賓果、電影、說明會'});
   const r = R(7,180,770,245,840);
@@ -921,20 +926,20 @@ room(7,165,712,245,765,'svc','接待處和岸上觀光櫃檯',{f:'reception',not
   put(7,'mcyl',r.cx,1.8,r.cz,.05,1.0,.05,0xc9a96e,inf);
   put(7,'sph',r.cx,1.6,r.cz,1.4,.6,1.4,0xffe6a6,inf);
 })();
-room(7,158,770,179,840,'dining','大堂咖啡',{f:'bar',note:'大堂旁的咖啡吧（付費）'});
-room(7,120,760,142,890,'svc','劇院售票處／賓果櫃檯',{f:'reception',note:'付費表演票與賓果卡'});
+room(7,158,770,179,840,'dining','大堂咖啡廳',{f:'bar',note:'大堂旁的咖啡吧（付費）'});
+room(7,120,760,142,890,'svc','售票處及賓果櫃檯',{f:'reception',note:'付費表演票與賓果卡'});
 (function(){
-  const inf = info(7,'悠閒大道','deck','沿船身兩側的露天步道（一般版手冊稱「海濱長廊」）');
+  const inf = info(7,'海濱長廊','deck','沿船身兩側的露天步道（台灣版手冊稱「悠閒大道」）');
   [[118,600,142,720],[268,600,292,720],[118,1010,142,1100],[268,1010,292,1100]].forEach(a=>{
     const r=R(7,...a); put(7,'box',r.cx,0,r.cz,r.w,.1,r.dz,0xd9ccb0,inf);
     for(let z=r.z0+1.5;z<r.z1;z+=3){ put(7,'cyl',r.cx,0.1,z,.7,.5,.7,0x8a6a4a,inf); put(7,'sph',r.cx,0.6,z,.9,1.1,.9,0x4f8a4f,inf); }
   });
-  addLabel('悠閒大道',7,wx(7,130),1.5,wz(7,660)); addLabel('悠閒大道',7,wx(7,280),1.5,wz(7,1055));
+  addLabel('海濱長廊',7,wx(7,130),1.5,wz(7,660)); addLabel('海濱長廊',7,wx(7,280),1.5,wz(7,1055));
 })();
 lift(7,180,842,235,858,3); stairs(7,178,868,238,890);
 room(7,140,898,166,945,'dining','星宴',{f:'tables',fo:{sp:2.0},note:'西式套餐與品酒晚宴（付費）'});
 room(7,245,872,266,942,'shop','紀念品商店',{f:'shop',note:'船上紀念品與日用品'});
-room(7,170,935,248,1005,'dining','絲路花舞中餐廳',{f:'tables',fo:{top:0xf2e6d0,chair:0x8c2f2f},note:'中式餐廳，招牌片皮鴨（付費）'});
+room(7,170,935,248,1005,'dining','絲路花舞',{f:'tables',fo:{top:0xf2e6d0,chair:0x8c2f2f},note:'中式餐廳，招牌片皮鴨（付費）'});
 lift(7,180,1072,235,1090,3); stairs(7,178,1100,238,1120);
 room(7,130,1135,280,1328,'fun','星座劇院',{f:'theatre',floor:0x3a2228,h:3,note:'主劇院（7–8 層），每晚免費製作秀'});
 
@@ -976,11 +981,11 @@ lift(4,180,458,232,475,3); stairs(4,180,486,232,505);
 lift(4,180,836,232,852,3); stairs(4,180,866,232,892);
 area(4,125,925,285,1330,'crew','非旅客區域',{color:0xb9c2cb,note:'4 層後半段不開放旅客'});
 (function(){
-  const inf = info(4,'接駁船接送處','svc','需要搭接駁小艇上岸時的登艇處（神戶、高知都靠碼頭，通常用不到）');
+  const inf = info(4,'接駁船登船處','svc','需要搭接駁小艇上岸時的登艇處（神戶、高知都靠碼頭，通常用不到）');
   [[117,855,150,915],[258,855,292,915]].forEach(a=>{ const r=R(4,...a);
     put(4,'box',r.cx,0,r.cz,r.w,.1,r.dz,0x9fb0bf,inf);
     put(4,'metal',r.cx,0.1,r.z0+.2,r.w,1.0,.06,0xc3cad1,inf); put(4,'metal',r.cx,0.1,r.z1-.2,r.w,1.0,.06,0xc3cad1,inf); });
-  addLabel('接駁船接送處',4,wx(4,133),1.5,wz(4,885));
+  addLabel('接駁船登船處',4,wx(4,133),1.5,wz(4,885));
 })();
 addLabel('海景・內側客房',4,wx(4,150),CAB_H+.5,wz(4,750));
 
@@ -1172,9 +1177,10 @@ function tick(t){
   renderer.render(scene,camera);
   const w = innerWidth, h = innerHeight;
   labels.forEach(L=>{
-    let show = showLabels && fade[L.deck] > 0.6;
+    let show = (showLabels || L.kind==='mine') && fade[L.deck] > 0.6;
     if(show){
-      if(L.kind==='deck' || L.kind==='bow') show = focus==='all';
+      if(L.kind==='mine') show = focus==='all' || focus===String(L.deck);
+      else if(L.kind==='deck' || L.kind==='bow') show = focus==='all';
       else if(L.kind==='core') show = focus===String(L.deck) || (showCores && focus==='all');
       else show = focus===String(L.deck);
     }
@@ -1187,6 +1193,44 @@ function tick(t){
   });
 }
 requestAnimationFrame(tick);
+
+/* ---------- 🏠 我們的房間：位置在加密的 LOCKED 裡（tools/lock.js 產生，與 index.html 同一份），用導覽頁記住的密碼（sn_lock）解開 ---------- */
+const LOCKED={n:600000,s:"NTyZOqB2qtDsff15TqW9dQ==",iv:"G8jWqAtQNvbw69Lb",ct:"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"};
+const unlockBtn = document.getElementById('t-unlock'), mineBtn = document.getElementById('t-mine');
+const b64u8 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function lockDecrypt(pw){
+  const k0 = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64u8(LOCKED.s), iterations:LOCKED.n, hash:'SHA-256'}, k0, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:b64u8(LOCKED.iv)}, key, b64u8(LOCKED.ct))));
+}
+function markMine(c){
+  const d = c.deck, r = R(d, c.d3.x0, c.d3.y0, c.d3.x1, c.d3.y1);
+  const glow = new THREE.MeshStandardMaterial({color:0xe5322d, emissive:0xe5322d, emissiveIntensity:.55, roughness:.5});
+  const add = (geo, sx, sy, sz, x, y, z, op=1) => {
+    const m = new THREE.Mesh(geo, glow.clone()); m.scale.set(sx, sy, sz); m.position.set(x, y, z);
+    m.userData = {deck:d, baseOpacity:op}; decks[d].add(m); return m;
+  };
+  add(GEO.box, r.w+.25, CAB_H+.25, r.dz+.25, r.cx, (CAB_H+.25)/2, r.cz, .55);   // 半透明罩住整間房
+  add(GEO.cyl, .18, 6, .18, r.cx, CAB_H+3, r.cz);                               // 細柱
+  add(GEO.cone, 1.4, 1.8, 1.4, r.cx, CAB_H+6.9, r.cz).rotation.x = Math.PI;      // 倒三角指標
+  setOpacity(decks[d], fade[d]);
+  addLabel('🏠 我們的房間', d, r.cx, CAB_H+8.4, r.cz, 'mine');
+  unlockBtn.hidden = true; mineBtn.hidden = false;
+  mineBtn.addEventListener('click', () => setFocus(String(d)));
+}
+async function unlockMine(pw, saved){
+  if(!LOCKED.n || !(window.crypto && crypto.subtle)) return false;
+  try{ const o = await lockDecrypt(pw); if(o.cabin) markMine(o.cabin); return true; }
+  catch(e){ if(saved){ try{ localStorage.removeItem('sn_lock'); }catch(_){} } return false; }
+}
+unlockBtn.hidden = !LOCKED.n;
+unlockBtn.addEventListener('click', async () => {
+  const pw = prompt('導覽站「🔒 我的訂位」的密碼');
+  if(!pw) return;
+  if(await unlockMine(pw)){ try{ localStorage.setItem('sn_lock', JSON.stringify(pw)); }catch(e){} }
+  else alert('密碼不對');
+});
+try{ const pw = JSON.parse(localStorage.getItem('sn_lock') || 'null'); if(pw) unlockMine(pw, true); }catch(e){}
 })();
 </script>
 

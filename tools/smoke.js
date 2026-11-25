@@ -6,7 +6,7 @@ const src = html.match(/<script>([\s\S]*)<\/script>/)[1];
 
 const STATIC = new Set(('mainContent deckBar deckBarScroll verLabel verDetail btnTop updateBar tabTr tabOv tabSg tabSt tabMore ' +
   'starBadge moreMenu searchOverlay searchInput searchClear searchChips searchResults navModal navModalBg navBody ' +
-  'dineModal dineModalBg dineBody aboutModal aboutModalBg dBtnTr dBtnOv dBtnSg dBtnSt dBtnSp').split(' '));
+  'dineModal dineModalBg dineBody aboutModal aboutModalBg lockModal lockModalBg lockBody dBtnTr dBtnOv dBtnSg dBtnSt dBtnSp').split(' '));
 const els = {};
 function el(id) {
   if (!STATIC.has(id)) return null;
@@ -28,7 +28,7 @@ Object.assign(global, {
 });
 
 const A = new Function(src + `
-return {D,QF,PLAN,DAYS,PORTS,CHECKS,INFO,SPEND,renderTrip,renderPort,renderOverview,renderSingle,renderStarred,renderDine,renderSpend,portTs,routeFromHash,
+return {D,QF,PLAN,DAYS,PORTS,CHECKS,INFO,SPEND,LOCKED,lockFormHTML,renderTrip,renderPort,renderOverview,renderSingle,renderStarred,renderDine,renderSpend,portTs,routeFromHash,
   set:(k,v)=>{eval(k+"=v")}};`)();
 (listeners.DOMContentLoaded || []).forEach(f => f());
 
@@ -50,6 +50,15 @@ for (const d of A.D) {
 check('starred', A.renderStarred());
 check('dine', A.renderDine());
 check('spend', A.renderSpend());
+check('lock form', A.lockFormHTML());
+// 🏠 我們的房間：用假座標確認標記畫得出來、不影響其他層
+A.set('myCabin', { deck: 11, plan: { x: 1, y: 200, w: 22, h: 4 } });
+for (const n of [11, 10]) { A.set('deckId', n); const h = A.renderSingle(); check('deck ' + n + ' with cabin mark', h);
+  if (h.includes('my-cabin') !== (n === 11)) fail(`cabin mark ${n === 11 ? 'missing on' : 'leaked to'} deck ${n}`); }
+A.set('myCabin', null);
+// 🔒 我的訂位：密文要由 tools/lock.js 產生（n=0 表示還沒加密過）
+if (!/^const LOCKED=\{n:600000,/m.test(fs.readFileSync(path.join(__dirname, '..', 'deck3d.html'), 'utf8'))) fail('deck3d.html LOCKED missing — run tools/lock.js');
+if (!(A.LOCKED.n >= 100000 && A.LOCKED.s && A.LOCKED.iv && A.LOCKED.ct)) fail('LOCKED is empty — run tools/lock.js');
 
 const CATS = new Set('dining pool entertainment bar spa kids service shopping cabin'.split(' '));
 const ids = A.D.flatMap(d => d.fac.map(f => f.id));
@@ -74,7 +83,7 @@ for (const p of Object.values(A.PORTS)) {
 }
 // deck3d.html（3D 甲板模型）的設施名稱必須跟 D 同層的 zh 一致；客房由分類表產生，不在此列
 const d3 = fs.readFileSync(path.join(__dirname, '..', 'deck3d.html'), 'utf8');
-const D3_GENERIC = new Set('樓梯 電梯 未標名區塊 非旅客區域 船長室 煙囪 直升機坪 救生艇 按摩池 泳池甲板 皇宮泳池'.split(' '));
+const D3_GENERIC = new Set('樓梯 電梯 未標名區塊 非旅客區域 駕駛台 煙囪 直升機坪 救生艇 按摩池 泳池甲板 皇宮泳池'.split(' '));
 const d3Names = [...d3.matchAll(/\b(?:room|area)\((\d+),[^']*'[a-z]+','([^']+)'/g), ...d3.matchAll(/\binfo\((\d+),'([^']+)'/g),
   ...d3.matchAll(/\bpool\((\d+),[\d,]*'([^']+)'/g)].map(m => ({ deck: +m[1], name: m[2] }));
 if (!d3Names.length) fail('deck3d.html: no facility names found (regex out of date?)');

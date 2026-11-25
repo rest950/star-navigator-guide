@@ -1,0 +1,4 @@
+.DS_Store
+# 個資：船票掃描檔、加密前的明文（只有 index.html 裡的 LOCKED 密文會發布）
+docs/
+private/
